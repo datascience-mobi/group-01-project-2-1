@@ -1,0 +1,41 @@
+NCI_TPW_gep_treated <- readRDS("/Users/laurakeppler/Desktop/Uni/4. Semester/Bioinformatik/R-Daten/NCI_TPW_gep_treated.rds")
+dat = NCI_TPW_gep_treated[, 421:474]
+LapatimibTreat <- data.frame(dat)
+rm(dat)
+NCI_TPW_gep_untreated <- readRDS("/Users/laurakeppler/Desktop/Uni/4. Semester/Bioinformatik/R-Daten/NCI_TPW_gep_untreated.rds")
+dat = NCI_TPW_gep_untreated[, 421:474]
+LapatimibUnTreat <- data.frame(dat)
+rm(dat)
+Metadata <- read.delim("/Users/laurakeppler/Desktop/Uni/4. Semester/Bioinformatik/R-Daten/NCI_TPW_metadata.tsv", header = TRUE, sep = "\t", stringsAsFactors = TRUE)
+Cellline_Annotation <- read.delim("/Users/laurakeppler/Desktop/Uni/4. Semester/Bioinformatik/R-Daten/cellline_annotation.tsv", header = TRUE, sep = "\t", stringsAsFactors = TRUE)
+Drug_Annotation <- read.delim("/Users/laurakeppler/Desktop/Uni/4. Semester/Bioinformatik/R-Daten/drug_annotation.tsv", header = TRUE, sep = "\t", stringsAsFactors = TRUE)
+CCLE_mutations <- readRDS("/Users/laurakeppler/Desktop/Uni/4. Semester/Bioinformatik/R-Daten/CCLE_mutations.rds")
+CCLE_copynumber <- readRDS("/Users/laurakeppler/Desktop/Uni/4. Semester/Bioinformatik/R-Daten/CCLE_copynumber.rds")
+CCLE_basalexpression <- readRDS("/Users/laurakeppler/Desktop/Uni/4. Semester/Bioinformatik/R-Daten/CCLE_basalexpression.rds")
+NegLogGI50 <- readRDS("/Users/laurakeppler/Desktop/Uni/4. Semester/Bioinformatik/R-Daten/NegLogGI50.rds")
+rm(NCI_TPW_gep_treated)
+rm(NCI_TPW_gep_untreated)
+topVar = apply(LapatimibTreat, 1, var)
+summary(topVar)
+topVar = apply(LapatimibUnTreat, 1, var)
+summary(topVar)
+km = kmeans(x = t(LapatimibTreat), centers = 5, nstart = 10)
+km$tot.withinss
+wss = sapply(2:7, function(k) {
+  +     kmeans(x = t(LapatimibTreat), centers = k)$tot.withinss
+  + })
+plot(2:7, wss, type = "b", pch = 19, xlab = "Number of clusters K", ylab = "Total within-clusters sum of squares")
+library(cluster)
+km = kmeans(x = t(LapatimibTreat), centers = 3, nstart = 10)
+s = silhouette(km$cluster, D)
+
+topVar = apply(LapatimibTreat, 1, var)
+summary(topVar)
+LapatimibTreat.topVar = LapatimibTreat[topVar > quantile(topVar, probs = 0.75), ]
+dim(LapatimibTreat.topVar)
+cor.mat = cor(LapatimibTreat.topVar, method = "spearman")
+cor.dist = as.dist(1 - cor.mat)
+cor.hc = hclust(cor.dist, method = "ward.D2")
+cor.hc = as.dendrogram(cor.hc)
+pca = prcomp(LapatimibTreat.topVar, center = F, scale. = F)
+print(pca)
