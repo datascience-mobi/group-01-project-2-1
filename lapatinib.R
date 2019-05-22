@@ -1,3 +1,4 @@
+# reducing Metadata to Lapatinib
 Metadata_Lapatinib_treated= Metadata[421:474, ]
 Metadata_Lapatinib_untreated= Metadata[1240:1293, ]
 summary(NegLogGI50[9, ])
