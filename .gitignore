@@ -1,2 +1,14 @@
 
 .RData
+Rohdaten/.Rhistory
+Rohdaten/CCLE_basalexpression.rds
+Rohdaten/CCLE_copynumber.rds
+Rohdaten/CCLE_mutations.rds
+Rohdaten/cellline_annotation.tsv
+Rohdaten/Cleaning.R
+Rohdaten/drug_annotation.tsv
+Rohdaten/F2.large.jpg
+Rohdaten/NCI_TPW_gep_treated.rds
+Rohdaten/NCI_TPW_gep_untreated.rds
+Rohdaten/NCI_TPW_metadata.tsv
+Rohdaten/NegLogGI50.rds
