@@ -1,6 +1,6 @@
 # Getting the Data
 library(rstudioapi)
-library(clusters)
+library(clusters) #meinst du vielleicht "library(cluster)"? das package "clusters" gibt es nicht ;)
 
 wd = dirname(rstudioapi::getSourceEditorContext()$path)
 
@@ -12,7 +12,7 @@ Drug_Annotation = read.delim(paste0(wd, "/Data/drug_annotation.tsv"), header = T
 CCLE_mutations = readRDS(paste0(wd, "/Data/CCLE_mutations.rds"))
 CCLE_copynumber = readRDS(paste0(wd, "/Data/CCLE_copynumber.rds"))
 CCLE_basalexpression = readRDS(paste0(wd, "/Data/CCLE_basalexpression.rds"))
-NegLogGI50 = readRDS(paste0(wd, "/Data/NegLogGI50.rds"))
+NegLogGI50 = as.data.frame(readRDS(paste0(wd, "/Data/NegLogGI50.rds")))
 Fold_Change = NCI_TPW_gep_treated - NCI_TPW_gep_untreated
 Treated = data.frame(NCI_TPW_gep_treated)
 Untreated = data.frame(NCI_TPW_gep_untreated)
