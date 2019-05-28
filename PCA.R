@@ -11,18 +11,21 @@ pca <- prcomp(t(Fold_Change), scale = TRUE)
 
 plot(pca$x[,1], pca$x[,2]) 
 
-pca.var <- pca$sdev^2  ##sdev calculates variation each PC accounts for
-pca.var.per <- round(pca.var/sum(pca.var)*100, 1)
-#since percentages make more sense then normal variation values
-#calculate % or variation, which is much more interesing
+# get name of sample with highest pc1 value
+rownames(pca$x)[order(pca$x[,1], decreasing = TRUE)[1]]
+
+
+pca.var <- pca$sdev^2  # sdev calculates variation each PC accounts for
+pca.var.per <- round(pca.var/sum(pca.var)*100, 1) 
+# since percentages make more sense then normal variation values
+# calculate % or variation, which is much more interesing
 
 barplot(pca.var.per, main = "Scree plot", xlab = "Principal Components", ylab = "% variation")
-plot(pca.var.per, type = "l", xlab = "Principal Components", ylab = "% variation")
+plot(pca.var.per[1:10], type = "l", xlab = "Principal Components", ylab = "% variation")
 plot(pca.var.per[1:15], type = "l", xlab = "Principal Components", ylab = "% variation")
-plot(cumsum(pca.var.per[1:150]), type = "l", xlab = "Principal Components", ylab = "% variation")
+plot(cumsum(pca.var.per[1:150]), type = "l", xlab = "Principal Components", ylab = "% variation") 
 
-library(ggplot2) ##for fancy pca plots with a lot of information
-#format data for ggplot
+
 
 pca.data <- data.frame(Sample = rownames(pca$x),
                        x = pca$x[,1],
@@ -108,33 +111,42 @@ View(cb)
 new.cb <- as.data.frame(cb)
 
 
+
   
-a <- ifelse(cb[,1] == "TRUE", "green", "red")
+azac <- ifelse(cb[,1] == "TRUE", "green", "black")
+bort <- ifelse(cb[,2] == "TRUE", "violet", "black")
+cisp <- ifelse(cb[,3] == "TRUE", "blue", "black")
+dasa <- ifelse(cb[,4] == "TRUE", "magenta", "black")
+doxo <- ifelse(cb[,5] == "TRUE", "yellow", "black")
+erlo <- ifelse(cb[,6] == "TRUE", "red", "black")
+geld <- ifelse(cb[,7] == "TRUE", "orange", "black")
+gemc <- ifelse(cb[,8] == "TRUE", "lightblue", "black") 
+lapa <- ifelse(cb[,9] == "TRUE", "aquamarine", "black")
+pacl <- ifelse(cb[,10] == "TRUE", "chocolate", "black")
+siro <- ifelse(cb[,11] == "TRUE", "coral", "black")
+sora <- ifelse(cb[,12] == "TRUE", "azure", "black")
+suni <- ifelse(cb[,13] == "TRUE", "coral", "black")
+topo <- ifelse(cb[,14] == "TRUE", "lightseagreen", "black")
+vori <- ifelse(cb[,15] == "TRUE", "plum", "black")
 
-View(a)
+cb_col <- cbind(azac,bort,cisp,dasa,doxo,erlo,geld,gemc,lapa,pacl,siro,sora,suni,topo,vori)
 
 
 
+plot(pca$rotation[,1], pca$rotation[,2], col = cb_col, pch = 19, xlab= "PC1", ylab = "PC2")
 
-plot(pca$rotation[,2], pca$rotation[,3], col = a, pch = 19, xlab= "PC1", ylab = "PC2")
-###End of test
+# Problem: black not ideal as else color -> is there a way to give no color at all (evtl. for loop?)
 
 
-###PCA with ggplot not working, idk why
-###either correction or discard
 
-ggplot(pca.data, aes(x=pca$x[,1], y=pca$x[,2])) #+
- # geom_text() +
-#  xlab(paste("PC1", pca.var.per[,1], "%", sep = "")) +
-#  ylab(paste("PC2", pca.var.per[,2], "%", sep = "")) +
-#  theme_bw() +
-#  ggtitle("My PCA")
+## get names of top 10 genes that contribute most to pc1
+loading_scores_1 <- pca$rotation[,1]
 
 loading_scores <- pca$rotation[,1:6]
-ranked_pca1 <- sort(loading_scores[,1])
+ranked_pca1 <- sort(loading_scores[,1], decreasing = TRUE)
 View(ranked_pca1)
 
-gene_score <- abs(loading_scores) ## sort magnitude
+gene_score <- abs(loading_scores_1) ## sort magnitude
 mean(gene_score)
 max(gene_score)
 min(gene_score)
@@ -144,7 +156,7 @@ gene_score_ranked <- sort(gene_score, decreasing = TRUE)
 head(gene_score_ranked)
 top_10_genes <- names(gene_score_ranked[1:10])
 
-top_10_genes
+top_10_genes # show names of top 10 genes
 
 
 
