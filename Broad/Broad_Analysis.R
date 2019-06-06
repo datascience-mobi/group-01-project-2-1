@@ -1,6 +1,6 @@
 # Getting the Data
 library(rstudioapi)
-library(clusters) #meinst du vielleicht "library(cluster)"? das package "clusters" gibt es nicht ;)
+library(cluster) 
 
 wd = dirname(rstudioapi::getSourceEditorContext()$path)
 
@@ -32,14 +32,20 @@ Fold_Change <- data.frame(Fold_Change)
 boxplot(Treated)
 boxplot(Untreated)
 boxplot(Fold_Change)
-Treated = scale(Treated)
-Untreated = scale(Untreated)
-Fold_Change = scale(Fold_Change)
-boxplot(Treated, ylab = "Gene expression profile", main = "Teated genexpressionprofiles",xaxt = "n")
+list = list(Treated,Untreated,Fold_Change)
+nlist = lapply(list,scale)
+Treated = as.data.frame(nlist[[1]])
+Untreated = as.data.frame(nlist[[2]])
+Fold_Change = as.data.frame(nlist[[3]])
+boxplot(Treated, col= df, ylab = "Gene expression profile", main = "Teated genexpressionprofiles",xaxt = "n")
 boxplot(Untreated, ylab = "Gene expression profile", main = "Untreated genexpressionprofiles",xaxt = "n")
 boxplot(Fold_Change, ylab = "Gene expression profile", main = "Fold_Change genexpressionprofiles",xaxt = "n")
 boxplot(Treated[,1:10], ylab = "Gene expression profile", main = "First 10 reated genexpressionprofiles")
 
+#couloured boxplots
+drug = Metadata$drug
+palette(topo.colors(15))
+boxplot(Treated, border=drug, ylab = "Gene expression profile", main = "Teated genexpressionprofiles",xaxt ="n")
 
 #Densityplot, abline show the 3 quantiles (      25%       50%       75%    )
 
@@ -74,8 +80,4 @@ km = kmeans(x = t(topVarTreated75), centers = 10, nstart = 10)
 s = silhouette(km$cluster, D)
 plot(s)
 
-#perfoming PCA
-pca = prcomp(topVarTreat75, center = F, scale. = F)
-plot(pca, type = "l")
-plot(pca$rotation[, 1], pca$rotation[, 2], col = c("blue","red"), xlab = "PC1", 
-ylab = "PC2")
+

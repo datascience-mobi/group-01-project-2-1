@@ -1,0 +1,27 @@
+
+.RData
+Rohdaten/.Rhistory
+Rohdaten/CCLE_basalexpression.rds
+Rohdaten/CCLE_copynumber.rds
+Rohdaten/CCLE_mutations.rds
+Rohdaten/cellline_annotation.tsv
+Rohdaten/Cleaning.R
+Rohdaten/drug_annotation.tsv
+Rohdaten/F2.large.jpg
+Rohdaten/NCI_TPW_gep_treated.rds
+Rohdaten/NCI_TPW_gep_untreated.rds
+Rohdaten/NCI_TPW_metadata.tsv
+Rohdaten/NegLogGI50.rds
+Data/Zi dateien/7937672.zip
+Data/Zi dateien/7901540.zip
+Data/Zi dateien/7901477.zip
+Data/NegLogGI50.rds
+Data/NCI_TPW_metadata.tsv
+Data/NCI_TPW_gep_untreated.rds
+Data/NCI_TPW_gep_treated.rds
+Data/drug_annotation.tsv
+Data/Cleaning.R
+Data/cellline_annotation.tsv
+Data/CCLE_mutations.rds
+Data/CCLE_copynumber.rds
+Data/CCLE_basalexpression.rds
