@@ -2,7 +2,6 @@
 library(rstudioapi)
 library(cluster) 
 
-wd = dirname(rstudioapi::getSourceEditorContext()$path)
 
 NCI_TPW_gep_treated = readRDS(paste0(wd, "/Data/NCI_TPW_gep_treated.rds"))
 NCI_TPW_gep_untreated = readRDS(paste0(wd, "/Data/NCI_TPW_gep_untreated.rds"))
@@ -18,16 +17,8 @@ Treated = data.frame(NCI_TPW_gep_treated)
 Untreated = data.frame(NCI_TPW_gep_untreated)
 Fold_Change <- data.frame(Fold_Change)
 
-# Sort out for Lapatinib
 
-#dat = NCI_TPW_gep_treated[, 421:474]
-#LapatimibTreat <- data.frame(dat)
-#rm(dat)
-#dat = NCI_TPW_gep_untreated[, 421:474]
-#LapatimibUnTreat <- data.frame(dat)
-#rm(dat)
-
-#Boxplots,check for normalization ; scale the Data', FC takes long
+#Boxplots,check for normalization ; scale the Data',
 
 boxplot(Treated)
 boxplot(Untreated)
@@ -42,10 +33,14 @@ boxplot(Untreated, ylab = "Gene expression profile", main = "Untreated genexpres
 boxplot(Fold_Change, ylab = "Gene expression profile", main = "Fold_Change genexpressionprofiles",xaxt = "n")
 boxplot(Treated[,1:10], ylab = "Gene expression profile", main = "First 10 reated genexpressionprofiles")
 
-#couloured boxplots
-drug = Metadata$drug
-palette(topo.colors(15))
-boxplot(Treated, border=drug, ylab = "Gene expression profile", main = "Teated genexpressionprofiles",xaxt ="n")
+#couloured boxplots, creating a susbet of Metadata based on the amount of tested genes in Treated
+Treated1 = readRDS(paste0(wd, "/Data/NCI_TPW_gep_treated.rds"))
+df = data.frame(t(Treated1))
+df.data <- data.frame(sample = rownames(df))
+adjustedMeda = subset(Metadata, sample %in% intersect(Metadata$sample, df.data$sample))
+rm(df,df.data, Treated1)
+
+boxplot(Treated, border=adjusted, ylab = "Gene expression profile", main = "Teated genexpressionprofiles",xaxt ="n")
 
 #Densityplot, abline show the 3 quantiles (      25%       50%       75%    )
 
