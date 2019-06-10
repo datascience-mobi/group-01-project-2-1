@@ -1,7 +1,8 @@
 # Performing a k-means on Lapatinib
 library(cluster)
+library(dplyr)
 
-Fold_Change = data.frame(scale(Fold_Change))
+
 LapatinibFold = select(Fold_Change, contains("Lapa"))
 
 #Determining the number of clusters
