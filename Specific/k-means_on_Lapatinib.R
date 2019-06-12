@@ -20,7 +20,7 @@ km = kmeans(x = t(topVarFold75), centers = 3, nstart = 10)
 km$tot.withinss
 
 #running a loop for the best n (searching for "ellbow")
-wss = as.data.frame(sapply(2:7, function(k) {
+wss = (sapply(2:7, function(k) {
   kmeans(x =t(topVarFold75), centers = k)$tot.withinss})  )            
 plot(2:7, wss, type = "b", pch = 19, xlab = "Number of clusters K", ylab = "Total within-clusters sum of squares", main = "Determining the amount of clusters from Foldchange")
 
