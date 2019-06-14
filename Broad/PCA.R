@@ -3,10 +3,6 @@
 library(ggplot2)
 library(gridExtra)
 
-Fold_Change = NCI_TPW_gep_treated - NCI_TPW_gep_untreated
-Treated = data.frame(NCI_TPW_gep_treated)
-Untreated = data.frame(NCI_TPW_gep_untreated)
-
 
 pca <- prcomp(t(Fold_Change), scale = TRUE)
 #transform df by function t() because prcomp expects rows to be samples, which is not the case for Fold_Change
@@ -69,7 +65,6 @@ heatmap(var(Fold_Change))
 
 ### cleaned up coloring 
 metad.cl <- subset(Metadata, sample %in% intersect(Metadata$sample, pca.data$sample)) ## adjust row length of metadata to pca.data
-nrowcell.split <- split(pca.data, metad.cl$cell) #create cell vector for color annotation, but actually you don't need that
 
 
 metad.cl$mechanism <- Drug_Annotation$Mechanism[match(metad.cl$drug, Drug_Annotation$Drug)]
@@ -99,15 +94,16 @@ pc2.3
 grid.arrange(pc1.2, pc1.3, pc2.3)
 
 
-pcs <- sapply(1:8, function(i){
-  pca$x[,i]
-}
-)
 
 
-plot(x=pcs, y=pcs,  col = metad.cl$drug, xlab = "PC"+i, ylab = "PC"+i+1, main = "Colored by drug")
-
-i <- 1
-while(i < 6){
-  plot(x=pca$x[,i], y=pca$x[,i+1],  col = metad.cl$drug, xlab = i, ylab = i+1, main = "Colored by drug")
-  i <- i+1}
+j<-1
+while(j < 7){
+  i <- 2
+  while(i < 7){
+    sapply(1:length(i), function(x){
+      sapply(1:length(i), function(y){
+        plot(x=pca$x[,j], y=pca$x[,i],  col = metad.cl$tissue, xlab = j, ylab = i, main = "Colored by tissue")
+        })
+      })
+    i <- i+1}
+  j <- j+1}
