@@ -1,13 +1,13 @@
 # PCA specific for Lapatinib: June 6th 2019
 library(ggplot2)
 library(gridExtra)
-
-Fold_Change = NCI_TPW_gep_treated - NCI_TPW_gep_untreated
-Treated = data.frame(NCI_TPW_gep_treated)
-Untreated = data.frame(NCI_TPW_gep_untreated)
+library(dplyr)
 
 
-L_fc <- Fold_Change[,421:474]
+L_fc <- select(Fold_Change, contains("Lapa"))
+
+
+heatmap(var(L_fc))
 
 # PCA
 pca <- prcomp(t(L_fc), scale = TRUE)
@@ -53,12 +53,12 @@ top_10_genes # show names of top 10 genes
 
 
 metad.cl <- subset(Metadata, sample %in% intersect(Metadata$sample, pca.data$sample))  
+metad.cl$msi <- Cellline_Annotation$Microsatellite_instability_status[match(metad.cl$cell, Cellline_Annotation$Cell_Line_Name)]
+metad.cl$inoculation_d <- Cellline_Annotation$Inoculation_Density[match(metad.cl$cell, Cellline_Annotation$Cell_Line_Name)]
+metad.cl$doubling_time <- Cellline_Annotation$Doubling_Time[match(metad.cl$cell, Cellline_Annotation$Cell_Line_Name)]
+metad.cl$cancer_type <- Cellline_Annotation$Cancer_type[match(metad.cl$cell, Cellline_Annotation$Cell_Line_Name)]
 
-Cell_Anno <- subset(Cellline_Annotation, Cell_Line_Name %in% intersect(metad.cl$cell, Cellline_Annotation$Cell_Line_Name))
-Cell_Anno <- Cell_Anno[ order(Cell_Anno$Cell_Line_Name), ] # sort alphabetically
-Cell_Anno <- cbind(Cell_Anno, sample = metad.cl$sample)
-
-plot(pca$x[,1], pca$x[,2], col = Cell_Anno$Doubling_Time, xlab = "PC1", ylab = "PC2", main = "Colored by tissue")
+plot(pca$x[,1], pca$x[,2], col = metad.cl$tissue, xlab = "PC1", ylab = "PC2", main = "Colored by tissue")
 
 
 ## plotting all important PCs, try for loop
@@ -76,15 +76,15 @@ pc2.3
 grid.arrange(pc1.2, pc1.3, pc2.3)
 
 
-pcs <- sapply(1:4, function(i){
-  pca$x[,i]
-}
-)
 
-
-plot(x=pcs, y=pcs,  col = metad.cl$drug, xlab = "PC"+i, ylab = "PC"+i+1, main = "Colored by drug")
-
-i <- 1
-while(i < 6){
-  plot(x=pca$x[,i], y=pca$x[,i+1],  col = metad.cl$drug, xlab = i, ylab = i+1, main = "Colored by drug")
-  i <- i+1}
+j<-1
+while(j < 7){
+  i <- 2
+  while(i < 7){
+    sapply(1:length(i), function(x){
+      sapply(1:length(i), function(y){
+        plot(x=pca$x[,j], y=pca$x[,i],  col = metad.cl$tissue, xlab = j, ylab = i, main = "Colored by tissue")
+      })
+    })
+    i <- i+1}
+  j <- j+1}
