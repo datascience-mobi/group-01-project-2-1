@@ -42,6 +42,13 @@ rm(NCI_TPW_gep_treated,NCI_TPW_gep_untreated,list,nlist)
 ```
 
 # broad analysis
+### installing packages
+```{r}
+library(rstudioapi)
+library(cluster) 
+```
+
+
 **Boxplots** checking for normalization
 ```{r}
 boxplot(Treated)
@@ -77,6 +84,52 @@ boxplot(Fold_Change, ylab = "Gene expression profile", main = "Fold_Change genex
 
 ```{r}
 boxplot(Treated[,1:10], ylab = "Gene expression profile", main = "First 10 reated genexpressionprofiles")
+```
+
+**Densityplot**abline show the 3 quantiles (      25%       50%       75%    )
+```{r}
+plot(density(NCI_TPW_gep_treated), "Densityplot Treated vs Untreated")
+lines(density(NCI_TPW_gep_untreated), col = "indianred2")
+legend("topright", legend = c("treated", "untreated"), col = c("black", "indianred2"), pch = 20)
+abline(v = quantile(NCI_TPW_gep_treated)[2:4], col = c("lightblue", "blue",  "orange"), lty = 2)
+```
+
+**k-means clustering**
+```{r}
+# Performing a k-means on Treated
+#Determining the number of clusters
+topVarTreated = apply(Treated, 1, var)
+summary(topVarTreated)
+
+# Using the most variable, thus informative genes
+topVarTreated75 = Treated[topVarTreated > quantile(topVarTreated, probs = 0.75), ]
+dim(topVarTreated75)
+
+```
+
+```{r}
+km = kmeans(x = t(topVarTreated75), centers = 3, nstart = 10)
+km$tot.withinss
+```
+
+```{r}
+km = kmeans(x = t(topVarTreated75), centers = 2, nstart = 10)
+km$tot.withinss
+```
+
+```{r}
+#running a loop for the best n (searching for "ellbow")
+wss = sapply(2:7, function(k) {
+kmeans(x = t(topVarTreated75), centers = k)$tot.withinss})            
+plot(2:7, wss, type = "b", pch = 19, xlab = "Number of clusters K", ylab = "Total within-clusters sum of squares", main = "Determining the amount of clusters from Treated")
+```
+
+```{r}
+# Using the silhouett method
+D = dist(t(topVarTreated75))
+km = kmeans(x = t(topVarTreated75), centers = 10, nstart = 10)
+s = silhouette(km$cluster, D)
+plot(s)
 ```
 
 
@@ -135,11 +188,171 @@ while(j < 7){
       })
     i <- i+1}
   j <- j+1}
+
+```
+
+
+# specific analysis: lapatinib
+###installing packages 
+```{r}
+library(cluster)
+library(dplyr)
+library(factoextra)
+library(fpc)
+library(dendextend)
+
+install.packages("pheatmap")
+install.packages("viridis")
+
+library(pheatmap)
+library(viridis)
+
+```
+
+**k-means**
+```{r}
+LapatinibFold = select(Fold_Change, contains("Lapa"))
+
+#Determining the number of clusters
+topVarFold = apply(LapatinibFold, 1, var)
+summary(topVarFold)
+
+# Using the most variable, thus informative genes
+topVarFold75 = LapatinibFold[topVarFold > quantile(topVarFold, probs = 0.75), ]
+dim(topVarFold75)
+
+km = kmeans(x = t(topVarFold75), centers = 2, nstart = 10)
+km$tot.withinss
+
+km = kmeans(x = t(topVarFold75), centers = 3, nstart = 10)
+km$tot.withinss
+
+#running a loop for the best n (searching for "ellbow")
+wss = (sapply(2:7, function(k) {
+  kmeans(x =t(topVarFold75), centers = k)$tot.withinss})  )            
+plot(2:7, wss, type = "b", pch = 19, xlab = "Number of clusters K", ylab = "Total within-clusters sum of squares", main = "Determining the amount of clusters from Foldchange")
+```
+
+```{r}
+# Using the silhouett method
+D = dist(t(topVarFold75))
+km = kmeans(x = t(topVarFold75), centers = 3, nstart = 10)
+s = silhouette(km$cluster, D)
+plot(s)
+```
+
+```{r}
+#plot kmeans
+clus <- kmeans(topVarFold75, centers=3)
+clusplot(topVarFold75, clus$cluster, color=TRUE, shade=TRUE, labels=2, lines=0, col.clus = c("purple", "pink", "lightseagreen"), main = "K-means Plot", col.p = c("purple", "pink", "lightseagreen") )
+plotcluster(topVarFold75, clus$cluster)
+```
+
+```{r}
+#dendrogram
+cor.mat = cor(topVarFold75, method = "spearman")
+cor.dist = as.dist(1 - cor.mat)
+cor.hc = hclust(cor.dist, method = "ward.D2")
+cor.hc = as.dendrogram(cor.hc)
+cor.hc %>% set("labels_col", value = c("purple", "pink", "lightseagreen"), k=3) %>%  plot(main = "Color labels \n by cluster", horiz = TRUE)
+
+
+#PCA
+pca = prcomp(topVarFold75, center = T, scale. = T)  
+print(pca)
+plot(pca, type = "l") #First two componets explain most of the variability in the data
+plot(pca$rotation[, 1], pca$rotation[, 2], col = c("maroon1", "turquoise3"), pch = 19, xlab = "PC1", ylab = "PC2")
+```
+
+**PCA**
+```{r}
+L_fc <- select(Fold_Change, contains("Lapa"))
+
+# PCA
+pca <- prcomp(t(L_fc), scale = TRUE)
+pca.var <- pca$sdev^2  # sdev calculates variation each PC accounts for
+pca.var.per <- round(pca.var/sum(pca.var)*100, 1) 
+
+```
+
+```{r}
+barplot(pca.var.per, main = "Scree plot", xlab = "Principal Components", ylab = "% variation")
+```
+
+```{r}
+plot(pca.var.per[1:10], type = "l", xlab = "Principal Components", ylab = "% variation") # between 2 and 4 PCs
+```
+
+```{r}
+pca.data <- data.frame(sample = rownames(pca$x),
+                       x = pca$x[,1],
+                       y = pca$x[,2]
+)
+
+
+
+## get names of top 10 genes that contribute most to pc1
+loading_scores_1 <- pca$rotation[,1]
+
+gene_score <- abs(loading_scores_1) ## sort magnitude
+gene_score_ranked <- sort(gene_score, decreasing = TRUE)
+
+top_10_genes <- names(gene_score_ranked[1:10])
+top_10_genes # show names of top 10 genes
+
+# coloring
+metad.cl <- subset(Metadata, sample %in% intersect(Metadata$sample, pca.data$sample))  
+metad.cl$msi <- Cellline_Annotation$Microsatellite_instability_status[match(metad.cl$cell, Cellline_Annotation$Cell_Line_Name)]
+metad.cl$inoculation_d <- Cellline_Annotation$Inoculation_Density[match(metad.cl$cell, Cellline_Annotation$Cell_Line_Name)]
+metad.cl$doubling_time <- Cellline_Annotation$Doubling_Time[match(metad.cl$cell, Cellline_Annotation$Cell_Line_Name)]
+metad.cl$cancer_type <- Cellline_Annotation$Cancer_type[match(metad.cl$cell, Cellline_Annotation$Cell_Line_Name)]
+```
+
+```{r}
+# plottting all importantn PCs
+j<-1
+while(j < 5){
+  i <- 2
+  while(i < 5){
+    sapply(1:length(i), function(x){
+      sapply(1:length(i), function(y){
+        plot(x=pca$x[,j], y=pca$x[,i],  col = metad.cl$tissue, xlab = j, ylab = i, main = "Colored by tissue")
+      })
+    })
+    i <- i+1}
+  j <- j+1}
+```
+
+**pearson and spearman correlation**
+```{r}
+# Pearson+ Spearman correlation+plot
+
+cor(Cellline_Annotation$Doubling_Time, Cellline_Annotation$Inoculation_Density, method = "pearson")
+```
+
+```{r}
+# Spearman correlation
+cor(Cellline_Annotation$Doubling_Time, Cellline_Annotation$Inoculation_Density, method = "spearman")
+```
+
+```{r}
+plot(Cellline_Annotation$Doubling_Time, Cellline_Annotation$Inoculation_Density, pch= 16, col= "blue", main = "Pearson correlation between Doubling Time and Inoculation Density", xlab = "Doubling Time", ylab = "Inoculation Density")
+lm(Cellline_Annotation$Inoculation_Density~ Cellline_Annotation$Doubling_Time)
+
+#   Call:
+#   lm(formula = Cellline_Annotation$Inoculation_Density ~ Cellline_Annotation$Doubling_Time)
+#
+#   Coefficients:
+#   (Intercept)  Cellline_Annotation$Doubling_Time  
+#       9110.9                              169.4   
+
+
+abline(lm(Cellline_Annotation$Inoculation_Density ~ Cellline_Annotation$Doubling_Time), col = "red", lwd = 2)
 ```
 
 
 
-# 2. Specific analysis: Erlotinib
+
 ```
 
 
