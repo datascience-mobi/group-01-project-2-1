@@ -350,6 +350,76 @@ lm(Cellline_Annotation$Inoculation_Density~ Cellline_Annotation$Doubling_Time)
 abline(lm(Cellline_Annotation$Inoculation_Density ~ Cellline_Annotation$Doubling_Time), col = "red", lwd = 2)
 ```
 
+#Main questions
+
+##question 2 erlotinib vs lapatinib
+```{r}
+#generell correlation
+n= as.data.frame(t(NegLogGI50))
+rmv.rows = apply(n, 1, function(x) {
+  sum(is.na(x))
+})
+NLGI50.all = n[-which(rmv.rows > 0), ]  # Removing any row with 1 or more missing values
+rm(rmv.rows, n, NegLogGI50)
+cor.mat = as.data.frame(cor(NLGI50.all[, 1:ncol(NLGI50.all)], method = "pearson")) #Vergleich zu anderen
+round(cor.mat, 2)
+```
+
+```{r}
+par(mar = c(3, 3, 0.5, 0.5), mgp = c(1.5, 0.5, 0), las = 2)
+pairs(NLGI50.all[, 1:ncol(NLGI50.all)], pch = 20, cex = 0.5, col = "cyan") #oder: plot(NLGI50.all, col= "magenta2", pch = 20, cex =0.75, main = "Correlation_NegLogGI50")
+
+diff = data.frame(erlotinib = NLGI50.all$erlotinib - mean(NLGI50.all$erlotinib), lapatinib = NLGI50.all$lapatinib- mean(NLGI50.all$lapatinib))
+diff$celllines = rownames(NLGI50.all)
+```
+*plot erlotinib all genes*
+```{r}
+ggplot(diff, aes(x=celllines,y=erlotinib))+geom_bar(stat="identity")+coord_flip() + labs(title="")
+```
+*plot lapatinib all genes*
+```{r}
+ggplot(diff, aes(x=celllines,y=lapatinib))+geom_bar(stat="identity")+coord_flip()
+```
+*correlation erlotinib , lapatinib*
+```{r}
+#correlation erlotinib, lapatinib gesamt
+cor(NLGI50.all$erlotinib, NLGI50.all$lapatinib)
+# 0.6528188
+```
+
+*Breast genes*
+```{r}
+#only breast with mean all
+### load data
+Metadata_Lapatinib_treated = Metadata[which(Metadata$drug == "lapatinib" & Metadata$dose != "0nM"),]
+NegLogGI50 = as.data.frame(readRDS(paste0(wd, "/Data/NegLogGI50.rds")))
+#breast genes from Metadata (421:474)
+Breast_Metadata_L_treated = Metadata[which(Metadata$drug == "lapatinib" & Metadata$dose != "0nM" & Metadata$tissue == "Breast"),] 
+celllines = Breast_Metadata_L_treated$cell
+NegLogGI50.breast = as.data.frame(t(NegLogGI50[c("erlotinib", "lapatinib"), celllines]))
+
+#Differenz
+dif.NegLogGI50.breast = data.frame(erlotinib = NegLogGI50.breast$erlotinib -  mean(NLGI50.all$erlotinib), lapatinib = NegLogGI50.breast$lapatinib -  mean(NLGI50.all$lapatinib))
+rownames(dif.NegLogGI50.breast) = rownames(NegLogGI50.breast)
+dif.NegLogGI50.breast$cellline = rownames(dif.NegLogGI50.breast)
+
+# PLot
+library(ggplot2)
+
+ggplot(dif.NegLogGI50.breast,aes(x=cellline,y=erlotinib))+geom_bar(stat="identity", fill="magenta2")+geom_text(aes(label=round(erlotinib, 2)), vjust=-0.5, color="black", size=3) +coord_flip() + labs(title="Breast genes Erlotinib")
+```
+*plot lapatinib*
+```{r}
+ggplot(dif.NegLogGI50.breast,aes(x=cellline,y=lapatinib))+geom_bar(stat="identity", fill="magenta2")+geom_text(aes(label=round(lapatinib, 2)), vjust=-0.5, color="black", size=3)+coord_flip() + labs(title="Breast genes Lapatinib")
+```
+*correlation breast*
+```{r}
+cor(NegLogGI50.breast$erlotinib, NegLogGI50.breast$lapatinib, method = "pearson")
+#0.7416895
+```
+
+###t-test/anova
+```{r}
 
 
 
