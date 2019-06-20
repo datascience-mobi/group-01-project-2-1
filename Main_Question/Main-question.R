@@ -1,10 +1,3 @@
-# T.test
-#Daten
-#list = list(Treated,Untreated)
-#nlist = lapply(list,scale)
-#Treated = as.data.frame(nlist[[1]])
-
-
   install.packages("dplyr")
   library(dplyr)
   
@@ -21,6 +14,7 @@ rmv.rows = apply(el, 1, function(x) {
 row.names(rmv.rows)
 
 
+
 fc<-(Treated-Untreated)
 fc<-data.frame(scale(fc))
 all<-data.frame(fc[grep("lapatinib|erlotinib", colnames(fc))])
@@ -28,25 +22,30 @@ all
 
 #since rlotinip contains more columns than lapatinib, we have to remove these columns
 library(dplyr)
-all %>% select(-CCRF.CEM_erlotinib_0nM_24h, 
-               -HL.60_erlotinib_0nM_24h, 
-               -HT29_erlotinib_0nM_24h, 
-               -K.562_erlotinib_0nM_24h, 
-               -LOX_erlotinib_0nM_24h,
-               -SR_erlotinib_0nM_24h) 
+all<-data.frame(all %>% select(-"CCRF.CEM_erlotinib_0nM_24h", 
+                    -"HL.60_erlotinib_0nM_24h", 
+                    -"HT29_erlotinib_0nM_24h", 
+                    -"K.562_erlotinib_0nM_24h", 
+                    -"LOX_erlotinib_0nM_24h",
+                    -"SR_erlotinib_0nM_24h",
+                    -"COLO.205_lapatinib_0nM_24h"))
+                   
+
+la<-data.frame(all[grep("lapatinib", colnames(all))])
+ncol(la)
+
+er<-data.frame(all[grep("erlotinib", colnames(all))])
+ncol(er)
+
+erla<-data.frame(er,la)
 
 ncol(all) #to prove if the columns are removed
 
-erlotinib<-(all %>% select(contains("erlotinib")))
-
-lapatinib<-(all %>% select(contains("lapatinib")))
-
-erlot_lapa<-data.frame(erlotinib, lapatinib)
 
 #ggplot(lapatinib, erlotinib)
 
-drug<-c(rep('Erlotinib',57), rep('Lapatinib',56))
-expression_drug<-apply(erlot_lapa, MARGIN = 2, sum)
+drug<-c(rep('Erlotinib',53), rep('Lapatinib',53))
+expression_drug<-apply(erla, MARGIN = 2, sum)
 df_drug<-data.frame(expression_drug, drug)
 
 boxplot(erlotinib, lapatinib)
@@ -58,4 +57,6 @@ ggboxplot (data = df_drug, x="drug", y="expression_drug", color = "drug",
           stat_compare_means(method = "anova")+        # Add global annova p-value
           stat_compare_means(label = "p.signif", method = "t.test",
           ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
+
+
 
