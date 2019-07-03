@@ -2,7 +2,9 @@
 title: "Project02 - Group01"
 author: "Eva, Tobi, Kathi, Laura"
 date: "14 Juni 2019"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -12,9 +14,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## data loading
 ```{r}
-library(rstudioapi)
 
-wd = dirname(rstudioapi::getSourceEditorContext()$path)
+
+wd = getwd()
 
 NCI_TPW_gep_treated = readRDS(paste0(wd, "/Data/NCI_TPW_gep_treated.rds"))
 NCI_TPW_gep_untreated = readRDS(paste0(wd, "/Data/NCI_TPW_gep_untreated.rds"))
@@ -49,7 +51,7 @@ library(cluster)
 ```
 
 
-**Boxplots** checking for normalization
+**Boxplots** (already normalized)
 ```{r}
 boxplot(Treated)
 ```
@@ -59,7 +61,7 @@ boxplot(Untreated)
 ```
 
 ```{r}
-boxplot(Fold_Change)
+#boxplot(Fold_Change)
 ```
 
 ```{r}
@@ -70,8 +72,9 @@ Untreated = as.data.frame(nlist[[2]])
 Fold_Change = as.data.frame(nlist[[3]])
 ```
 
+
 ```{r}
-boxplot(Treated, col= df, ylab = "Gene expression profile", main = "Teated genexpressionprofiles",xaxt = "n")
+boxplot(Treated,  ylab = "Gene expression profile", main = "Teated genexpressionprofiles",xaxt = "n")
 ```
 
 ```{r}
@@ -84,6 +87,17 @@ boxplot(Fold_Change, ylab = "Gene expression profile", main = "Fold_Change genex
 
 ```{r}
 boxplot(Treated[,1:10], ylab = "Gene expression profile", main = "First 10 reated genexpressionprofiles")
+```
+
+
+```{r couloured boxplots, creating a susbet of Metadata based on the amount of tested genes in Treated}
+Treated1 = readRDS(paste0(wd, "/Data/NCI_TPW_gep_treated.rds"))
+df = data.frame(t(Treated1))
+df.data <- data.frame(sample = rownames(df))
+adjustedMeda = subset(Metadata, sample %in% intersect(Metadata$sample, df.data$sample))
+rm(df,df.data, Treated1)
+palette(rainbow(15))
+boxplot(Treated, border=adjustedMeda$drug,xlab= "different Drugs" ,ylab = "Gene expression profile", main = "Teated genexpressionprofiles",xaxt ="n")
 ```
 
 **Densityplot**abline show the 3 quantiles (      25%       50%       75%    )
@@ -250,7 +264,7 @@ ggboxplot(df_breast_marker, x="Marker_Breast", y="expression_breast", color = "M
 
 
 expression of biomarker in breast cells
-```{r basalexpression}
+```{r basalexpression1}
 pheatmap(data_biomarker_breast, 
                        show_rownames = TRUE, 
                        show_colnames = FALSE, 
@@ -266,7 +280,7 @@ pheatmap(data_biomarker_breast,
 
 
 pheatmap of the basalexpression
-```{r Basalexpression}
+```{r Basalexpression2}
 library(pheatmap)
 library(viridis)
 pheatmap(CCLE_basalexpression,
@@ -299,7 +313,7 @@ ggboxplot(df_marker, x="Marker", y="expression", color = "Marker",
 
 
 pheatmap of the basalexpression of biomarkers in all cell lines 
-```{r basalexpression}
+```{r basalexpression3}
 #pretty heatsmap
 pheat_all_genes<-pheatmap(Matrix_biomarker, 
                           show_rownames = TRUE, 
@@ -552,6 +566,119 @@ abline(lm(Cellline_Annotation$Inoculation_Density ~ Cellline_Annotation$Doubling
 ```
 
 #Main questions
+##question 1 Pedicted GI50-values
+```{r}
+library(dplyr)
+Fold_ChangeLap = select(Fold_Change, contains("Lapa"))
+NegLogGI50Lap = NegLogGI50[9,]
+means = colMeans(Fold_ChangeLap)
+Fold_Changemeans = as.data.frame(t(means))
+
+asdf = gsub(x = colnames (Fold_Changemeans), pattern = "_lapatinib_10000nM_24h", replacement = "")
+colnames(Fold_Changemeans) = asdf
+
+asdfa = gsub(x = asdf, pattern = "X7", replacement = "7")
+colnames(Fold_Changemeans) = asdfa
+
+
+asd = gsub(x = colnames (NegLogGI50Lap), pattern = "-", replacement = ".")
+colnames(NegLogGI50Lap) = asd
+
+c1 = rbind(asd,NegLogGI50Lap)
+c2 = rbind(asdfa,Fold_Changemeans)
+
+c1 = t(c1)
+c2 = t(c2)
+
+c1 =as.data.frame(c1)
+c2 =as.data.frame(c2)
+
+
+
+c3 = subset(c1, `1` %in% intersect(c1$`1`, c2$V1))
+c4 = as.numeric(as.character(c3$lapatinib))
+adjustedNeglogI50Lap = as.data.frame(c4)
+#adjustedNeglogI50Lap = as.data.frame(t(adjustedNeglogI50Lap))
+
+
+Fold_Changemeans = as.data.frame(t(Fold_Changemeans))
+
+combined1 = cbind(adjustedNeglogI50Lap, Fold_Changemeans)
+
+names1 = c( "NegLogI50Lap","Fold_Changemeans")
+colnames(combined1) = names1
+                      
+lmFold = lm(NegLogI50Lap ~ Fold_Changemeans, data = combined1)
+
+summary(lmFold)
+
+qqnorm(lmFold$residuals, main = "Test for normaldistribution of residuals")
+qqline(lmFold$residuals)
+
+plot(combined1$NegLogI50Lap, lmFold$fitted.values, pch = 20, col = "blue", xlab = "Real values", 
+     ylab = "Predicted values", main = "Real and predicted values ~ linear regression (Fold_Changemeans)")
+abline(0, 1, col = "red")
+
+cor(combined1$NegLogI50Lap,combined1$Fold_Changemeans)
+```
+
+```{r}
+#Same wth doubling-time
+
+NegLogGI50Lap = NegLogGI50[9,]
+
+#Sort by Cellline-Name
+df = arrange(Cellline_Annotation, Cell_Line_Name)
+Doublingtime = cbind.data.frame (df$Cell_Line_Name, df$Doubling_Time)
+
+c21 = as.data.frame(t(NegLogGI50Lap))
+
+combined2 = cbind(c21, Doublingtime$`df$Doubling_Time`)
+names2 = c( "NegLogI50Lap","Doubling_Time")
+colnames(combined2) = names2
+
+combined2 =na.omit(combined2)
+
+lmDouble = lm(NegLogI50Lap ~ Doubling_Time, data = combined2)
+
+summary(lmDouble)
+
+qqnorm(lmDouble$residuals, main = "Test for normaldistribution of residuals")
+qqline(lmDouble$residuals)
+
+plot(combined2$NegLogI50Lap, lmDouble$fitted.values, pch = 20, col = "blue", xlab = "Real values", 
+     ylab = "Predicted values", main = "Real and predicted values ~ linear regression (Doubling-Time)")
+abline(0, 1, col = "red")
+
+cor(combined2$NegLogI50Lap,combined2$Doubling_Time)
+```
+
+```{r}
+#Multiple regression
+
+qwer = gsub(x =Doublingtime$`df$Cell_Line_Name`, pattern = "-", replacement = ".")
+Doublingtime1 =  rbind(qwer,Doublingtime$`df$Doubling_Time`)
+Doublingtime1 = as.data.frame(t(Doublingtime1)) 
+
+c31 = subset(Doublingtime1, qwer %in% intersect(Doublingtime1$qwer, c2$V1))
+c41 = as.numeric(as.character(c31$V2))
+adjustedDoubling_Time = as.data.frame(c41)
+
+combined3 = cbind(adjustedNeglogI50Lap, Fold_Changemeans, adjustedDoubling_Time)
+names3 = c( "NegLogI50Lap","Fold_Changemeans","Doubling_Time")
+colnames(combined3) = names3
+
+mlr = lm(NegLogI50Lap ~ ., data = combined3)
+
+summary(mlr)
+
+qqnorm(mlr$residuals, main = "Test for normaldistribution of residuals")
+qqline(mlr$residuals)
+
+plot(combined3$NegLogI50Lap, mlr$fitted.values, pch = 20, col = "blue", xlab = "Real values", 
+     ylab = "Predicted values" , main = "Real and predicted values ~ multiple regression")
+abline(0, 1, col = "red")
+```
 
 ##question 2 erlotinib vs lapatinib
 ```{r}
