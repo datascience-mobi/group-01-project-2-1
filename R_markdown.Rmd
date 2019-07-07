@@ -523,7 +523,7 @@ plot(s)
 ```{r}
 #plot kmeans
 clus <- kmeans(topVarFold75, centers=3)
-clusplot(topVarFold75, clus$cluster, color=TRUE, shade=TRUE, labels=2, lines=0, col.clus = c("purple", "pink", "lightseagreen"), main = "K-means Plot", col.p = c("purple", "pink", "lightseagreen") )
+clusplot(topVarFold75, clus$cluster, color=TRUE, shade=TRUE, labels=1, lines=0, col.clus = c("purple", "pink", "lightseagreen"), main = "K-means Plot", col.p = "black")
 plotcluster(topVarFold75, clus$cluster)
 ```
 
@@ -744,71 +744,88 @@ plot(combined3$NegLogI50Lap, mlr$fitted.values, pch = 20, col = "blue", xlab = "
 abline(0, 1, col = "red")
 ```
 
-##question 2 erlotinib vs lapatinib
+##question 2 Erlotinib vs Lapatinib
 ```{r}
-#generell correlation
+# correlation in general 
 n= as.data.frame(t(NegLogGI50))
 rmv.rows = apply(n, 1, function(x) {
   sum(is.na(x))
 })
 NLGI50.all = n[-which(rmv.rows > 0), ]  # Removing any row with 1 or more missing values
 rm(rmv.rows, n, NegLogGI50)
-cor.mat = as.data.frame(cor(NLGI50.all[, 1:ncol(NLGI50.all)], method = "pearson")) #Vergleich zu anderen
-round(cor.mat, 2)
+cor.mat = as.data.frame(cor(NLGI50.all[, 1:ncol(NLGI50.all)], method = "pearson")) #Pearson correlation
+round(cor.mat, 2) #round values
 ```
 
 ```{r}
-par(mar = c(3, 3, 0.5, 0.5), mgp = c(1.5, 0.5, 0), las = 2)
-pairs(NLGI50.all[, 1:ncol(NLGI50.all)], pch = 20, cex = 0.5, col = "cyan") #oder: plot(NLGI50.all, col= "magenta2", pch = 20, cex =0.75, main = "Correlation_NegLogGI50")
+pairs(NLGI50.all[, 1:ncol(NLGI50.all)], pch = 20, cex = 0.8, col = "royalblue3", main = "Correlation_NegLogGI50") 
 
+```
+*plot erlotinib all genes, coloured by tissue*
+```{r}
+library(ggplot2)
+#differece
 diff = data.frame(erlotinib = NLGI50.all$erlotinib - mean(NLGI50.all$erlotinib), lapatinib = NLGI50.all$lapatinib- mean(NLGI50.all$lapatinib))
 diff$celllines = rownames(NLGI50.all)
+#create vector to insert column tissue from Metadata
+
+tissue = sapply(1:nrow(diff), function(x) {
+  position = which(as.character(Metadata$cell) == diff[x, "celllines"])[1] #if tissue occurs several times, take the first
+  out = as.character(Metadata[position, "tissue"]) #output the tissue at this position
+  return(out)
+})
+diff$tissue = tissue
+rm(tissue)
+
+diff$celllines = factor(diff$celllines, levels = diff$celllines[order(diff$tissue)]) #Classified by tissue
+
+ggplot(diff, aes(x = celllines, y = erlotinib, fill = tissue))+geom_bar(stat = "identity") + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Erlotinib")
+
 ```
-*plot erlotinib all genes*
+ The difference from the NegLogGI50 for a particular cell line and the mean NegLogGI50 is plotted here for Erlotinib.
+ 
+*plot lapatinib all genes, coloured by tissue*
 ```{r}
-ggplot(diff, aes(x=celllines,y=erlotinib))+geom_bar(stat="identity")+coord_flip() + labs(title="")
+ggplot(diff, aes(x = celllines, y = lapatinib, fill = tissue)) + geom_bar(stat="identity") + coord_flip() + labs(title="Mean graph plot of NLGI50 values for Lapatinib")
 ```
-*plot lapatinib all genes*
-```{r}
-ggplot(diff, aes(x=celllines,y=lapatinib))+geom_bar(stat="identity")+coord_flip()
-```
+The difference from the NegLogGI50 for a particular cell line and the mean NegLogGI50 is plotted here for Lapatinib.
+
 *correlation erlotinib , lapatinib*
 ```{r}
-#correlation erlotinib, lapatinib gesamt
-cor(NLGI50.all$erlotinib, NLGI50.all$lapatinib)
-# 0.6528188
+cor(NLGI50.all$erlotinib, NLGI50.all$lapatinib, method = "pearson")
 ```
+A Pearson correlation coefficient of ~ 0.65 confirms that these patterns are very similar
 
-*Breast genes*
+*Lung genes*
 ```{r}
-#only breast with mean all
+#only lung with mean all
 ### load data
 Metadata_Lapatinib_treated = Metadata[which(Metadata$drug == "lapatinib" & Metadata$dose != "0nM"),]
 NegLogGI50 = as.data.frame(readRDS(paste0(wd, "/Data/NegLogGI50.rds")))
-#breast genes from Metadata (421:474)
-Breast_Metadata_L_treated = Metadata[which(Metadata$drug == "lapatinib" & Metadata$dose != "0nM" & Metadata$tissue == "Breast"),] 
-celllines = Breast_Metadata_L_treated$cell
-NegLogGI50.breast = as.data.frame(t(NegLogGI50[c("erlotinib", "lapatinib"), celllines]))
+#lung genes from Metadata
+Lung_Metadata_L_treated = Metadata[which(Metadata$drug == "lapatinib" & Metadata$dose != "0nM" & Metadata$tissue == "Lung"),] 
+celllines = Lung_Metadata_L_treated$cell
+NegLogGI50.lung = as.data.frame(t(NegLogGI50[c("erlotinib", "lapatinib"), celllines]))
 
-#Differenz
-dif.NegLogGI50.breast = data.frame(erlotinib = NegLogGI50.breast$erlotinib -  mean(NLGI50.all$erlotinib), lapatinib = NegLogGI50.breast$lapatinib -  mean(NLGI50.all$lapatinib))
-rownames(dif.NegLogGI50.breast) = rownames(NegLogGI50.breast)
-dif.NegLogGI50.breast$cellline = rownames(dif.NegLogGI50.breast)
+#Difference
+dif.NegLogGI50.lung = data.frame(erlotinib = NegLogGI50.lung$erlotinib -  mean(NLGI50.all$erlotinib), lapatinib = NegLogGI50.lung$lapatinib -  mean(NLGI50.all$lapatinib)) #erlotinib data - mean value, lapatinib data - mean value
+dif.NegLogGI50.lung$celllines = rownames(NegLogGI50.lung)
 
 # PLot
 library(ggplot2)
 
-ggplot(dif.NegLogGI50.breast,aes(x=cellline,y=erlotinib))+geom_bar(stat="identity", fill="magenta2")+geom_text(aes(label=round(erlotinib, 2)), vjust=-0.5, color="black", size=3) +coord_flip() + labs(title="Breast genes Erlotinib")
+ggplot(dif.NegLogGI50.lung,aes(x = celllines, y = erlotinib)) + geom_bar(stat = "identity", fill = "skyblue") + geom_text(aes(label = round(erlotinib, 2)), vjust = -0.5, color = "black", size = 3) + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Erlotinib, only Lung genes")
 ```
 *plot lapatinib*
 ```{r}
-ggplot(dif.NegLogGI50.breast,aes(x=cellline,y=lapatinib))+geom_bar(stat="identity", fill="magenta2")+geom_text(aes(label=round(lapatinib, 2)), vjust=-0.5, color="black", size=3)+coord_flip() + labs(title="Breast genes Lapatinib")
+ggplot(dif.NegLogGI50.lung,aes(x = celllines, y = lapatinib)) + geom_bar(stat = "identity", fill = "skyblue") + geom_text(aes(label=round(lapatinib, 2)), vjust = -0.5, color = "black", size = 3) + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Lapatinib, only Lung genes")
 ```
-*correlation breast*
+*correlation lung*
 ```{r}
-cor(NegLogGI50.breast$erlotinib, NegLogGI50.breast$lapatinib, method = "pearson")
-#0.7416895
+cor(NegLogGI50.lung$erlotinib, NegLogGI50.lung$lapatinib, method = "pearson")
+
 ```
+A pearson correlation coefficent of ~ 0.96 suggests that Lapatinib has a similar effect on lung cancer as Erlotinib
 
 ##anova
 
