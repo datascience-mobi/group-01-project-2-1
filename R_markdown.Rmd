@@ -192,20 +192,134 @@ top_10_genes # show names of top 10 genes
 
 ```
 ```{r}
-# plotting all important pcs agianst each other 
-j<-1
-while(j < 7){
-  i <- 2
-  while(i < 7){
-    sapply(1:length(i), function(x){
-      sapply(1:length(i), function(y){
-        plot(x=pca$x[,j], y=pca$x[,i],  col = metad.cl$drug, xlab = j, ylab = i, main = "Colored by drug")
-        })
-      })
-    i <- i+1}
-  j <- j+1}
+### Metadata color matrix for coloring 
+Metadata$sample <- gsub(x = Metadata$sample, pattern = "-", replacement = ".")
+
+metad.cl <- subset(Metadata, Metadata$sample %in% pca.data$sample) 
+## adjust row length of metadata to pca.data
+
+
+metad.cl$mechanism <- Drug_Annotation$Mechanism[match(metad.cl$drug, Drug_Annotation$Drug)]
+metad.cl$msi <- Cellline_Annotation$Microsatellite_instability_status[match(metad.cl$cell, Cellline_Annotation$Cell_Line_Name)]
 
 ```
+```{r}
+# plotting all informative PCs
+#color vectors for coloring by drug and tissue
+viridis <- viridis(9)
+color_tissue = color[metad.cl$tissue]
+tissue <- levels(metad.cl$tissue)
+
+magma <- magma(15)
+color_drug = color2[metad.cl$drug]
+drug <- levels(metad.cl$drug)
+
+
+## colored by drug
+#plot PC1 and PC2
+plot(pca$x[,1], 
+     pca$x[,2], 
+     col = color_drug,
+     pch = 19, 
+     xlab = paste("PC1 (",pca.var.per[1],"%)"), 
+     ylab = paste("PC2 (",pca.var.per[2],"%)"))
+#create legend
+legend("topleft", 
+       legend = drug, 
+       col = magma, 
+       pch = 19, 
+       xpd = "TRUE",
+       bty = "n",
+       cex = 0.75
+)
+#create title
+mtext("PCA of Fold Change  colored by drug", 
+      side = 3, 
+      line = -2,
+      cex = 1.2,
+      font = 2, 
+      outer = TRUE)
+
+#plot PC2 and PC3
+plot(pca$x[,2], 
+     pca$x[,3], 
+     col = color_drug,
+     pch = 19, 
+     xlab = paste("PC2 (",pca.var.per[2],"%)"), 
+     ylab = paste("PC3 (",pca.var.per[3],"%)"))
+#create legend
+legend("right", 
+       legend = drug, 
+       col = magma, 
+       pch = 19, 
+       xpd = "TRUE",
+       bty = "n",
+       cex = 0.75,
+       inset = c(0, 2)
+)
+#create title
+mtext("PCA of Fold Change  colored by drug", 
+      side = 3, 
+      line = -2,
+      cex = 1.2,
+      font = 2, 
+      outer = TRUE)
+
+
+
+
+## colored by tissue
+#plot PC1 and PC2
+plot(pca$x[,1], 
+     pca$x[,2], 
+     col = color_tissue,
+     pch = 19, 
+     xlab = paste("PC1 (",pca.var.per[1],"%)"), 
+     ylab = paste("PC2 (",pca.var.per[2],"%)"))
+#create legend
+legend("topleft", 
+       legend = tissue, 
+       col = viridis, 
+       pch = 19, 
+       xpd = "TRUE",
+       bty = "n",
+       cex = 0.75
+)
+#create title
+mtext("PCA of Fold Change  colored by tissue", 
+      side = 3, 
+      line = -2,
+      cex = 1.2,
+      font = 2, 
+      outer = TRUE)
+
+#plot PC2 and PC3
+plot(pca$x[,2], 
+     pca$x[,3], 
+     col = color_tissue,
+     pch = 19, 
+     xlab = paste("PC2 (",pca.var.per[2],"%)"), 
+     ylab = paste("PC3 (",pca.var.per[3],"%)"))
+#create legend
+legend("right", 
+       legend = tissue, 
+       col = viridis, 
+       pch = 19, 
+       xpd = "TRUE",
+       bty = "n",
+       cex = 0.75,
+       inset = c(0, 2)
+)
+#create title
+mtext("PCA of Fold Change  colored by tissue", 
+      side = 3, 
+      line = -2,
+      cex = 1.2,
+      font = 2,
+      outer = TRUE)
+
+```
+
 
 
 # 2. specific analysis: lapatinib
