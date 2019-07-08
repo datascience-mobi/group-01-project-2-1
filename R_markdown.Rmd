@@ -14,7 +14,7 @@ library(dplyr)
 
 
 ## data loading
-```{r}
+```{r, echo=FALSE}
 
 
 wd = getwd()
@@ -33,13 +33,14 @@ Untreated = data.frame(NCI_TPW_gep_untreated)
 ```
 
 ## data scaling
-```{r}
+After checking for normalization, we scaled our data in the first place to provide the scaled data for further analysis.
+```{r }
 list = list(Treated,Untreated)
 nlist = lapply(list,scale)
 Treated = as.data.frame(nlist[[1]])
 Untreated = as.data.frame(nlist[[2]])
 Fold_Change = Treated - Untreated
-Fold_Change <- data.frame(Fold_Change)
+Fold_Change = data.frame(Fold_Change)
 rm(NCI_TPW_gep_treated,NCI_TPW_gep_untreated,list,nlist)
 
 ```
@@ -53,29 +54,22 @@ library(cluster)
 
 
 ###Boxplots (already normalized)
-```{r}
+This step was done before scaleing the data. The boxplots showed a deviation which is the reason for scaling the data.
+```{r, echo=FALSE}
 boxplot(Treated)
 ```
 
-```{r}
+```{r, echo=FALSE}
 boxplot(Untreated)
 ```
 
-```{r}
-#boxplot(Fold_Change)
-```
-
-```{r}
-list = list(Treated,Untreated,Fold_Change)
-nlist = lapply(list,scale)
-Treated = as.data.frame(nlist[[1]])
-Untreated = as.data.frame(nlist[[2]])
-Fold_Change = as.data.frame(nlist[[3]])
+```{r, echo=FALSE}
+boxplot(Fold_Change)
 ```
 
 
 ```{r}
-boxplot(Treated,  ylab = "Gene expression profile", main = "Teated genexpressionprofiles",xaxt = "n")
+boxplot(Treated,  ylab = "Gene expression profile", main = "Treated genexpressionprofiles",xaxt = "n")
 ```
 
 ```{r}
@@ -98,20 +92,22 @@ df.data <- data.frame(sample = rownames(df))
 adjustedMeda = subset(Metadata, sample %in% intersect(Metadata$sample, df.data$sample))
 rm(df,df.data, Treated1)
 palette(rainbow(15))
-boxplot(Treated, border=adjustedMeda$drug,xlab= "different Drugs" ,ylab = "Gene expression profile", main = "Teated genexpressionprofiles",xaxt ="n")
+boxplot(Treated, border=adjustedMeda$drug,xlab= "Different Drugs" ,ylab = "Gene expression profile", main = "Teated genexpressionprofiles",xaxt ="n")
 ```
 
 ### Densityplot 
+The abline shows the 3 quantiles (      25%       50%       75%    )
 ```{r}
 plot(density(NCI_TPW_gep_treated), "Densityplot Treated vs Untreated")
 lines(density(NCI_TPW_gep_untreated), col = "indianred2")
 legend("topright", legend = c("treated", "untreated"), col = c("black", "indianred2"), pch = 20)
 abline(v = quantile(NCI_TPW_gep_treated)[2:4], col = c("lightblue", "blue",  "orange"), lty = 2)
 ```
-abline show the 3 quantiles (      25%       50%       75%    )
+
 
 ###k-means clustering
-```{r}
+To look for clusters in the raw data we performed a k-menas clustering and searched for potentially clusters.
+```{r, echo=FALSE}
 # Performing a k-means on Treated
 #Determining the number of clusters
 topVarTreated = apply(Treated, 1, var)
@@ -123,12 +119,12 @@ dim(topVarTreated75)
 
 ```
 
-```{r}
+```{r, echo=FALSE}
 km = kmeans(x = t(topVarTreated75), centers = 3, nstart = 10)
 km$tot.withinss
 ```
 
-```{r}
+```{r, echo=FALSE}
 km = kmeans(x = t(topVarTreated75), centers = 2, nstart = 10)
 km$tot.withinss
 ```
@@ -139,7 +135,8 @@ wss = sapply(2:7, function(k) {
 kmeans(x = t(topVarTreated75), centers = k)$tot.withinss})            
 plot(2:7, wss, type = "b", pch = 19, xlab = "Number of clusters K", ylab = "Total within-clusters sum of squares", main = "Determining the amount of clusters from Treated")
 ```
-
+As we wanted an "ellbow"to get a good result we can say in a way that our data are not really good to cluster.
+To look in a other way, we also provided the clusters by the silhouette-method.
 ```{r}
 # Using the silhouett method
 D = dist(t(topVarTreated75))
@@ -844,6 +841,8 @@ abline(lm(Cellline_Annotation$Inoculation_Density ~ Cellline_Annotation$Doubling
 
 # 3. Main questions
 ##question 1 Pedicted GI50-values
+As we mentioned in our presentation, we want to create a model to predict GI50-values thus to predict, if Lapatinib is a good choice.,
+The first linear model trys to predict the G-50 value under the data of the doubling time.
 ```{r}
 library(dplyr)
 Fold_ChangeLap = select(Fold_Change, contains("Lapa"))
@@ -899,6 +898,7 @@ abline(0, 1, col = "red")
 cor(combined1$NegLogI50Lap,combined1$Fold_Changemeans)
 ```
 
+The second linear model trys to predict the G-50 value under the data of the Foldchange-means.
 ```{r}
 #Same wth doubling-time
 
@@ -930,6 +930,7 @@ abline(0, 1, col = "red")
 cor(combined2$NegLogI50Lap,combined2$Doubling_Time)
 ```
 
+As a last part, we did a multiple regression with both datasets to predict GI50-values.
 ```{r}
 #Multiple regression
 
@@ -957,6 +958,7 @@ plot(combined3$NegLogI50Lap, mlr$fitted.values, pch = 20, col = "blue", xlab = "
 abline(0, 1, col = "red")
 ```
 
+As you can see from the data, All three regression models are not really good.
 ##question 2 Erlotinib vs Lapatinib
 ```{r}
 # correlation in general 
