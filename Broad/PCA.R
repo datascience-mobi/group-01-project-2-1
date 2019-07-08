@@ -82,11 +82,11 @@ while(j < 7){
 
 #color vectors for coloring by drug and tissue
 viridis <- viridis(9)
-color_tissue = color[metad.cl$tissue]
+color_tissue = viridis[metad.cl$tissue]
 tissue <- levels(metad.cl$tissue)
 
 magma <- magma(15)
-color_drug = color2[metad.cl$drug]
+color_drug = magma[metad.cl$drug]
 drug <- levels(metad.cl$drug)
 
 
@@ -111,7 +111,7 @@ mtext("PCA of Fold Change  colored by drug",
       side = 3, 
       line = -2.5,
       cex = 1.2,
-      font = 2, #bold
+      font = 2, 
       outer = TRUE)
 
 
@@ -137,7 +137,7 @@ mtext("PCA of Fold Change  colored by drug",
       side = 3, 
       line = -2.5,
       cex = 1.2,
-      font = 2, #bold
+      font = 2, 
       outer = TRUE)
 
 
@@ -162,7 +162,7 @@ mtext("PCA of Fold Change  colored by tissue",
       side = 3, 
       line = -2.5,
       cex = 1.2,
-      font = 2, #bold
+      font = 2, 
       outer = TRUE)
 
 
@@ -188,7 +188,7 @@ mtext("PCA of Fold Change  colored by tissue",
       side = 3, 
       line = -2.5,
       cex = 1.2,
-      font = 2, #bold
+      font = 2, 
       outer = TRUE)
 
 
