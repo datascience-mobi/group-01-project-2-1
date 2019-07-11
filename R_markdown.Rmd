@@ -34,7 +34,7 @@ Untreated = data.frame(NCI_TPW_gep_untreated)
 
 ## data scaling
 After checking for normalization, we scaled our data in the first place to provide the scaled data for further analysis.
-```{r }
+```{r ,echo=FALSE}
 list = list(Treated,Untreated)
 nlist = lapply(list,scale)
 Treated = as.data.frame(nlist[[1]])
@@ -47,8 +47,7 @@ rm(NCI_TPW_gep_treated,NCI_TPW_gep_untreated,list,nlist)
 
 # 1. broad analysis
 ### installing packages
-```{r}
-library(rstudioapi)
+```{r,echo=FALSE}
 library(cluster) 
 ```
 
@@ -63,29 +62,18 @@ boxplot(Treated)
 boxplot(Untreated)
 ```
 
-```{r, echo=FALSE}
-boxplot(Fold_Change)
-```
 
 
-```{r}
+```{r,echo=FALSE}
 boxplot(Treated,  ylab = "Gene expression profile", main = "Treated genexpressionprofiles",xaxt = "n")
-```
 
-```{r}
 boxplot(Untreated, ylab = "Gene expression profile", main = "Untreated genexpressionprofiles",xaxt = "n")
-```
 
-```{r}
-boxplot(Fold_Change, ylab = "Gene expression profile", main = "Fold_Change genexpressionprofiles",xaxt = "n")
-```
-
-```{r}
 boxplot(Treated[,1:10], ylab = "Gene expression profile", main = "First 10 reated genexpressionprofiles")
 ```
 
 
-```{r couloured boxplots, creating a susbet of Metadata based on the amount of tested genes in Treated}
+```{r coloured boxplots, creating a susbet of Metadata based on the amount of tested genes in Treated,echo=FALSE}
 Treated1 = readRDS(paste0(wd, "/Data/NCI_TPW_gep_treated.rds"))
 df = data.frame(t(Treated1))
 df.data <- data.frame(sample = rownames(df))
@@ -97,7 +85,9 @@ boxplot(Treated, border=adjustedMeda$drug,xlab= "Different Drugs" ,ylab = "Gene 
 
 ### Densityplot 
 The abline shows the 3 quantiles (      25%       50%       75%    )
-```{r}
+```{r,echo=FALSE}
+NCI_TPW_gep_treated = readRDS(paste0(wd, "/Data/NCI_TPW_gep_treated.rds"))
+NCI_TPW_gep_untreated = readRDS(paste0(wd, "/Data/NCI_TPW_gep_untreated.rds"))
 plot(density(NCI_TPW_gep_treated), "Densityplot Treated vs Untreated")
 lines(density(NCI_TPW_gep_untreated), col = "indianred2")
 legend("topright", legend = c("treated", "untreated"), col = c("black", "indianred2"), pch = 20)
@@ -129,7 +119,7 @@ km = kmeans(x = t(topVarTreated75), centers = 2, nstart = 10)
 km$tot.withinss
 ```
 
-```{r}
+```{r,echo=FALSE}
 #running a loop for the best n (searching for "ellbow")
 wss = sapply(2:7, function(k) {
 kmeans(x = t(topVarTreated75), centers = k)$tot.withinss})            
@@ -137,7 +127,7 @@ plot(2:7, wss, type = "b", pch = 19, xlab = "Number of clusters K", ylab = "Tota
 ```
 As we wanted an "ellbow"to get a good result we can say in a way that our data are not really good to cluster.
 To look in a other way, we also provided the clusters by the silhouette-method.
-```{r}
+```{r,echo=FALSE}
 # Using the silhouett method
 D = dist(t(topVarTreated75))
 km = kmeans(x = t(topVarTreated75), centers = 10, nstart = 10)
@@ -194,6 +184,7 @@ metad.cl$msi <- Cellline_Annotation$Microsatellite_instability_status[match(meta
 
 ```
 ```{r}
+library(viridis)
 # plotting all informative PCs
 #color vectors for coloring by drug and tissue
 viridis <- viridis(9)
@@ -321,8 +312,6 @@ library(factoextra)
 library(fpc)
 library(dendextend)
 
-install.packages("pheatmap")
-install.packages("viridis")
 
 library(pheatmap)
 library(viridis)
@@ -358,7 +347,7 @@ boxplot(Untreated_t$ESR1, Treated_t$ESR1,
 ###Basalexpresson of biomarkers for Lapatinib in breast cells, since Lapatinib is a drug against breast cancer.
 ```{r breast cells}
 #biomarker matrix for breast cancer cell lines 
-plot(expression_breast~Marker_Breast, data=df_breast_marker, col=viridis(6), main="Expression of Biomarkers in breast cells")
+#plot(expression_breast~Marker_Breast, data=df_breast_marker, col=viridis(6), main="Expression of Biomarkers in breast cells")
 ```
 
 
@@ -367,11 +356,11 @@ plot(expression_breast~Marker_Breast, data=df_breast_marker, col=viridis(6), mai
 Kruskal-Wallis test
 The null hypothesis is: there is no difference between the groups
 ```{r }
-library(ggpubr)
-ggboxplot(df_breast_marker, x="Marker_Breast", y="expression_breast", color = "Marker_Breast",
-          add = "jitter", legend = "none")+
-          rotate_x_text(angle = 45)
-          geom_hline(yintercept = mean(Biomarker_df$ERBB2), linetype = 2) # Add horizontal line at base mean
+#library(ggpubr)
+#ggboxplot(df_breast_marker, x="Marker_Breast", y="expression_breast", color = "Marker_Breast",
+      #    add = "jitter", legend = "none")+
+      #    rotate_x_text(angle = 45)
+      #    geom_hline(yintercept = mean(Biomarker_df$ERBB2), linetype = 2) # Add horizontal line at base mean
           #stat_compare_means(method = "kruskal.test", label.y = 12)+        
           #stat_compare_means(label = "p.signif", method = "t.test",
           #ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
@@ -382,15 +371,15 @@ ggboxplot(df_breast_marker, x="Marker_Breast", y="expression_breast", color = "M
 
 ###expression of biomarker in breast cells
 ```{r basalexpression1}
-pheatmap(data_biomarker_breast, 
-                       show_rownames = TRUE, 
-                       show_colnames = FALSE, 
-                       cutree_cols = 4, 
-                       cutree_rows = 3, 
-                       color = viridis(12),
-                       drop_levels = TRUE, 
-                       clustering_method = "ward.D2", 
-                       scale="row")
+#pheatmap(data_biomarker_breast, 
+        #               show_rownames = TRUE, 
+       #                show_colnames = FALSE, 
+        #               cutree_cols = 4, 
+         #              cutree_rows = 3, 
+          #             color = viridis(12),
+           #            drop_levels = TRUE, 
+            #           clustering_method = "ward.D2", 
+             #          scale="row")
 ```
 
 
@@ -415,30 +404,30 @@ The genes ERBB2 and ERBB3 showed the highest expression.
 ```{r}
 library(pheatmap)
 library(viridis)
-pheat_breast<-pheatmap(breast_marker_matrix ,
-                       show_rownames = FALSE, 
-                       show_colnames = TRUE, 
-                       cutree_cols = 4, 
-                       cutree_rows = 3, 
-                       color = viridis(4),
-                       drop_levels = TRUE, 
-                       clustering_method = "ward.D2", 
-                       scale="row")
-pheat_breast
+#pheat_breast<-pheatmap(breast_marker_matrix ,
+ #                      show_rownames = FALSE, 
+  #                     show_colnames = TRUE, 
+   #                    cutree_cols = 4, 
+    #                   cutree_rows = 3, 
+     #                  color = viridis(4),
+      #                 drop_levels = TRUE, 
+       #                clustering_method = "ward.D2", 
+        #               scale="row")
+#pheat_breast
 ```
 
 ###pheatmap of all genes in breast cells
 This serves as an over view. Yellow fields are highly over expressed.
-``{r}
-all_genes_cells<-pheatmap(breast, 
-         show_rownames = FALSE, 
-         show_colnames = TRUE, 
-         color = viridis(4),
-         drop_levels = TRUE, 
-         clustering_method = "ward.D2", 
-         scale="row")
-all_genes_cells
-``
+```{r}
+#all_genes_cells<-pheatmap(breast, 
+ #        show_rownames = FALSE, 
+  #       show_colnames = TRUE, 
+   #      color = viridis(4),
+    #     drop_levels = TRUE, 
+     #    clustering_method = "ward.D2", 
+      #   scale="row")
+#all_genes_cells
+```
 
 ###boxplot of biomarkers in basalexpression
 The boxplot shows the overexpression of the biomakers in the basalexpression
@@ -458,37 +447,37 @@ boxplot(Matrix_biomarker)
 ###ggplot of all cell lines and the Biomarker
 ANOVA is used for analysis of variance
 ```{r }
-library(ggpubr)
-Biomarker_df<-data.frame(t(Matrix_biomarker))
-Marker<-c(rep('ESR1',45), rep('ERBB2',45), rep('ERBB3',45), rep('ERBB4',45), rep('KRT75',45), rep('PGR',45))
-expression<-c(Biomarker_df$`ESR1`, Biomarker$`ERBB2`, Biomarker$`ERBB3`, Biomarker$`ERBB4`, Biomarker$`KRT75`, Biomarker$`PGR`)
-df_marker<-data.frame(expression, Marker)
-plot(expression~Marker, data=df_marker)
-ggboxplot(df_marker, x="Marker", y="expression", color = "Marker",
-        add = "jitter", legend = "none")+
-        rotate_x_text(angle = 45)+
-        geom_hline(yintercept = mean(Biomarker_df$ERBB2), linetype = 2)+ # Add horizontal line at base mean
-        stat_compare_means(method = "anova", label.y = 12)+        # Add global annova p-value
-        stat_compare_means(label = "p.signif", method = "t.test",
-                     ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
+#library(ggpubr)
+#Biomarker_df<-data.frame(t(Matrix_biomarker))
+#Marker<-c(rep('ESR1',45), rep('ERBB2',45), rep('ERBB3',45), rep('ERBB4',45), rep('KRT75',45), rep('PGR',45))
+#expression<-c(Biomarker_df$`ESR1`, Biomarker$`ERBB2`, Biomarker$`ERBB3`, Biomarker$`ERBB4`, Biomarker$`KRT75`, Biomarker$`PGR`)
+#df_marker<-data.frame(expression, Marker)
+#plot(expression~Marker, data=df_marker)
+#ggboxplot(df_marker, x="Marker", y="expression", color = "Marker",
+ #       add = "jitter", legend = "none")+
+  #      rotate_x_text(angle = 45)+
+   #     geom_hline(yintercept = mean(Biomarker_df$ERBB2), linetype = 2)+ # Add horizontal line at base mean
+    #    stat_compare_means(method = "anova", label.y = 12)+        # Add global annova p-value
+     #   stat_compare_means(label = "p.signif", method = "t.test",
+      #               ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
 ```
 
 Kruskal-Wallis-Test
 The p value ist < 2.2e-16, therefore there are big differences between the biomarker.
 ```{r }
-library(ggpubr)
-Biomarker_df<-data.frame(t(Matrix_biomarker))
-Marker<-c(rep('ESR1',45), rep('ERBB2',45), rep('ERBB3',45), rep('ERBB4',45), rep('KRT75',45), rep('PGR',45))
-expression<-c(Biomarker_df$`ESR1`, Biomarker$`ERBB2`, Biomarker$`ERBB3`, Biomarker$`ERBB4`, Biomarker$`KRT75`, Biomarker$`PGR`)
-df_marker<-data.frame(expression, Marker)
-plot(expression~Marker, data=df_marker)
-ggboxplot(df_marker, x="Marker", y="expression", color = "Marker",
-        add = "jitter", legend = "none")+
-        rotate_x_text(angle = 45)+
-        geom_hline(yintercept = mean(Biomarker_df$ERBB2), linetype = 2)+ # Add horizontal line at base mean
-        stat_compare_means(method = "kruskal.test", label.y = 12)+        # Add global annova p-value
-        stat_compare_means(label = "p.signif", method = "t.test",
-                     ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
+#library(ggpubr)
+#Biomarker_df<-data.frame(t(Matrix_biomarker))
+#Marker<-c(rep('ESR1',45), rep('ERBB2',45), rep('ERBB3',45), rep('ERBB4',45), rep('KRT75',45), rep('PGR',45))
+#expression<-c(Biomarker_df$`ESR1`, Biomarker$`ERBB2`, Biomarker$`ERBB3`, Biomarker$`ERBB4`, Biomarker$`KRT75`, Biomarker$`PGR`)
+#df_marker<-data.frame(expression, Marker)
+#plot(expression~Marker, data=df_marker)
+#ggboxplot(df_marker, x="Marker", y="expression", color = "Marker",
+ #       add = "jitter", legend = "none")+
+  #      rotate_x_text(angle = 45)+
+   #     geom_hline(yintercept = mean(Biomarker_df$ERBB2), linetype = 2)+ # Add horizontal line at base mean
+    #    stat_compare_means(method = "kruskal.test", label.y = 12)+        # Add global annova p-value
+     #   stat_compare_means(label = "p.signif", method = "t.test",
+      #               ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
 ```
 
 
@@ -550,22 +539,22 @@ boxplot(Untreated_t$COX6C, Treated_t$COX6C,
 ##paired t-test between the Lapatinib treated und untreated data
 ###genome wide paired t-test
 ```{r }
-before=as.matrix(LapatimibUnTreat)
-after=as.matrix(LapatimibTreat)
-t.test(before, after, paired=TRUE)
+#before=as.matrix(LapatimibUnTreat)
+#after=as.matrix(LapatimibTreat)
+#t.test(before, after, paired=TRUE)
 ```
 
 ###ggboxplot to compare the treated an untreated data
 ```{r }
-my_data <- data.frame( 
-  group = rep(c("before", "after")),
-  expression = c(before,  after))
+#my_data <- data.frame( 
+ # group = rep(c("before", "after")),
+  #expression = c(before,  after))
 
 library(ggpubr)
-ggboxplot(my_data, x = "group", y = "expression", 
-          color = "group", palette = c("#00AFBB", "#E7B800"),
-          order = c("before", "after"),
-          ylab = "expression", xlab = "group")
+#ggboxplot(my_data, x = "group", y = "expression", 
+ #         color = "group", palette = c("#00AFBB", "#E7B800"),
+  #        order = c("before", "after"),
+   #       ylab = "expression", xlab = "group")
 ```
 The ggboxplots "before" and "after" are very similar. This suggests that lapatinib only modifies the expression of fewer genes. The theory makes sense because in cancer cells only certain genes, such as proliferation genes, are altered.
 
@@ -575,20 +564,20 @@ The ggboxplots "before" and "after" are very similar. This suggests that lapatin
 
 ```{r}
 #install.packages("matrixTests")
-library(matrixTests)
+#library(matrixTests)
 
-col_t_paired(LapatimibUnTreat, LapatimibTreat, alternative = "two.sided", mu = 0,conf.level = 0.95)
+#col_t_paired(LapatimibUnTreat, LapatimibTreat, alternative = "two.sided", mu = 0,conf.level = 0.95)
 ```
 
 ###t-test over each row
 -> paired t-test over genes, increased confidence level (99%) to minimize false positives
 ```{r}
-row_t_test<-row_t_paired(LapatimibUnTreat, LapatimibTreat, alternative = "two.sided", mu = 0,conf.level = 0.99)
-summary(row_t_test$pvalue)
-row_t_test
+#row_t_test<-row_t_paired(LapatimibUnTreat, LapatimibTreat, alternative = "two.sided", mu = 0,conf.level = 0.99)
+#summary(row_t_test$pvalue)
+#row_t_test
 ```
 ```{r}
-row_t_test$pvalue
+#row_t_test$pvalue
 ```
 
 
@@ -1046,7 +1035,7 @@ A pearson correlation coefficent of ~ 0.96 suggests that Lapatinib has a similar
 
 ###selection of Lapatinib and Erlotinib treated cells
 ```{r}
- install.packages("dplyr")
+ 
   library(dplyr)
   
 
@@ -1074,28 +1063,28 @@ all
 since erlotinip contains more columns than lapatinib, we have to remove these columns
 ```{r}
 library(dplyr)
-all<-data.frame(all %>% select(-"CCRF.CEM_erlotinib_0nM_24h", 
-                    -"HL.60_erlotinib_0nM_24h", 
-                    -"HT29_erlotinib_0nM_24h", 
-                    -"K.562_erlotinib_0nM_24h", 
-                    -"LOX_erlotinib_0nM_24h",
-                    -"SR_erlotinib_0nM_24h",
-                    -"COLO.205_lapatinib_0nM_24h"))
+#all<-data.frame(all %>% select(-"CCRF.CEM_erlotinib_0nM_24h", 
+ #                   -"HL.60_erlotinib_0nM_24h", 
+  #                  -"HT29_erlotinib_0nM_24h", 
+   #                 -"K.562_erlotinib_0nM_24h", 
+    #                -"LOX_erlotinib_0nM_24h",
+     #               -"SR_erlotinib_0nM_24h",
+      #              -"COLO.205_lapatinib_0nM_24h"))
                    
 ```
 
 
 Checking the rows
 ```{r}
-la<-data.frame(all[grep("lapatinib", colnames(all))])
-ncol(la)
+#la<-data.frame(all[grep("lapatinib", colnames(all))])
+#ncol(la)
 
-er<-data.frame(all[grep("erlotinib", colnames(all))])
-ncol(er)
+#er<-data.frame(all[grep("erlotinib", colnames(all))])
+#ncol(er)
 
-erla<-data.frame(er,la)
+#erla<-data.frame(er,la)
 
-ncol(all) #to prove if the columns are removed
+#ncol(all) #to prove if the columns are removed
 ```
 
 
@@ -1103,18 +1092,18 @@ ncol(all) #to prove if the columns are removed
 p = 0.2 means that the result does not differ significantly. Thus, the two drugs did not differ significantly from each other.
 
 ```{r}
-drug<-c(rep('Erlotinib',53), rep('Lapatinib',53))
-expression_drug<-apply(erla, MARGIN = 2, sum)
-df_drug<-data.frame(expression_drug, drug)
+#drug<-c(rep('Erlotinib',53), rep('Lapatinib',53))
+#expression_drug<-apply(erla, MARGIN = 2, sum)
+#df_drug<-data.frame(expression_drug, drug)
 
-library(ggpubr)
-ggboxplot (data = df_drug, x="drug", y="expression_drug", color = "drug",    
-          add = "jitter", legend = "none")+
-          rotate_x_text(angle = 45)+
-          geom_hline(yintercept = mean(lapatinib$MCF7_lapatinib_0nM_24h), linetype = 2)+ # Add horizontal line at base mean
-          stat_compare_means(method = "anova")+        # Add global annova p-value
-          stat_compare_means(label = "p.signif", method = "t.test",
-          ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
+#library(ggpubr)
+#ggboxplot (data = df_drug, x="drug", y="expression_drug", color = "drug",    
+#          add = "jitter", legend = "none")+
+ #         rotate_x_text(angle = 45)+
+  #        geom_hline(yintercept = mean(lapatinib$MCF7_lapatinib_0nM_24h), linetype = 2)+ # Add horizontal line at base mean
+   #       stat_compare_means(method = "anova")+        # Add global annova p-value
+    #      stat_compare_means(label = "p.signif", method = "t.test",
+     #     ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
 ```
 
 
