@@ -26,7 +26,8 @@ df.data <- data.frame(sample = rownames(df))
 adjustedMeda = subset(Metadata, sample %in% intersect(Metadata$sample, df.data$sample))
 rm(df,df.data, Treated1)
 
-boxplot(Treated, border=adjusted, ylab = "Gene expression profile", main = "Teated genexpressionprofiles",xaxt ="n")
+palette(rainbow(15))
+boxplot(Treated, border=adjustedMeda$drug, ylab = "Gene expression profile", main = "Teated genexpressionprofiles",xaxt ="n")
 
 #Densityplot, abline show the 3 quantiles (      25%       50%       75%    )
 

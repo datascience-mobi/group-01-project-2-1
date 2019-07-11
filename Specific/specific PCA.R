@@ -1,13 +1,12 @@
 # PCA specific for Lapatinib: June 6th 2019
 library(ggplot2)
 library(gridExtra)
-
-Fold_Change = NCI_TPW_gep_treated - NCI_TPW_gep_untreated
-Treated = data.frame(NCI_TPW_gep_treated)
-Untreated = data.frame(NCI_TPW_gep_untreated)
+library(dplyr)
+library(RColorBrewer)
 
 
-L_fc <- Fold_Change[,421:474]
+L_fc <- select(Fold_Change, contains("Lapa"))
+
 
 # PCA
 pca <- prcomp(t(L_fc), scale = TRUE)
@@ -24,10 +23,10 @@ plot(pca.var.per[1:10], type = "l", xlab = "Principal Components", ylab = "% var
 plot(pca.var.per[1:8], type = "l", xlab = "Principal Components", ylab = "% variation") # either 2 or 4 PCs
 plot(cumsum(pca.var.per[1:15]), type = "l", xlab = "Principal Components", ylab = "% variation")
 
-pca.data <- data.frame(sample = rownames(pca$x),
-                       x = pca$x[,1],
-                       y = pca$x[,2]
-)
+pca.data <- data.frame(pca$x)
+rownames(pca.data) <- gsub(x = rownames(pca.data), pattern = "X786", replacement = "786")
+pca.data <- cbind(sample =rownames(pca.data), pca.data)
+
 
 View(pca.data)
 
@@ -39,52 +38,143 @@ ranked_pca <- sort(loading_scores[,1], decreasing = TRUE)
 View(ranked_pca)
 
 gene_score <- abs(loading_scores_1) ## sort magnitude
-mean(gene_score)
-max(gene_score)
-min(gene_score)
-
 gene_score_ranked <- sort(gene_score, decreasing = TRUE)
 
-head(gene_score_ranked)
-tail(gene_score_ranked)
-top_10_genes <- names(gene_score_ranked[1:10])
 
+top_10_genes <- names(gene_score_ranked[1:10])
 top_10_genes # show names of top 10 genes
 
 
+### Metadata matrix for coloring 
+Metadata$sample <- gsub(x = Metadata$sample, pattern = "-", replacement = ".")
 metad.cl <- subset(Metadata, sample %in% intersect(Metadata$sample, pca.data$sample))  
-
-Cell_Anno <- subset(Cellline_Annotation, Cell_Line_Name %in% intersect(metad.cl$cell, Cellline_Annotation$Cell_Line_Name))
-Cell_Anno <- Cell_Anno[ order(Cell_Anno$Cell_Line_Name), ] # sort alphabetically
-Cell_Anno <- cbind(Cell_Anno, sample = metad.cl$sample)
-
-plot(pca$x[,1], pca$x[,2], col = Cell_Anno$Doubling_Time, xlab = "PC1", ylab = "PC2", main = "Colored by tissue")
+metad.cl$msi <- Cellline_Annotation$Microsatellite_instability_status[match(metad.cl$cell, Cellline_Annotation$Cell_Line_Name)]
+metad.cl$inoculation_d <- Cellline_Annotation$Inoculation_Density[match(metad.cl$cell, Cellline_Annotation$Cell_Line_Name)]
+metad.cl$doubling_time <- Cellline_Annotation$Doubling_Time[match(metad.cl$cell, Cellline_Annotation$Cell_Line_Name)]
+metad.cl$cancer_type <- Cellline_Annotation$Cancer_type[match(metad.cl$cell, Cellline_Annotation$Cell_Line_Name)]
 
 
-## plotting all important PCs, try for loop
-scores <- data.frame(colnames(L_fc), pca$x[,1:6])
-pc1.2 <- qplot(x=PC1, y=PC2, data = scores, colour =metad.cl$tissue) +
-  theme(legend.position="none")
-pc1.3 <- qplot(x=PC1, y=PC3, data = scores, colour =metad.cl$tissue) +
-  theme(legend.position="none")
-pc2.3 <- qplot(x=PC2, y=PC3, data = scores, colour =metad.cl$tissue) +
-  theme(legend.position="none")
-
-pc1.2 
-pc1.3 
-pc2.3
-grid.arrange(pc1.2, pc1.3, pc2.3)
 
 
-pcs <- sapply(1:4, function(i){
-  pca$x[,i]
-}
+##overview of most important PCs
+j<-1
+while(j < 7){
+  i <- 2
+  while(i < 7){
+    sapply(1:length(i), function(x){
+      sapply(1:length(i), function(y){
+        plot(x=pca$x[,j], y=pca$x[,i],  col = metad.cl$tissue, xlab = j, ylab = i, main = "Colored by tissue")
+      })
+    })
+    i <- i+1}
+  j <- j+1}
+
+
+
+
+#color vectors for coloring by msi and tissue
+colormsi <- brewer.pal(3, "Set1")
+color_msi = colormsi[metad.cl$msi]
+msi <- levels(metad.cl$msi)
+
+magma <- magma(9)
+color_tissue = magma[metad.cl$tissue]
+tissue <- levels(metad.cl$tissue)
+
+
+## colored by msi
+#plot PC1 and PC2
+plot(pca$x[,1], 
+     pca$x[,2], 
+     col = color_msi,
+     pch = 19, 
+     xlab = paste("PC1 (",pca.var.per[1],"%)"), 
+     ylab = paste("PC2 (",pca.var.per[2],"%)"))
+#create legend
+legend("bottomright", 
+       legend = msi, 
+       col = colormsi, 
+       pch = 19, 
+       xpd = "TRUE",
+       bty = "n"
 )
+#create title
+mtext("PCA of Fold Change colored by MSI", 
+      side = 3, 
+      line = -2.5,
+      cex = 1.2,
+      font = 2, 
+      outer = TRUE)
+
+#plot PC2 and PC3
+plot(pca$x[,2], 
+     pca$x[,3], 
+     col = color_msi,
+     pch = 19, 
+     xlab = paste("PC2 (",pca.var.per[2],"%)"), 
+     ylab = paste("PC3 (",pca.var.per[3],"%)"))
+#create legend
+legend("topleft", 
+       legend = msi, 
+       col = colormsi, 
+       pch = 19, 
+       xpd = "TRUE",
+       bty = "n"
+)
+#create title
+mtext("PCA of Fold Change colored by MSI", 
+      side = 3, 
+      line = -2.5,
+      cex = 1.2,
+      font = 2, 
+      outer = TRUE)
 
 
-plot(x=pcs, y=pcs,  col = metad.cl$drug, xlab = "PC"+i, ylab = "PC"+i+1, main = "Colored by drug")
 
-i <- 1
-while(i < 6){
-  plot(x=pca$x[,i], y=pca$x[,i+1],  col = metad.cl$drug, xlab = i, ylab = i+1, main = "Colored by drug")
-  i <- i+1}
+##colored by tissue
+#plot PC1 and PC2
+plot(pca$x[,1], 
+     pca$x[,2], 
+     col = color_tissue,
+     pch = 19, 
+     xlab = paste("PC1 (",pca.var.per[1],"%)"), 
+     ylab = paste("PC2 (",pca.var.per[2],"%)"))
+#create legend
+legend("bottomright", 
+       legend = tissue, 
+       col = magma, 
+       pch = 19, 
+       xpd = "TRUE",
+       bty = "n"
+)
+#create title
+mtext("PCA of Fold Change colored by tissue", 
+      side = 3, 
+      line = -2.5,
+      cex = 1.2,
+      font = 2, 
+      outer = TRUE)
+
+#plot PC2 and PC3
+plot(pca$x[,2], 
+     pca$x[,3], 
+     col = color_tissue,
+     pch = 19, 
+     xlab = paste("PC2 (",pca.var.per[2],"%)"), 
+     ylab = paste("PC3 (",pca.var.per[3],"%)"))
+#create legend
+legend("bottomleft", 
+       legend = tissue, 
+       col = magma, 
+       pch = 19, 
+       xpd = "TRUE",
+       bty = "n"
+)
+#create title
+mtext("PCA of Fold Change colored by tissue", 
+      side = 3, 
+      line = -2.5,
+      cex = 1.2,
+      font = 2, 
+      outer = TRUE)
+

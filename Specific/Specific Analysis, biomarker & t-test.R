@@ -43,6 +43,14 @@ plot(expression ~ cells, data=df_breast)
 breast.aov<-aov(expression ~ cells, data=df_breast)
 summary(breast.aov)
 
+
+
+#ggboxplot of cell lines
+library(ggpubr)
+ggboxplot(df_breast, x = "cells", y = "expression", color="cells")
+
+
+
 #ggboxplot of biomarkers for breast
 library(ggpubr)
 ggboxplot(df_breast, x = "cells", y = "expression", color="cells",
@@ -63,6 +71,7 @@ ggboxplot(df_breast, x = "cells", y = "expression", color="cells",
 
 library(pheatmap)
 library(viridis)
+
 pheat_breast<-pheatmap(breast_marker_matrix ,
                        show_rownames = FALSE, 
                        show_colnames = TRUE, 
@@ -83,6 +92,17 @@ all_genes_cells<-pheatmap(breast,
          clustering_method = "ward.D2", 
          scale="row")
 all_genes_cells
+
+pheat_breast<-pheatmap(data_biomarker_breast, 
+                       show_rownames = TRUE, 
+                       show_colnames = FALSE, 
+                       cutree_cols = 4, 
+                       cutree_rows = 3, 
+                       color = viridis(12),
+                       drop_levels = TRUE, 
+                       clustering_method = "ward.D2", 
+                       scale="row")
+
 
 #biomarker matrix for all cell lines 
 t_basalexpression<-data.frame(t(CCLE_basalexpression))
@@ -153,11 +173,14 @@ ggplot(Matrix_biomarker_breast, aes(x=MCF7, y="MDA-MB-231"))
 
 #setting a threshold, matrix of the highest gene expression
 rmv.rows = apply(CCLE_basalexpression, 1, function(x) {
+
   sum(x<14)})
+
 which(rmv.rows <14)
 highest_expression = CCLE_basalexpression[-which(rmv.rows <14), ]  
 rm(rmv.rows)
 summary(highest_expression)
+
 
 
 library(pheatmap)
@@ -169,6 +192,16 @@ pheatmap(highest_expression,
                             drop_levels = TRUE, 
                             clustering_method = "ward.D2", 
                             scale="row")
+
+pheat_highest_expression<-pheatmap(highest_expression, 
+                                   show_rownames = TRUE, 
+                                   show_colnames = TRUE, 
+                                   cutree_cols = 4, 
+                                   cutree_rows = 3, 
+                                   drop_levels = TRUE, 
+                                   clustering_method = "ward.D2", 
+                                   scale="row")
+
 
 #searching for our own biomarkers
 basalexpression <- data.frame(CCLE_basalexpression)
@@ -225,6 +258,7 @@ col_t_paired(LapatimibUnTreat, LapatimibTreat, alternative = "two.sided", mu = 0
 #t-test over each row -> genes
 row_t_test<-row_t_paired(LapatimibUnTreat, LapatimibTreat, alternative = "two.sided", mu = 0,conf.level = 0.99)
 summary(row_t_test$pvalue)
+
 row_t_test$pvalue
 
 
@@ -235,3 +269,9 @@ basalexpression <- data.frame(CCLE_basalexpression)
 b<-apply(basalexpression,1, max)
 highest_basalexpression<-sort(b, decreasing = TRUE)
 head(highest_basalexpression)
+
+row_t_test
+
+Treated_t<-data.frame(t(Treated))
+Untreated_t<-data.frame(t(Untreated))
+
