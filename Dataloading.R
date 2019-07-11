@@ -12,7 +12,16 @@ CCLE_mutations = readRDS(paste0(wd, "/Data/CCLE_mutations.rds"))
 CCLE_copynumber = readRDS(paste0(wd, "/Data/CCLE_copynumber.rds"))
 CCLE_basalexpression = readRDS(paste0(wd, "/Data/CCLE_basalexpression.rds"))
 NegLogGI50 = as.data.frame(readRDS(paste0(wd, "/Data/NegLogGI50.rds")))
-Fold_Change = NCI_TPW_gep_treated - NCI_TPW_gep_untreated
 Treated = data.frame(NCI_TPW_gep_treated)
 Untreated = data.frame(NCI_TPW_gep_untreated)
+
+
+#For scaling the data (taken from and analysed  in "Broad")
+
+list = list(Treated,Untreated)
+nlist = lapply(list,scale)
+Treated = as.data.frame(nlist[[1]])
+Untreated = as.data.frame(nlist[[2]])
+Fold_Change = Treated - Untreated
 Fold_Change <- data.frame(Fold_Change)
+rm(NCI_TPW_gep_treated,NCI_TPW_gep_untreated,list,nlist)

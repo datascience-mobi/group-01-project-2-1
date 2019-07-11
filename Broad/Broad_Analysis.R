@@ -2,32 +2,9 @@
 library(rstudioapi)
 library(cluster) 
 
-wd = dirname(rstudioapi::getSourceEditorContext()$path)
 
-NCI_TPW_gep_treated = readRDS(paste0(wd, "/Data/NCI_TPW_gep_treated.rds"))
-NCI_TPW_gep_untreated = readRDS(paste0(wd, "/Data/NCI_TPW_gep_untreated.rds"))
-Metadata = read.delim(paste0(wd, "/Data/NCI_TPW_metadata.tsv"), header = TRUE, sep = "\t", stringsAsFactors = TRUE)
-Cellline_Annotation = read.delim(paste0(wd, "/Data/cellline_annotation.tsv"), header = TRUE, sep = "\t", stringsAsFactors = TRUE)
-Drug_Annotation = read.delim(paste0(wd, "/Data/drug_annotation.tsv"), header = TRUE, sep = "\t", stringsAsFactors = TRUE)
-CCLE_mutations = readRDS(paste0(wd, "/Data/CCLE_mutations.rds"))
-CCLE_copynumber = readRDS(paste0(wd, "/Data/CCLE_copynumber.rds"))
-CCLE_basalexpression = readRDS(paste0(wd, "/Data/CCLE_basalexpression.rds"))
-NegLogGI50 = as.data.frame(readRDS(paste0(wd, "/Data/NegLogGI50.rds")))
-Fold_Change = NCI_TPW_gep_treated - NCI_TPW_gep_untreated
-Treated = data.frame(NCI_TPW_gep_treated)
-Untreated = data.frame(NCI_TPW_gep_untreated)
-Fold_Change <- data.frame(Fold_Change)
 
-# Sort out for Lapatinib
-
-#dat = NCI_TPW_gep_treated[, 421:474]
-#LapatimibTreat <- data.frame(dat)
-#rm(dat)
-#dat = NCI_TPW_gep_untreated[, 421:474]
-#LapatimibUnTreat <- data.frame(dat)
-#rm(dat)
-
-#Boxplots,check for normalization ; scale the Data', FC takes long
+#Boxplots,check for normalization ; scale the Data',
 
 boxplot(Treated)
 boxplot(Untreated)
@@ -42,10 +19,14 @@ boxplot(Untreated, ylab = "Gene expression profile", main = "Untreated genexpres
 boxplot(Fold_Change, ylab = "Gene expression profile", main = "Fold_Change genexpressionprofiles",xaxt = "n")
 boxplot(Treated[,1:10], ylab = "Gene expression profile", main = "First 10 reated genexpressionprofiles")
 
-#couloured boxplots
-drug = Metadata$drug
-palette(topo.colors(15))
-boxplot(Treated, border=drug, ylab = "Gene expression profile", main = "Teated genexpressionprofiles",xaxt ="n")
+#couloured boxplots, creating a susbet of Metadata based on the amount of tested genes in Treated
+Treated1 = readRDS(paste0(wd, "/Data/NCI_TPW_gep_treated.rds"))
+df = data.frame(t(Treated1))
+df.data <- data.frame(sample = rownames(df))
+adjustedMeda = subset(Metadata, sample %in% intersect(Metadata$sample, df.data$sample))
+rm(df,df.data, Treated1)
+
+boxplot(Treated, border=adjusted, ylab = "Gene expression profile", main = "Teated genexpressionprofiles",xaxt ="n")
 
 #Densityplot, abline show the 3 quantiles (      25%       50%       75%    )
 

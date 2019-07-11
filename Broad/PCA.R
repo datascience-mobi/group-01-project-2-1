@@ -1,5 +1,8 @@
-#PCA by Eva, created: May 23rd 2019, updated: June 2nd 2019
-#capplying fold change to continous variables 
+#PCA: May 23rd 2019
+#applying fold change to continous variables 
+library(ggplot2)
+library(gridExtra)
+
 Fold_Change = NCI_TPW_gep_treated - NCI_TPW_gep_untreated
 Treated = data.frame(NCI_TPW_gep_treated)
 Untreated = data.frame(NCI_TPW_gep_untreated)
@@ -31,7 +34,7 @@ pca.data <- data.frame(sample = rownames(pca$x),
                        x = pca$x[,1],
                        y = pca$x[,2]
                        )
-pca.data
+
 View(pca.data)
 
 
@@ -66,8 +69,45 @@ heatmap(var(Fold_Change))
 
 ### cleaned up coloring 
 metad.cl <- subset(Metadata, sample %in% intersect(Metadata$sample, pca.data$sample)) ## adjust row length of metadata to pca.data
-cell.split <- split(pca.data, metad.cl$cell) #create cell vector for color annotation, but actually you don't need that
+nrowcell.split <- split(pca.data, metad.cl$cell) #create cell vector for color annotation, but actually you don't need that
+
+
+metad.cl$mechanism <- Drug_Annotation$Mechanism[match(metad.cl$drug, Drug_Annotation$Drug)]
+metad.cl$msi <- Cellline_Annotation$Microsatellite_instability_status[match(metad.cl$cell, Cellline_Annotation$Cell_Line_Name)]
+
 
 plot(pca$x[,1], pca$x[,2], col = metad.cl$drug, xlab = "PC1", ylab = "PC2", main =  "Colored by drug")
 plot(pca$x[,1], pca$x[,2], col = metad.cl$dose, xlab = "PC1", ylab = "PC2", main = "Colored by dose")
 plot(pca$x[,1], pca$x[,2], col = metad.cl$tissue, xlab = "PC1", ylab = "PC2", main = "Colored by tissue")
+
+plot(pca$x[,1], pca$x[,2], col = metad.cl$msi, xlab = "PC1", ylab = "PC2", main = "Colored by Microsatellite Instability Status")
+plot(pca$x[,1], pca$x[,2], col = metad.cl$mechanism, xlab = "PC1", ylab = "PC2", main = "Colored by Mechanism of action")
+
+
+## plotting all important PCs, try for loop
+scores <- data.frame(colnames(Fold_Change), pca$x[,1:6])
+pc1.2 <- qplot(x=PC1, y=PC2, data = scores, colour =metad.cl$drug) +
+  theme(legend.position="none")
+pc1.3 <- qplot(x=PC1, y=PC3, data = scores, colour =metad.cl$drug) +
+  theme(legend.position="none")
+pc2.3 <- qplot(x=PC2, y=PC3, data = scores, colour =metad.cl$drug) +
+  theme(legend.position="none")
+
+pc1.2 
+pc1.3 
+pc2.3
+grid.arrange(pc1.2, pc1.3, pc2.3)
+
+
+pcs <- sapply(1:8, function(i){
+  pca$x[,i]
+}
+)
+
+
+plot(x=pcs, y=pcs,  col = metad.cl$drug, xlab = "PC"+i, ylab = "PC"+i+1, main = "Colored by drug")
+
+i <- 1
+while(i < 6){
+  plot(x=pca$x[,i], y=pca$x[,i+1],  col = metad.cl$drug, xlab = i, ylab = i+1, main = "Colored by drug")
+  i <- i+1}
