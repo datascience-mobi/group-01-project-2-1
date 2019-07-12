@@ -1060,28 +1060,30 @@ all
 since erlotinip contains more columns than lapatinib, we have to remove these columns
 ```{r}
 library(dplyr)
-#all<-data.frame(all %>% select(-"CCRF.CEM_erlotinib_0nM_24h", 
- #                   -"HL.60_erlotinib_0nM_24h", 
-  #                  -"HT29_erlotinib_0nM_24h", 
-   #                 -"K.562_erlotinib_0nM_24h", 
-    #                -"LOX_erlotinib_0nM_24h",
-     #               -"SR_erlotinib_0nM_24h",
-      #              -"COLO.205_lapatinib_0nM_24h"))
+all.rmv<-data.frame(all %>% select(
+                    -"CCRF.CEM_erlotinib_0nM_24h", 
+                    -"HL.60_erlotinib_0nM_24h", 
+                    -"HT29_erlotinib_0nM_24h", 
+                    -"K.562_erlotinib_0nM_24h", 
+                    -"LOX_erlotinib_0nM_24h",
+                    -"SR_erlotinib_0nM_24h",
+                    -"COLO.205_lapatinib_0nM_24h"))
                    
 ```
 
 
 Checking the rows
 ```{r}
-#la<-data.frame(all[grep("lapatinib", colnames(all))])
-#ncol(la)
+la<-data.frame(all[grep("lapatinib", colnames(all.rmv))])
+ncol(la)
 
-#er<-data.frame(all[grep("erlotinib", colnames(all))])
-#ncol(er)
+er<-data.frame(all[grep("erlotinib", colnames(all.rmv))])
+ncol(er)
 
-#erla<-data.frame(er,la)
+erla<-data.frame(er,la)
 
-#ncol(all) #to prove if the columns are removed
+ncol(all.rmv) #to prove if the columns are removed
+
 ```
 
 
