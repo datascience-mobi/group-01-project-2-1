@@ -349,21 +349,39 @@ boxplot(Untreated_t$ESR1, Treated_t$ESR1,
 #biomarker matrix for breast cancer cell lines 
 #plot(expression_breast~Marker_Breast, data=df_breast_marker, col=viridis(6), main="Expression of Biomarkers in breast cells")
 ```
+### creating some date
+```{r}
+breastcells<-subset(Metadata, tissue == "Breast")
+breast<-subset(CCLE_basalexpression, breastcells$cell  %in%  colnames(CCLE_basalexpression))
 
+tbreastcells<-data.frame(t(breast))
+biomarker_genes <-c("ESR1", "ERBB2", "ERBB3", "ERBB4", "KRT75", "PGR")
+
+breast_marker <- c(tbreastcells$ESR1,tbreastcells$ERBB2, tbreastcells$ERBB3, tbreastcells$ERBB4, tbreastcells$KRT75, tbreastcells$PGR )
+breast_marker_matrix <- data.frame(tbreastcells$ESR1,tbreastcells$ERBB2, tbreastcells$ERBB3, tbreastcells$ERBB4, tbreastcells$KRT75, tbreastcells$PGR )
+```
+
+###overview of the basalexpression of our biomarkers
+```{r}
+cells<-c(rep('ESR1',45),rep('ERBB2',45),rep('ERBB3',45),rep('ERBB4',45),rep('KRT75',45),rep('PGR',45))
+expression<-c(tbreastcells$ESR1,tbreastcells$ERBB2, tbreastcells$ERBB3, tbreastcells$ERBB4, tbreastcells$KRT75, tbreastcells$PGR )
+df_breast<-data.frame(cells,expression)
+plot(expression ~ cells, data=df_breast)
+``
 
 ###ggboxplot of basalexpression of biomarkers in breast cells
 
 Kruskal-Wallis test
 The null hypothesis is: there is no difference between the groups
 ```{r }
-#library(ggpubr)
-#ggboxplot(df_breast_marker, x="Marker_Breast", y="expression_breast", color = "Marker_Breast",
-      #    add = "jitter", legend = "none")+
-      #    rotate_x_text(angle = 45)
-      #    geom_hline(yintercept = mean(Biomarker_df$ERBB2), linetype = 2) # Add horizontal line at base mean
-          #stat_compare_means(method = "kruskal.test", label.y = 12)+        
-          #stat_compare_means(label = "p.signif", method = "t.test",
-          #ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
+library(ggpubr)
+ggboxplot(df_breast_marker, x="Marker_Breast", y="expression_breast", color = "Marker_Breast",
+          add = "jitter", legend = "none")+
+          rotate_x_text(angle = 45)
+          geom_hline(yintercept = mean(Biomarker_df$ERBB2), linetype = 2) # Add horizontal line at base mean
+          stat_compare_means(method = "kruskal.test", label.y = 12)+        
+          stat_compare_means(label = "p.signif", method = "t.test",
+          ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
 
 ```
 
