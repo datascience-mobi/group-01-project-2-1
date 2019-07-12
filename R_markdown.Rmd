@@ -545,15 +545,15 @@ t.test(before, after, paired=TRUE)
 
 ###ggboxplot to compare the treated an untreated data
 ```{r }
-#my_data <- data.frame( 
- # group = rep(c("before", "after")),
-  #expression = c(before,  after))
+my_data <- data.frame( 
+  group = rep(c("before", "after")),
+  expression = c(before,  after))
 
 library(ggpubr)
-#ggboxplot(my_data, x = "group", y = "expression", 
- #         color = "group", palette = c("#00AFBB", "#E7B800"),
-  #        order = c("before", "after"),
-   #       ylab = "expression", xlab = "group")
+ggboxplot(my_data, x = "group", y = "expression", 
+          color = "group", palette = c("#00AFBB", "#E7B800"),
+          order = c("before", "after"),
+          ylab = "expression", xlab = "group")
 ```
 The ggboxplots "before" and "after" are very similar. This suggests that lapatinib only modifies the expression of fewer genes. The theory makes sense because in cancer cells only certain genes, such as proliferation genes, are altered.
 
