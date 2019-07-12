@@ -461,12 +461,11 @@ boxplot(Matrix_biomarker)
 ANOVA is used for analysis of variance
 ###biomarker matrix for all cell lines 
 ```{r }
-library(ggpubr)
-Biomarker_df<-data.frame(t(Matrix_biomarker))
-Marker<-c(rep('ESR1',45), rep('ERBB2',45), rep('ERBB3',45), rep('ERBB4',45), rep('KRT75',45), rep('PGR',45))
-expression<-c(Biomarker_df$`ESR1`, Biomarker$`ERBB2`, Biomarker$`ERBB3`, Biomarker$`ERBB4`, Biomarker$`KRT75`, Biomarker$`PGR`)
-df_marker<-data.frame(expression, Marker)
-plot(expression~Marker, data=df_marker)
+#library(ggpubr)
+#Biomarker_df<-data.frame(t(Matrix_biomarker))
+#Marker<-c(rep('ESR1',45), rep('ERBB2',45), rep('ERBB3',45), rep('ERBB4',45), rep('KRT75',45), rep('PGR',45))
+#expression<-c(Biomarker_df$`ESR1`, Biomarker_df$`ERBB2`, Biomarker_df$`ERBB3`, Biomarker_df$`ERBB4`, Biomarker_df$`KRT75`, #Biomarker_df$`PGR`)
+#plot(expression~Marker)
 ```
 
 ###ggplot of all cell lines and the Biomarker
