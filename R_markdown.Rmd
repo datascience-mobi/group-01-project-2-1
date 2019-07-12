@@ -344,11 +344,6 @@ boxplot(Untreated_t$ESR1, Treated_t$ESR1,
 ```
 
 
-###Basalexpresson of biomarkers for Lapatinib in breast cells, since Lapatinib is a drug against breast cancer.
-```{r breast cells}
-#biomarker matrix for breast cancer cell lines 
-#plot(expression_breast~Marker_Breast, data=df_breast_marker, col=viridis(6), main="Expression of Biomarkers in breast cells")
-```
 ### creating some date
 ```{r}
 breastcells<-subset(Metadata, tissue == "Breast")
@@ -422,29 +417,29 @@ The genes ERBB2 and ERBB3 showed the highest expression.
 ```{r}
 library(pheatmap)
 library(viridis)
-#pheat_breast<-pheatmap(breast_marker_matrix ,
- #                      show_rownames = FALSE, 
-  #                     show_colnames = TRUE, 
-   #                    cutree_cols = 4, 
-    #                   cutree_rows = 3, 
-     #                  color = viridis(4),
-      #                 drop_levels = TRUE, 
-       #                clustering_method = "ward.D2", 
-        #               scale="row")
-#pheat_breast
+pheat_breast<-pheatmap(breast_marker_matrix ,
+                      show_rownames = FALSE, 
+                      show_colnames = TRUE, 
+                      cutree_cols = 4, 
+                      cutree_rows = 3, 
+                      color = viridis(4),
+                      drop_levels = TRUE, 
+                      clustering_method = "ward.D2", 
+                      scale="row")
+pheat_breast
 ```
 
 ###pheatmap of all genes in breast cells
 This serves as an over view. Yellow fields are highly over expressed.
 ```{r}
-#all_genes_cells<-pheatmap(breast, 
- #        show_rownames = FALSE, 
-  #       show_colnames = TRUE, 
-   #      color = viridis(4),
-    #     drop_levels = TRUE, 
-     #    clustering_method = "ward.D2", 
-      #   scale="row")
-#all_genes_cells
+all_genes_cells<-pheatmap(breast, 
+         show_rownames = FALSE, 
+         show_colnames = TRUE, 
+         color = viridis(4),
+         drop_levels = TRUE, 
+         clustering_method = "ward.D2", 
+         scale="row")
+all_genes_cells
 ```
 
 ###boxplot of biomarkers in basalexpression
@@ -464,38 +459,39 @@ boxplot(Matrix_biomarker)
 
 ###ggplot of all cell lines and the Biomarker
 ANOVA is used for analysis of variance
+###biomarker matrix for all cell lines 
 ```{r }
-#library(ggpubr)
-#Biomarker_df<-data.frame(t(Matrix_biomarker))
-#Marker<-c(rep('ESR1',45), rep('ERBB2',45), rep('ERBB3',45), rep('ERBB4',45), rep('KRT75',45), rep('PGR',45))
-#expression<-c(Biomarker_df$`ESR1`, Biomarker$`ERBB2`, Biomarker$`ERBB3`, Biomarker$`ERBB4`, Biomarker$`KRT75`, Biomarker$`PGR`)
-#df_marker<-data.frame(expression, Marker)
-#plot(expression~Marker, data=df_marker)
-#ggboxplot(df_marker, x="Marker", y="expression", color = "Marker",
- #       add = "jitter", legend = "none")+
-  #      rotate_x_text(angle = 45)+
-   #     geom_hline(yintercept = mean(Biomarker_df$ERBB2), linetype = 2)+ # Add horizontal line at base mean
-    #    stat_compare_means(method = "anova", label.y = 12)+        # Add global annova p-value
-     #   stat_compare_means(label = "p.signif", method = "t.test",
-      #               ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
+library(ggpubr)
+Biomarker_df<-data.frame(t(Matrix_biomarker))
+Marker<-c(rep('ESR1',45), rep('ERBB2',45), rep('ERBB3',45), rep('ERBB4',45), rep('KRT75',45), rep('PGR',45))
+expression<-c(Biomarker_df$`ESR1`, Biomarker$`ERBB2`, Biomarker$`ERBB3`, Biomarker$`ERBB4`, Biomarker$`KRT75`, Biomarker$`PGR`)
+df_marker<-data.frame(expression, Marker)
+plot(expression~Marker, data=df_marker)
+```
+
+###ggplot of all cell lines and the Biomarker
+ANOVA is used for analysis of variance
+```{r}
+ggboxplot(df_marker, x="Marker", y="expression", color = "Marker",
+        add = "jitter", legend = "none")+
+        rotate_x_text(angle = 45)+
+        geom_hline(yintercept = mean(Biomarker_df$ERBB2), linetype = 2)+ # Add horizontal line at base mean
+        stat_compare_means(method = "anova", label.y = 12)+        # Add global annova p-value
+        stat_compare_means(label = "p.signif", method = "t.test",
+                     ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
 ```
 
 Kruskal-Wallis-Test
 The p value ist < 2.2e-16, therefore there are big differences between the biomarker.
 ```{r }
 #library(ggpubr)
-#Biomarker_df<-data.frame(t(Matrix_biomarker))
-#Marker<-c(rep('ESR1',45), rep('ERBB2',45), rep('ERBB3',45), rep('ERBB4',45), rep('KRT75',45), rep('PGR',45))
-#expression<-c(Biomarker_df$`ESR1`, Biomarker$`ERBB2`, Biomarker$`ERBB3`, Biomarker$`ERBB4`, Biomarker$`KRT75`, Biomarker$`PGR`)
-#df_marker<-data.frame(expression, Marker)
-#plot(expression~Marker, data=df_marker)
-#ggboxplot(df_marker, x="Marker", y="expression", color = "Marker",
- #       add = "jitter", legend = "none")+
-  #      rotate_x_text(angle = 45)+
-   #     geom_hline(yintercept = mean(Biomarker_df$ERBB2), linetype = 2)+ # Add horizontal line at base mean
-    #    stat_compare_means(method = "kruskal.test", label.y = 12)+        # Add global annova p-value
-     #   stat_compare_means(label = "p.signif", method = "t.test",
-      #               ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
+ggboxplot(df_marker, x="Marker", y="expression", color = "Marker",
+        add = "jitter", legend = "none")+
+        rotate_x_text(angle = 45)+
+        geom_hline(yintercept = mean(Biomarker_df$ERBB2), linetype = 2)+ # Add horizontal line at base mean
+        stat_compare_means(method = "kruskal.test", label.y = 12)+        # Add global Kruskal-Wallis-Test p-value
+        stat_compare_means(label = "p.signif", method = "t.test",
+                     ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
 ```
 
 
