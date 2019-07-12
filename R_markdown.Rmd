@@ -381,23 +381,6 @@ ggboxplot(df_breast_marker, x="Marker_Breast", y="expression_breast", color = "M
 ```
 
 
-
-###expression of biomarker in breast cells
-```{r basalexpression1}
-#pheatmap(data_biomarker_breast, 
-        #               show_rownames = TRUE, 
-       #                show_colnames = FALSE, 
-        #               cutree_cols = 4, 
-         #              cutree_rows = 3, 
-          #             color = viridis(12),
-           #            drop_levels = TRUE, 
-            #           clustering_method = "ward.D2", 
-             #          scale="row")
-```
-
-
-
-
 ###pheatmap of the basalexpression
 to detect highly over expressed genes 
 ```{r Basalexpression2}
@@ -461,16 +444,17 @@ boxplot(Matrix_biomarker)
 ANOVA is used for analysis of variance
 ###biomarker matrix for all cell lines 
 ```{r }
-#library(ggpubr)
-#Biomarker_df<-data.frame(t(Matrix_biomarker))
-#Marker<-c(rep('ESR1',45), rep('ERBB2',45), rep('ERBB3',45), rep('ERBB4',45), rep('KRT75',45), rep('PGR',45))
-#expression<-c(Biomarker_df$`ESR1`, Biomarker_df$`ERBB2`, Biomarker_df$`ERBB3`, Biomarker_df$`ERBB4`, Biomarker_df$`KRT75`, #Biomarker_df$`PGR`)
-#plot(expression~Marker)
+Biomarker_df<-data.frame(t(Matrix_biomarker))
+Marker<-c(rep('ESR1',45), rep('ERBB2',45), rep('ERBB3',45), rep('ERBB4',45), rep('KRT75',45), rep('PGR',45))
+expression<-c(Biomarker_df$`ESR1`, Biomarker$`ERBB2`, Biomarker$`ERBB3`, Biomarker$`ERBB4`, Biomarker$`KRT75`, Biomarker$`PGR`)
+df_marker<-data.frame(expression, Marker)
+plot(expression~Marker, data=df_marker)
 ```
 
 ###ggplot of all cell lines and the Biomarker
 ANOVA is used for analysis of variance
 ```{r}
+library(ggpubr)
 ggboxplot(df_marker, x="Marker", y="expression", color = "Marker",
         add = "jitter", legend = "none")+
         rotate_x_text(angle = 45)+
