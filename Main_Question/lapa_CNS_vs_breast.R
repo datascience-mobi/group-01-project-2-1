@@ -1,15 +1,14 @@
 library(dplyr)
 library(data.table)
 library(matrixTests)
-
-
-install.packages("plotly")
-suppressPackageStartupMessages(library("plotly"))
-
-update.packages("ggplot2")
-library(ggplot2)
+library(plotly)
 library(ggrepel)
-library(EnhancedVolcano)
+library(compare)
+library(viridis)
+library(pheatmap)
+install.packages("dendextend")
+install.packages("factoextra")
+install.packages("fpc")
 
 L_fc <- select(Fold_Change, contains("Lapa"))
 L_fc <- as.data.frame(t(L_fc))
@@ -59,27 +58,32 @@ genes <- colnames(breastFC)
 ## breast volcano plot
 
 diff_df_breast <- data.frame(gene = genes, Fold = breastFCm, FDR = fdr_breast)
+diff_df_breast$absFold <- abs(diff_df_breast$Fold)
 head(diff_df_breast)
 
 
 # add a grouping column; default value is "not significant"
-diff_df_breast["group"] <- "NotSignificant"
-
-diff_df_breast["group"] <- if_else((-log10(diff_df_breast['FDR']) < 0.5 & abs(diff_df_breast['Fold'] > 0.4)),"group"<- "Significant&FoldChange", "group"<- "NotSignificant")
+diff_df_breast$group <- "NotSignificant"
 
 
+
+# change the grouping for the entries with significance but not a large enough Fold change
+diff_df_breast[which(diff_df_breast['FDR'] < 0.5 & (diff_df_breast['absFold']) < 0.2 ),"group"] <- "Significant"
 
 # change the grouping for the entries a large enough Fold change but not a low enough p value
-#diff_df_breast[(abs(diff_df_breast['Fold']) > 1.5 ),"group"] <- "FoldChange"
+diff_df_breast[which(diff_df_breast['FDR'] > 0.5 & (diff_df_breast['absFold']) > 0.2 ),"group"] <- "FoldChange"
 
 # change the grouping for the entries with both significance and large enough fold change
-#diff_df_breast[which(diff_df_breast['FDR'] < 0.05 & abs(diff_df_breast['Fold']) > 4 ),"group"] <- "Significant&FoldChange"
+diff_df_breast[which(diff_df_breast['FDR'] < 0.5 & (diff_df_breast['absFold']) > 0.2 ),"group"] <- "Significant&FoldChange"
+
+
+View(diff_df_breast)
 
 
 
 # Find and label the top peaks..
-top_peaks_breast <- diff_df_breast[with(diff_df_breast, order(Fold, FDR)),][1:5,]
-top_peaks_breast <- rbind(top_peaks_breast, diff_df_breast[with(diff_df_breast, order(-Fold, FDR)),][1:5,])
+top_peaks_breast <- diff_df_breast[with(diff_df_breast, order(Fold, FDR)),][1:10,]
+top_peaks_breast <- rbind(top_peaks_breast, diff_df_breast[with(diff_df_breast, order(-Fold, FDR)),][1:10,])
 
 
 # Add gene labels for all of the top genes we found
@@ -101,27 +105,45 @@ for (i in seq_len(nrow(top_peaks_breast))) {
   )
 }
 
-plot_breat <- plot_ly(data = diff_df_breast, x = diff_df_breast$Fold, y = -log10(diff_df_breast$FDR), text = diff_df_breast$gene, mode = "markers", color = diff_df_breast$group) %>% 
-  layout(title ="Volcano Plot of Lapatinib breast cancer samples") %>%
+plot_breast <- plot_ly(data = diff_df_breast, x = diff_df_breast$Fold, y = -log10(diff_df_breast$FDR), type = "scatter", text = diff_df_breast$gene, mode = "markers", color = diff_df_breast$group) %>% 
+  layout(title ="Volcano Plot of Lapatinib breast cancer samples", 
+         xaxis = list(title="log2 Fold Change"),
+         yaxis = list(title="FDR")) %>%
   layout(annotations = a)
 plot_breast
+
+
+
 
 
 ## CNS volcano plot
 
 diff_df_cns <- data.frame(gene = genes, Fold = cnsFCm, FDR = fdr_cns)
+diff_df_cns$absFold <- abs(diff_df_cns$Fold)
 head(diff_df_cns)
 
 
 # add a grouping column; default value is "not significant"
-diff_df_cns["group"] <- "NotSignificant"
+diff_df_cns$group <- "NotSignificant"
 
-diff_df_cns["group"] <- if_else((-log10(diff_df_cns['FDR']) < 0.5 & abs(diff_df_cns['Fold'] > 0.4)),"group"<- "Significant&FoldChange", "group"<- "NotSignificant")
+
+# change the grouping for the entries with significance but not a large enough Fold change
+diff_df_cns[which(diff_df_cns['FDR'] < 0.5 & (diff_df_cns['absFold']) < 0.2 ),"group"] <- "Significant"
+
+# change the grouping for the entries a large enough Fold change but not a low enough p value
+diff_df_cns[which(diff_df_cns['FDR'] > 0.5 & (diff_df_cns['absFold']) > 0.2 ),"group"] <- "FoldChange"
+
+# change the grouping for the entries with both significance and large enough fold change
+diff_df_cns[which(diff_df_cns['FDR'] < 0.5 & (diff_df_cns['absFold']) > 0.2 ),"group"] <- "Significant&FoldChange"
+
+
+View(diff_df_cns)
+
 
 
 # Find and label the top peaks..
-top_peaks_cns <- diff_df_cns[with(diff_df_cns, order(Fold, FDR)),][1:5,]
-top_peaks_cns <- rbind(top_peaks_cns, diff_df_cns[with(diff_df_cns, order(-Fold, FDR)),][1:5,])
+top_peaks_cns <- diff_df_cns[with(diff_df_cns, order(Fold, FDR)),][1:10,]
+top_peaks_cns <- rbind(top_peaks_cns, diff_df_cns[with(diff_df_cns, order(-Fold, FDR)),][1:10,])
 
 
 # Add gene labels for all of the top genes we found
@@ -143,20 +165,44 @@ for (i in seq_len(nrow(top_peaks_cns))) {
   )
 }
 
-plot_cns <- plot_ly(data = diff_df_cns, x = diff_df_cns$Fold, y = -log10(diff_df_cns$FDR), text = diff_df_cns$gene, mode = "markers", color = diff_df_cns$group) %>% 
-  layout(title ="Volcano Plot of Lapatinib CNS cancer samples") %>%
+plot_cns <- plot_ly(data = diff_df_cns, x = diff_df_cns$Fold, y = -log10(diff_df_cns$FDR),type = "scatter", text = diff_df_cns$gene, mode = "markers", color = diff_df_cns$group) %>% 
+  layout(title ="Volcano Plot of Lapatinib CNS cancer samples",
+         xaxis = list(title="log2 Fold Change"),
+         yaxis = list(title="FDR"))%>%
   layout(annotations = a)
 plot_cns
 
 
 
-#EnhancedVolcano(diff_df_breast,
-#                lab = diff_df_breast$gene,
-#                x = 'Fold',
-#                y = 'FDR',
-#                xlim = c(-0.5, 1))
+# selecet top peak genes common in cns and breast tissue
+tpb_comparison <- subset(top_peaks_breast, gene %in% top_peaks_cns$gene)
+View(tpb_comparison)
+tpc_comparison <- subset(top_peaks_cns, gene %in% top_peaks_breast$gene)
+View(tpc_comparison)
 
 
-#install.packages("manhattanly")
-#library(manhattanly)
-#volcanoly(diff_df_breast, FC = c("Fold"), pval = c("FDR"))
+# order common genes alphabetically
+tpb_comparison <- tpb_comparison[order(tpb_comparison$gene),]
+tpc_comparison <- tpc_comparison[order(tpc_comparison$gene),]
+
+
+
+
+## creating heat map of FCs to compare values 
+cor_mat <- cbind("breast" = tpb_comparison$Fold, "cns" = tpc_comparison$Fold)
+rownames(cor_mat) <- tpb_comparison$gene
+data <- read.delim
+
+
+pheatmap(
+  mat               = cor_mat,
+  color             = magma(10),
+  border_color      = "black",
+  show_colnames     = TRUE,
+  show_rownames     = TRUE,
+  drop_levels       = TRUE,
+  fontsize          = 14,
+  main              = "Comparison:
+  FC levels of CNS and breast top peak genes"
+)
+
