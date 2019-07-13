@@ -9,7 +9,20 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+#library packages
+library(cluster) 
+library(dendextend)
 library(dplyr)
+library(factoextra)
+library(fpc)
+library(ggplot2)
+library(ggpubr)
+library(matrixTests)
+library(pheatmap)
+library(RColorBrewer)
+#install.packages("viridisLite")
+library(viridis)
+
 ```
 
 
@@ -45,10 +58,10 @@ rm(NCI_TPW_gep_treated,NCI_TPW_gep_untreated,list,nlist)
 
 ```
 
-# 1. broad analysis
+# 1. Broad analysis
 ### installing packages
 ```{r,echo=FALSE}
-library(cluster) 
+
 ```
 
 
@@ -184,7 +197,7 @@ metad.cl$msi <- Cellline_Annotation$Microsatellite_instability_status[match(meta
 
 ```
 ```{r}
-library(viridis)
+
 # plotting all informative PCs
 #color vectors for coloring by drug and tissue
 viridis <- viridis(9)
@@ -303,22 +316,7 @@ mtext("PCA of Fold Change  colored by tissue",
 
 
 
-# 2. specific analysis: lapatinib
-###installing packages 
-```{r}
-library(cluster)
-library(dplyr)
-library(factoextra)
-library(fpc)
-library(dendextend)
-
-#install.packages("viridisLite")
-library(pheatmap)
-library(viridis)
-library(RColorBrewer)
-library(ggpubr)
-library(matrixTests)
-```
+# 2. Specific analysis: lapatinib
 
 ##Analysis of the biomarker and t-test between treated and untreated cells
 
@@ -762,23 +760,15 @@ higher value with spearman method
 plot(Cellline_Annotation$Doubling_Time, Cellline_Annotation$Inoculation_Density, pch= 16, col= "blue", main = "Spearman correlation between Doubling Time and Inoculation Density", xlab = "Doubling Time", ylab = "Inoculation Density")
 lm(Cellline_Annotation$Inoculation_Density~ Cellline_Annotation$Doubling_Time)
 
-#   Call:
-#   lm(formula = Cellline_Annotation$Inoculation_Density ~ Cellline_Annotation$Doubling_Time)
-#
-#   Coefficients:
-#   (Intercept)  Cellline_Annotation$Doubling_Time  
-#       9110.9                              169.4   
-
-
 abline(lm(Cellline_Annotation$Inoculation_Density ~ Cellline_Annotation$Doubling_Time), col = "red", lwd = 2)
 ```
 
 # 3. Main questions
-##question 1 Pedicted GI50-values
+##Question 1: Pedicted GI50-values
 As we mentioned in our presentation, we want to create a model to predict GI50-values thus to predict, if Lapatinib is a good choice.,
 The first linear model trys to predict the G-50 value under the data of the doubling time.
 ```{r}
-library(dplyr)
+
 Fold_ChangeLap = select(Fold_Change, contains("Lapa"))
 NegLogGI50Lap = NegLogGI50[9,]
 means = colMeans(Fold_ChangeLap)
@@ -893,8 +883,8 @@ abline(0, 1, col = "red")
 ```
 
 As you can see from the data, All three regression models are not really good.
-##question 2 Erlotinib vs Lapatinib
-```{r}
+##Question 2: Erlotinib vs Lapatinib
+```{r correlation}
 # correlation in general 
 n= as.data.frame(t(NegLogGI50))
 rmv.rows = apply(n, 1, function(x) {
@@ -906,13 +896,13 @@ cor.mat = as.data.frame(cor(NLGI50.all[, 1:ncol(NLGI50.all)], method = "pearson"
 round(cor.mat, 2) #round values
 ```
 
-```{r}
+```{r correlation map}
 pairs(NLGI50.all[, 1:ncol(NLGI50.all)], pch = 20, cex = 0.8, col = "royalblue3", main = "Correlation_NegLogGI50") 
 
 ```
 *plot erlotinib all genes, coloured by tissue*
-```{r}
-library(ggplot2)
+```{r plot erlotinib}
+
 #differece
 diff = data.frame(erlotinib = NLGI50.all$erlotinib - mean(NLGI50.all$erlotinib), lapatinib = NLGI50.all$lapatinib- mean(NLGI50.all$lapatinib))
 diff$celllines = rownames(NLGI50.all)
@@ -934,19 +924,19 @@ ggplot(diff, aes(x = celllines, y = erlotinib, fill = tissue))+geom_bar(stat = "
  The difference from the NegLogGI50 for a particular cell line and the mean NegLogGI50 is plotted here for Erlotinib.
  
 *plot lapatinib all genes, coloured by tissue*
-```{r}
+```{r plot lapatinib}
 ggplot(diff, aes(x = celllines, y = lapatinib, fill = tissue)) + geom_bar(stat="identity") + coord_flip() + labs(title="Mean graph plot of NLGI50 values for Lapatinib")
 ```
 The difference from the NegLogGI50 for a particular cell line and the mean NegLogGI50 is plotted here for Lapatinib.
 
 *correlation erlotinib , lapatinib*
-```{r}
+```{r correlation erlotinib, lapatinib}
 cor(NLGI50.all$erlotinib, NLGI50.all$lapatinib, method = "pearson")
 ```
 A Pearson correlation coefficient of ~ 0.65 confirms that these patterns are very similar
 
 *Lung genes*
-```{r}
+```{r main question, lung genes}
 #only lung with mean all
 ### load data
 Metadata_Lapatinib_treated = Metadata[which(Metadata$drug == "lapatinib" & Metadata$dose != "0nM"),]
@@ -961,16 +951,15 @@ dif.NegLogGI50.lung = data.frame(erlotinib = NegLogGI50.lung$erlotinib -  mean(N
 dif.NegLogGI50.lung$celllines = rownames(NegLogGI50.lung)
 
 # PLot
-library(ggplot2)
 
 ggplot(dif.NegLogGI50.lung,aes(x = celllines, y = erlotinib)) + geom_bar(stat = "identity", fill = "skyblue") + geom_text(aes(label = round(erlotinib, 2)), vjust = -0.5, color = "black", size = 3) + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Erlotinib, only Lung genes")
 ```
 *plot lapatinib*
-```{r}
+```{r plot lapatinib, lung}
 ggplot(dif.NegLogGI50.lung,aes(x = celllines, y = lapatinib)) + geom_bar(stat = "identity", fill = "skyblue") + geom_text(aes(label=round(lapatinib, 2)), vjust = -0.5, color = "black", size = 3) + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Lapatinib, only Lung genes")
 ```
 *correlation lung*
-```{r}
+```{r pearson correlation lung}
 cor(NegLogGI50.lung$erlotinib, NegLogGI50.lung$lapatinib, method = "pearson")
 
 ```
@@ -980,8 +969,6 @@ A pearson correlation coefficent of ~ 0.96 suggests that Lapatinib has a similar
 
 ###selection of Lapatinib and Erlotinib treated cells
 ```{r}
- 
-  library(dplyr)
 
 lapa<-data.frame(Metadata[which(Metadata[,'drug'] == "lapatinib"), ])
 erlo<-data.frame(Metadata[which(Metadata[,'drug'] == "erlotinib"), ])
@@ -1002,7 +989,7 @@ all<-data.frame(fc[grep("lapatinib|erlotinib", colnames(fc))])
 
 since erlotinip contains more columns than lapatinib, we have to remove these columns
 ```{r}
-library(dplyr)
+
 all.rmv<-all[, -which(colnames(all) %in% c(
                     "CCRF.CEM_erlotinib_0nM_24h", 
                     "HL.60_erlotinib_0nM_24h", 
