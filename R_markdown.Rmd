@@ -59,11 +59,6 @@ rm(NCI_TPW_gep_treated,NCI_TPW_gep_untreated,list,nlist)
 ```
 
 # 1. Broad analysis
-### installing packages
-```{r,echo=FALSE}
-
-```
-
 
 ###Boxplots (already normalized)
 This step was done before scaleing the data. The boxplots showed a deviation which is the reason for scaling the data.
