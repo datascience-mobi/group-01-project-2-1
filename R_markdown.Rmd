@@ -1030,21 +1030,21 @@ ncol(all.rmv) #to prove if the columns are removed
 ###Anova 
 p = 0.2 means that the result does not differ significantly. Thus, the two drugs did not differ significantly from each other.
 
-```{r}
-drug<-c(rep('Erlotinib',53), rep('Lapatinib',53))
-expression_drug<-apply(erla, MARGIN = 2, sum)
-df_drug<-data.frame(expression_drug, drug)
+#```{r}
+#drug<-c(rep('Erlotinib',53), rep('Lapatinib',53))
+#expression_drug<-apply(erla, MARGIN = 2, sum)
+#df_drug<-data.frame(expression_drug, drug)
 
 
-library(ggpubr)
-ggboxplot (data = df_drug, x="drug", y="expression_drug", color = "drug",    
-          add = "jitter", legend = "none")+
-          rotate_x_text(angle = 45)+
-          geom_hline(yintercept = mean(lapatinib$MCF7_lapatinib_0nM_24h), linetype = 2)+ # Add horizontal line at base mean
-          stat_compare_means(method = "anova")+        # Add global annova p-value
-          stat_compare_means(label = "p.signif", method = "t.test",
-          ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
+#library(ggpubr)
+#ggboxplot (data = df_drug, x="drug", y="expression_drug", color = "drug",    
+ #         add = "jitter", legend = "none")+
+  #        rotate_x_text(angle = 45)+
+   #       geom_hline(yintercept = mean(lapatinib$MCF7_lapatinib_0nM_24h), linetype = 2)+ # Add horizontal line at base mean
+    #      stat_compare_means(method = "anova")+        # Add global annova p-value
+     #     stat_compare_means(label = "p.signif", method = "t.test",
+      #    ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
 
-```
+#```
 
 
