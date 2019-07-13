@@ -312,23 +312,24 @@ library(factoextra)
 library(fpc)
 library(dendextend)
 
-
+#install.packages("viridisLite")
 library(pheatmap)
 library(viridis)
 library(RColorBrewer)
-
+library(ggpubr)
+library(matrixTests)
 ```
 
 ##Analysis of the biomarker and t-test between treated and untreated cells
 
 
-###Expression of biomakers before and after the treatment of Lapatinib.
+###Expression of biomakers before and after the treatment with Lapatinib.
 ```{r}
 Treated_t<-data.frame(t(Treated))
 Untreated_t<-data.frame(t(Untreated))
 ```
 
-
+###boxplot of biomakers before and after treatment with Lapatinib
 ```{r Treated and Untreated}
 boxplot(Untreated_t$ESR1, Treated_t$ESR1, 
         Untreated_t$ERBB2, Treated_t$ERBB2,
@@ -348,10 +349,8 @@ boxplot(Untreated_t$ESR1, Treated_t$ESR1,
 ```{r}
 breastcells<-subset(Metadata, tissue == "Breast")
 breast<-subset(CCLE_basalexpression, breastcells$cell  %in%  colnames(CCLE_basalexpression))
-
 tbreastcells<-data.frame(t(breast))
 biomarker_genes <-c("ESR1", "ERBB2", "ERBB3", "ERBB4", "KRT75", "PGR")
-
 breast_marker <- c(tbreastcells$ESR1,tbreastcells$ERBB2, tbreastcells$ERBB3, tbreastcells$ERBB4, tbreastcells$KRT75, tbreastcells$PGR )
 breast_marker_matrix <- data.frame(tbreastcells$ESR1,tbreastcells$ERBB2, tbreastcells$ERBB3, tbreastcells$ERBB4, tbreastcells$KRT75, tbreastcells$PGR )
 ```
@@ -368,24 +367,19 @@ plot(expression ~ cells, data=df_breast)
 
 Kruskal-Wallis test
 The null hypothesis is: there is no difference between the groups
-```{r }
-library(ggpubr)
-ggboxplot(df_breast_marker, x="Marker_Breast", y="expression_breast", color = "Marker_Breast",
+```{r}
+ggboxplot(df_breast, x="cells", y="expression", color = "cells",
           add = "jitter", legend = "none")+
-          rotate_x_text(angle = 45)
-          geom_hline(yintercept = mean(Biomarker_df$ERBB2), linetype = 2) # Add horizontal line at base mean
-          stat_compare_means(method = "kruskal.test", label.y = 12)+        
-          stat_compare_means(label = "p.signif", method = "t.test",
-          ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
-
+  rotate_x_text(angle = 45)+
+  stat_compare_means(method = "kruskal.test", label.y = 12)+        # Add global annova p-value
+  stat_compare_means(label = "p.signif", method = "t.test",
+                     ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
 ```
 
 
 ###pheatmap of the basalexpression
 to detect highly over expressed genes 
 ```{r Basalexpression2}
-library(pheatmap)
-library(viridis)
 pheatmap(CCLE_basalexpression,
          show_rownames = FALSE, 
          show_colnames = FALSE, 
@@ -398,8 +392,6 @@ pheatmap(CCLE_basalexpression,
 ###pheatmap of the biomarker in breast cells
 The genes ERBB2 and ERBB3 showed the highest expression.
 ```{r}
-library(pheatmap)
-library(viridis)
 pheat_breast<-pheatmap(breast_marker_matrix ,
                       show_rownames = FALSE, 
                       show_colnames = TRUE, 
@@ -433,51 +425,10 @@ t_basalexpression<-data.frame(t(CCLE_basalexpression))
 biomarker_genes <-c("ESR1", "ERBB2" ,"ERBB3", "ERBB4", "KRT75", "PGR")
 Matrix_biomarker<-c(t_basalexpression$ESR1, t_basalexpression$ERBB2, t_basalexpression$ERBB3, t_basalexpression$ERBB4, t_basalexpression$KRT75, t_basalexpression$PGR)
 summary(Matrix_biomarker)
-
 min(Matrix_biomarker)
 max(Matrix_biomarker)
-
 boxplot(Matrix_biomarker)
 ```
-
-###ggplot of all cell lines and the Biomarker
-ANOVA is used for analysis of variance
-###biomarker matrix for all cell lines 
-```{r }
-Biomarker_df<-data.frame(t(Matrix_biomarker))
-Marker<-c(rep('ESR1',45), rep('ERBB2',45), rep('ERBB3',45), rep('ERBB4',45), rep('KRT75',45), rep('PGR',45))
-expression<-c(Biomarker_df$`ESR1`, Biomarker$`ERBB2`, Biomarker$`ERBB3`, Biomarker$`ERBB4`, Biomarker$`KRT75`, Biomarker$`PGR`)
-df_marker<-data.frame(expression, Marker)
-plot(expression~Marker, data=df_marker)
-```
-
-###ggplot of all cell lines and the Biomarker
-ANOVA is used for analysis of variance
-```{r}
-library(ggpubr)
-ggboxplot(df_marker, x="Marker", y="expression", color = "Marker",
-        add = "jitter", legend = "none")+
-        rotate_x_text(angle = 45)+
-        geom_hline(yintercept = mean(Biomarker_df$ERBB2), linetype = 2)+ # Add horizontal line at base mean
-        stat_compare_means(method = "anova", label.y = 12)+        # Add global annova p-value
-        stat_compare_means(label = "p.signif", method = "t.test",
-                     ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
-```
-
-Kruskal-Wallis-Test
-The p value ist < 2.2e-16, therefore there are big differences between the biomarker.
-```{r }
-#library(ggpubr)
-ggboxplot(df_marker, x="Marker", y="expression", color = "Marker",
-        add = "jitter", legend = "none")+
-        rotate_x_text(angle = 45)+
-        geom_hline(yintercept = mean(Biomarker_df$ERBB2), linetype = 2)+ # Add horizontal line at base mean
-        stat_compare_means(method = "kruskal.test", label.y = 12)+        # Add global Kruskal-Wallis-Test p-value
-        stat_compare_means(label = "p.signif", method = "t.test",
-                     ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
-```
-
-
 
 
 *setting a threshold to define overexpressed genes*
@@ -493,7 +444,7 @@ rm(rmv.rows)
 
 ###pheatmap of highly expressed genes
 ```{r}
-library(viridis)
+#install.packages("viridisLite")
 pheatmap(highest_expression,
          show_rownames = FALSE, 
          color=viridis(4),
@@ -538,8 +489,8 @@ boxplot(Untreated_t$COX6C, Treated_t$COX6C,
 ```{r }
 LapatinibUntreated<-grep("lapatinib", colnames(Untreated))
 LapatinibTreated<-grep("lapatinib", colnames(Treated))
-before=as.matrix(LapatimibUnTreat)
-after=as.matrix(LapatimibTreat)
+before=as.matrix(LapatinibUntreated)
+after=as.matrix(LapatinibTreated)
 t.test(before, after, paired=TRUE)
 ```
 
@@ -549,7 +500,6 @@ my_data <- data.frame(
   group = rep(c("before", "after")),
   expression = c(before,  after))
 
-library(ggpubr)
 ggboxplot(my_data, x = "group", y = "expression", 
           color = "group", palette = c("#00AFBB", "#E7B800"),
           order = c("before", "after"),
@@ -562,11 +512,9 @@ The ggboxplots "before" and "after" are very similar. This suggests that lapatin
 -> paired t-test over cell lines
 
 ```{r}
-library(matrixTests)
 
 #t-test over each column -> cell lines
 col_t_paired(LapatinibUntreated, LapatinibTreated, alternative = "two.sided", mu = 0,conf.level = 0.95)
-
 ```
 
 ###t-test over each row
