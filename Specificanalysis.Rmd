@@ -1,0 +1,503 @@
+---
+title: "Project02 - Group01"
+author: "Eva, Tobi, Kathi, Laura"
+date: "14 Juni 2019"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#library packages
+library(cluster) 
+library(dendextend)
+library(dplyr)
+library(factoextra)
+library(fpc)
+library(ggplot2)
+library(ggpubr)
+library(matrixTests)
+library(pheatmap)
+library(RColorBrewer)
+library(viridis)
+library(plotly)
+library(ggrepel)
+library(compare)
+library(data.table)
+library(matrixTests)
+
+```
+
+
+## data loading
+```{r, echo=FALSE}
+
+
+wd = getwd()
+
+NCI_TPW_gep_treated = readRDS(paste0(wd, "/Data/NCI_TPW_gep_treated.rds"))
+NCI_TPW_gep_untreated = readRDS(paste0(wd, "/Data/NCI_TPW_gep_untreated.rds"))
+Metadata = read.delim(paste0(wd, "/Data/NCI_TPW_metadata.tsv"), header = TRUE, sep = "\t", stringsAsFactors = TRUE)
+Cellline_Annotation = read.delim(paste0(wd, "/Data/cellline_annotation.tsv"), header = TRUE, sep = "\t", stringsAsFactors = TRUE)
+Drug_Annotation = read.delim(paste0(wd, "/Data/drug_annotation.tsv"), header = TRUE, sep = "\t", stringsAsFactors = TRUE)
+CCLE_mutations = readRDS(paste0(wd, "/Data/CCLE_mutations.rds"))
+CCLE_copynumber = readRDS(paste0(wd, "/Data/CCLE_copynumber.rds"))
+CCLE_basalexpression = readRDS(paste0(wd, "/Data/CCLE_basalexpression.rds"))
+NegLogGI50 = as.data.frame(readRDS(paste0(wd, "/Data/NegLogGI50.rds")))
+Treated = data.frame(NCI_TPW_gep_treated)
+Untreated = data.frame(NCI_TPW_gep_untreated)
+```
+
+## data scaling
+After checking for normalization, we scaled our data in the first place to provide the scaled data for further analysis.
+```{r ,echo=FALSE}
+list = list(Treated,Untreated)
+nlist = lapply(list,scale)
+Treated = as.data.frame(nlist[[1]])
+Untreated = as.data.frame(nlist[[2]])
+Fold_Change = Treated - Untreated
+Fold_Change = data.frame(Fold_Change)
+rm(NCI_TPW_gep_treated,NCI_TPW_gep_untreated,list,nlist)
+
+```
+
+# 2. Specific analysis: lapatinib
+
+##Analysis of the biomarker and t-test between treated and untreated cells
+
+
+###Expression of biomakers before and after the treatment with Lapatinib.
+```{r}
+Treated_t<-data.frame(t(Treated))
+Untreated_t<-data.frame(t(Untreated))
+```
+
+###boxplot of biomakers before and after treatment with Lapatinib
+```{r Treated and Untreated}
+boxplot(Untreated_t$ESR1, Treated_t$ESR1, 
+        Untreated_t$ERBB2, Treated_t$ERBB2,
+        Untreated_t$ERBB3, Treated_t$ERBB3, 
+        Untreated_t$ERBB4, Treated_t$ERBB4,
+        Untreated_t$KRT75, Treated_t$KRT75, 
+        Untreated_t$PGR, Treated_t$PGR,
+        col = viridis(12),
+        names = c("ESR1 before", "ESR1 after", "ERBB2 before", "ERBB2 after", "ERBB3 before", "ERBB3 after", "ERBB4     before","ERBB4 after", "KRT75 before", "KRT75 after", "PGR before",  "PGR after"),
+        main="Expression of Biomakers before and after treatment with Lapatinib", 
+        xlab="Biomarker",
+        ylab="expression")
+```
+
+
+### creating some date
+```{r}
+breastcells<-subset(Metadata, tissue == "Breast")
+breast<-subset(CCLE_basalexpression, breastcells$cell  %in%  colnames(CCLE_basalexpression))
+tbreastcells<-data.frame(t(breast))
+biomarker_genes <-c("ESR1", "ERBB2", "ERBB3", "ERBB4", "KRT75", "PGR")
+breast_marker <- c(tbreastcells$ESR1,tbreastcells$ERBB2, tbreastcells$ERBB3, tbreastcells$ERBB4, tbreastcells$KRT75, tbreastcells$PGR )
+breast_marker_matrix <- data.frame(tbreastcells$ESR1,tbreastcells$ERBB2, tbreastcells$ERBB3, tbreastcells$ERBB4, tbreastcells$KRT75, tbreastcells$PGR )
+```
+
+###overview of the basalexpression of our biomarkers
+```{r}
+cells<-c(rep('ESR1',45),rep('ERBB2',45),rep('ERBB3',45),rep('ERBB4',45),rep('KRT75',45),rep('PGR',45))
+expression<-c(tbreastcells$ESR1,tbreastcells$ERBB2, tbreastcells$ERBB3, tbreastcells$ERBB4, tbreastcells$KRT75, tbreastcells$PGR )
+df_breast<-data.frame(cells,expression)
+plot(expression ~ cells, data=df_breast)
+```
+
+###ggboxplot of basalexpression of biomarkers in breast cells
+
+Kruskal-Wallis test
+The null hypothesis is: there is no difference between the groups
+```{r}
+ggboxplot(df_breast, x="cells", y="expression", color = "cells",
+          add = "jitter", legend = "none")+
+  rotate_x_text(angle = 45)+
+  stat_compare_means(method = "kruskal.test", label.y = 12)+        # Add global annova p-value
+  stat_compare_means(label = "p.signif", method = "t.test",
+                     ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
+```
+
+
+###pheatmap of the basalexpression
+to detect highly over expressed genes 
+```{r Basalexpression2}
+pheatmap(CCLE_basalexpression,
+         show_rownames = FALSE, 
+         show_colnames = FALSE, 
+         color = viridis(4),
+         drop_levels = TRUE, 
+         clustering_method = "ward.D2", 
+         scale="row")
+```
+
+###pheatmap of the biomarker in breast cells
+The genes ERBB2 and ERBB3 showed the highest expression.
+```{r}
+pheat_breast<-pheatmap(breast_marker_matrix ,
+                      show_rownames = FALSE, 
+                      show_colnames = TRUE, 
+                      cutree_cols = 4, 
+                      cutree_rows = 3, 
+                      color = viridis(4),
+                      drop_levels = TRUE, 
+                      clustering_method = "ward.D2", 
+                      scale="row")
+pheat_breast
+```
+
+###pheatmap of all genes in breast cells
+This serves as an over view. Yellow fields are highly over expressed.
+```{r}
+all_genes_cells<-pheatmap(breast, 
+         show_rownames = FALSE, 
+         show_colnames = TRUE, 
+         color = viridis(4),
+         drop_levels = TRUE, 
+         clustering_method = "ward.D2", 
+         scale="row")
+all_genes_cells
+```
+
+###boxplot of biomarkers in basalexpression
+The boxplot shows the overexpression of the biomakers in the basalexpression
+
+```{r}
+t_basalexpression<-data.frame(t(CCLE_basalexpression))
+biomarker_genes <-c("ESR1", "ERBB2" ,"ERBB3", "ERBB4", "KRT75", "PGR")
+Matrix_biomarker<-c(t_basalexpression$ESR1, t_basalexpression$ERBB2, t_basalexpression$ERBB3, t_basalexpression$ERBB4, t_basalexpression$KRT75, t_basalexpression$PGR)
+summary(Matrix_biomarker)
+min(Matrix_biomarker)
+max(Matrix_biomarker)
+boxplot(Matrix_biomarker)
+```
+
+
+*setting a threshold to define overexpressed genes*
+```{r }
+rmv.rows = apply(CCLE_basalexpression, 1, function(x) {
+  sum(x<14)})
+which(rmv.rows <14)
+highest_expression = CCLE_basalexpression[-which(rmv.rows <14), ]  
+rm(rmv.rows)
+                                   
+```
+
+
+###pheatmap of highly expressed genes
+```{r}
+#install.packages("viridisLite")
+pheatmap(highest_expression,
+         show_rownames = FALSE, 
+         color=viridis(4),
+         show_colnames = FALSE, 
+         drop_levels = TRUE, 
+         clustering_method = "ward.D2", 
+         scale="row") 
+```
+
+###searching for our own biomarkers
+This command displays the six most expressed genes of basal expression.
+```{r}
+basalexpression <- data.frame(CCLE_basalexpression)
+b<-apply(basalexpression,1, max)
+highest_basalexpression<-sort(b, decreasing = TRUE)
+head(highest_basalexpression)
+```
+
+###boxplot of highly expressed genes before and after treatment with Lapatinib
+```{r }
+boxplot(Untreated_t$COX6C, Treated_t$COX6C, 
+        Untreated_t$'2', Treated_t$'2',
+        Untreated_t$RPS11, Treated_t$RPS11, 
+        Untreated_t$GAPDH, Treated_t$GAPDH,
+        Untreated_t$MT2A, Treated_t$MT2A, 
+        Untreated_t$TUBA1B, Treated_t$TUBA1B,
+        col = viridis(12),
+        names = c("COX6C ", "COX6C ", 
+                  "2 ", "2 ", 
+                  "RPS11 ", "RPS11 ", 
+                  "GAPDH ","GAPDH ", 
+                  "$MT2A ", "$MT2A ", 
+                  "TUBA1B ",  "TUBA1B "),
+        main="Expression of Biomakers before and after treatment with Lapatinib", 
+        xlab="Biomarker",
+        ylab="expression")
+```
+
+
+##paired t-test between the Lapatinib treated und untreated data
+###genome wide paired t-test
+```{r }
+LapatinibUntreated<-grep("lapatinib", colnames(Untreated))
+LapatinibTreated<-grep("lapatinib", colnames(Treated))
+before=as.matrix(LapatinibUntreated)
+after=as.matrix(LapatinibTreated)
+t.test(before, after, paired=TRUE)
+```
+
+###ggboxplot to compare the treated an untreated data
+```{r }
+my_data <- data.frame( 
+  group = rep(c("before", "after")),
+  expression = c(before,  after))
+
+ggboxplot(my_data, x = "group", y = "expression", 
+          color = "group", palette = c("#00AFBB", "#E7B800"),
+          order = c("before", "after"),
+          ylab = "expression", xlab = "group")
+```
+The ggboxplots "before" and "after" are very similar. This suggests that lapatinib only modifies the expression of fewer genes. The theory makes sense because in cancer cells only certain genes, such as proliferation genes, are altered.
+
+
+###t-test over each column 
+-> paired t-test over cell lines
+
+```{r}
+
+#t-test over each column -> cell lines
+col_t_paired(LapatinibUntreated, LapatinibTreated, alternative = "two.sided", mu = 0,conf.level = 0.95)
+```
+
+###t-test over each row
+-> paired t-test over genes, increased confidence level (99%) to minimize false positives
+```{r}
+row_t_test<-as.data.frame(row_t_paired(LapatinibUntreated, LapatinibTreated, alternative = "two.sided", mu = 0,conf.level = 0.99))
+summary(row_t_test$pvalue)
+row_t_test$pvalue
+```
+
+
+
+
+
+##k-means
+```{r}
+LapatinibFold = select(Fold_Change, contains("Lapa"))
+
+#Determining the number of clusters
+topVarFold = apply(LapatinibFold, 1, var)
+summary(topVarFold)
+
+# Using the most variable, thus informative genes
+topVarFold75 = LapatinibFold[topVarFold > quantile(topVarFold, probs = 0.75), ]
+dim(topVarFold75)
+
+km = kmeans(x = t(topVarFold75), centers = 2, nstart = 10)
+km$tot.withinss
+
+km = kmeans(x = t(topVarFold75), centers = 3, nstart = 10)
+km$tot.withinss
+
+#running a loop for the best n (searching for "ellbow")
+wss = (sapply(2:7, function(k) {
+  kmeans(x =t(topVarFold75), centers = k)$tot.withinss})  )            
+plot(2:7, wss, type = "b", pch = 19, xlab = "Number of clusters K", ylab = "Total within-clusters sum of squares", main = "Determining the amount of clusters from Foldchange")
+```
+
+```{r}
+# Using the silhouett method
+D = dist(t(topVarFold75))
+km = kmeans(x = t(topVarFold75), centers = 3, nstart = 10)
+s = silhouette(km$cluster, D)
+plot(s)
+```
+
+```{r}
+#plot kmeans
+clus <- kmeans(topVarFold75, centers=3)
+clusplot(topVarFold75, clus$cluster, color=TRUE, shade=TRUE, labels=1, lines=0, col.clus = c("purple", "pink", "lightseagreen"), main = "K-means Plot", col.p = c("purple", "pink", "lightseagreen"))
+
+```
+
+```{r}
+
+#PCA
+pca = prcomp(topVarFold75, center = T, scale. = T)  
+print(pca)
+plot(pca, type = "l") #First two componets explain most of the variability in the data
+plot(pca$rotation[, 1], pca$rotation[, 2], col = c("maroon1", "turquoise3"), pch = 19, xlab = "PC1", ylab = "PC2")
+```
+
+## PCA
+```{r}
+L_fc <- select(Fold_Change, contains("Lapa"))
+
+# PCA
+pca <- prcomp(t(L_fc), scale = TRUE)
+
+```
+```{r}
+pca.var <- pca$sdev^2  # sdev calculates variation each PC accounts for
+pca.var.per <- round(pca.var/sum(pca.var)*100, 1) 
+# since percentages make more sense then normal variation values
+# calculate % or variation, which is much more interesing
+
+barplot(pca.var.per, main = "Scree plot", xlab = "Principal Components", ylab = "% variation")
+plot(pca.var.per[1:10], main = "Elbow plot", type = "l", xlab = "Principal Components", ylab = "% variation")
+plot(cumsum(pca.var.per[1:15]), main = "cumulative variation", type = "l", xlab = "Principal Components", ylab = "% variation") 
+```
+```{r}
+pca.data <- data.frame(pca$x)
+rownames(pca.data) <- gsub(x = rownames(pca.data), pattern = "X786", replacement = "786")
+pca.data <- cbind(sample =rownames(pca.data), pca.data)
+
+```
+
+
+```{r}
+## get names of top 10 genes that contribute most to pc1
+loading_scores_1 <- pca$rotation[,1]
+
+gene_score <- abs(loading_scores_1) ## sort magnitude
+gene_score_ranked <- sort(gene_score, decreasing = TRUE)
+
+top_10_genes <- names(gene_score_ranked[1:10])
+top_10_genes # show names of top 10 genes
+
+```
+```{r}
+### Metadata matrix for coloring 
+Metadata$sample <- gsub(x = Metadata$sample, pattern = "-", replacement = ".")
+metad.cl <- subset(Metadata, sample %in% intersect(Metadata$sample, pca.data$sample))  
+metad.cl$msi <- Cellline_Annotation$Microsatellite_instability_status[match(metad.cl$cell, Cellline_Annotation$Cell_Line_Name)]
+metad.cl$inoculation_d <- Cellline_Annotation$Inoculation_Density[match(metad.cl$cell, Cellline_Annotation$Cell_Line_Name)]
+metad.cl$doubling_time <- Cellline_Annotation$Doubling_Time[match(metad.cl$cell, Cellline_Annotation$Cell_Line_Name)]
+metad.cl$cancer_type <- Cellline_Annotation$Cancer_type[match(metad.cl$cell, Cellline_Annotation$Cell_Line_Name)]
+
+```
+
+```{r}
+#color vectors for coloring by msi and tissue
+colormsi <- brewer.pal(3, "Set1")
+color_msi = colormsi[metad.cl$msi]
+msi <- levels(metad.cl$msi)
+
+magma <- magma(9)
+color_tissue = magma[metad.cl$tissue]
+tissue <- levels(metad.cl$tissue)
+
+
+## colored by msi
+#plot PC1 and PC2
+plot(pca$x[,1], 
+     pca$x[,2], 
+     col = color_msi,
+     pch = 19, 
+     xlab = paste("PC1 (",pca.var.per[1],"%)"), 
+     ylab = paste("PC2 (",pca.var.per[2],"%)"))
+#create legend
+legend("bottomright", 
+       legend = msi, 
+       col = colormsi, 
+       pch = 19, 
+       xpd = "TRUE",
+       bty = "n",
+       cex = 0.75
+)
+#create title
+mtext("PCA of Fold Change colored by MSI", 
+      side = 3, 
+      line = -2,
+      cex = 1.2,
+      font = 2, 
+      outer = TRUE)
+
+#plot PC2 and PC3
+plot(pca$x[,2], 
+     pca$x[,3], 
+     col = color_msi,
+     pch = 19, 
+     xlab = paste("PC2 (",pca.var.per[2],"%)"), 
+     ylab = paste("PC3 (",pca.var.per[3],"%)"))
+#create legend
+legend("topleft", 
+       legend = msi, 
+       col = colormsi, 
+       pch = 19, 
+       xpd = "TRUE",
+       bty = "n",
+       cex = 0.75
+)
+#create title
+mtext("PCA of Fold Change colored by MSI", 
+      side = 3, 
+      line = -2,
+      cex = 1.2,
+      font = 2, 
+      outer = TRUE)
+
+
+
+##colored by tissue
+#plot PC1 and PC2
+plot(pca$x[,1], 
+     pca$x[,2], 
+     col = color_tissue,
+     pch = 19, 
+     xlab = paste("PC1 (",pca.var.per[1],"%)"), 
+     ylab = paste("PC2 (",pca.var.per[2],"%)"))
+#create legend
+legend("bottomright", 
+       legend = tissue, 
+       col = magma, 
+       pch = 19, 
+       xpd = "TRUE",
+       bty = "n",
+       cex = 0.75
+)
+#create title
+mtext("PCA of Fold Change colored by tissue", 
+      side = 3, 
+      line = -2,
+      cex = 1.2,
+      font = 2, 
+      outer = TRUE)
+
+#plot PC2 and PC3
+plot(pca$x[,2], 
+     pca$x[,3], 
+     col = color_tissue,
+     pch = 19, 
+     xlab = paste("PC2 (",pca.var.per[2],"%)"), 
+     ylab = paste("PC3 (",pca.var.per[3],"%)"))
+#create legend
+legend("bottomleft", 
+       legend = tissue, 
+       col = magma, 
+       pch = 19, 
+       xpd = "TRUE",
+       bty = "n",
+       cex = 0.75
+)
+#create title
+mtext("PCA of Fold Change colored by tissue", 
+      side = 3, 
+      line = -2,
+      cex = 1.2,
+      font = 2, 
+      outer = TRUE)
+
+
+```
+
+### pearson and spearman correlation
+```{r}
+# Pearson correlation
+cor(Cellline_Annotation$Doubling_Time, Cellline_Annotation$Inoculation_Density, method = "pearson")
+```
+
+```{r}
+# Spearman correlation
+cor(Cellline_Annotation$Doubling_Time, Cellline_Annotation$Inoculation_Density, method = "spearman")
+```
+higher value with spearman method
+
+```{r}
+plot(Cellline_Annotation$Doubling_Time, Cellline_Annotation$Inoculation_Density, pch= 16, col= "blue", main = "Spearman correlation between Doubling Time and Inoculation Density", xlab = "Doubling Time", ylab = "Inoculation Density")
+lm(Cellline_Annotation$Inoculation_Density~ Cellline_Annotation$Doubling_Time)
+
+abline(lm(Cellline_Annotation$Inoculation_Density ~ Cellline_Annotation$Doubling_Time), col = "red", lwd = 2)
+```
