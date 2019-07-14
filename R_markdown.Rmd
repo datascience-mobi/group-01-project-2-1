@@ -965,6 +965,7 @@ rmse3.test
 ```
 
 As you can see from the data, All three regression models are not really good.
+
 ##Question 2: Erlotinib vs Lapatinib
 ```{r correlation}
 # correlation in general 
@@ -978,11 +979,22 @@ cor.mat = as.data.frame(cor(NLGI50.all[, 1:ncol(NLGI50.all)], method = "pearson"
 round(cor.mat, 2) #round values
 ```
 
+*produce pairwise scatter plots*
 ```{r correlation map}
 pairs(NLGI50.all[, 1:ncol(NLGI50.all)], pch = 20, cex = 0.8, col = "royalblue3", main = "Correlation_NegLogGI50") 
 
 ```
+
+*matrix of correlations*
+```{r phetmap correlation map}
+cor = cor(NLGI50.all)
+pheatmap(cor, col = cm.colors(256))
+```
+
+Erlotinib and lapatinib have a strong correlation.
+
 *plot erlotinib all genes, coloured by tissue*
+
 ```{r plot erlotinib}
 
 #differece
@@ -1003,19 +1015,22 @@ diff$celllines = factor(diff$celllines, levels = diff$celllines[order(diff$tissu
 ggplot(diff, aes(x = celllines, y = erlotinib, fill = tissue))+geom_bar(stat = "identity") + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Erlotinib")
 
 ```
- The difference from the NegLogGI50 for a particular cell line and the mean NegLogGI50 is plotted here for Erlotinib.
+ 
+The difference from the NegLogGI50 for a particular cell line and the mean NegLogGI50 is plotted here for Erlotinib.
  
 *plot lapatinib all genes, coloured by tissue*
 ```{r plot lapatinib}
 ggplot(diff, aes(x = celllines, y = lapatinib, fill = tissue)) + geom_bar(stat="identity") + coord_flip() + labs(title="Mean graph plot of NLGI50 values for Lapatinib")
 ```
+
 The difference from the NegLogGI50 for a particular cell line and the mean NegLogGI50 is plotted here for Lapatinib.
 
 *correlation erlotinib , lapatinib*
 ```{r correlation erlotinib, lapatinib}
 cor(NLGI50.all$erlotinib, NLGI50.all$lapatinib, method = "pearson")
 ```
-A Pearson correlation coefficient of ~ 0.65 confirms that these patterns are very similar
+
+A Pearson correlation coefficient of ~ 0.65 confirms that these patterns are similar.
 
 *Lung genes*
 ```{r main question, lung genes}
@@ -1036,73 +1051,26 @@ dif.NegLogGI50.lung$celllines = rownames(NegLogGI50.lung)
 
 ggplot(dif.NegLogGI50.lung,aes(x = celllines, y = erlotinib)) + geom_bar(stat = "identity", fill = "skyblue") + geom_text(aes(label = round(erlotinib, 2)), vjust = -0.5, color = "black", size = 3) + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Erlotinib, only Lung genes")
 ```
+
 *plot lapatinib*
 ```{r plot lapatinib, lung}
 ggplot(dif.NegLogGI50.lung,aes(x = celllines, y = lapatinib)) + geom_bar(stat = "identity", fill = "skyblue") + geom_text(aes(label=round(lapatinib, 2)), vjust = -0.5, color = "black", size = 3) + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Lapatinib, only Lung genes")
 ```
+
 *correlation lung*
 ```{r pearson correlation lung}
 cor(NegLogGI50.lung$erlotinib, NegLogGI50.lung$lapatinib, method = "pearson")
 
 ```
+
 A pearson correlation coefficent of ~ 0.96 suggests that Lapatinib has a similar effect on lung cancer as Erlotinib
-
-##anova
-<<<<<<< HEAD
-
-###selection of Lapatinib and Erlotinib treated cells
-```{r}
-
-lapa<-data.frame(Metadata[which(Metadata[,'drug'] == "lapatinib"), ])
-erlo<-data.frame(Metadata[which(Metadata[,'drug'] == "erlotinib"), ])
-el<-right_join(lapa,erlo, by="cell")
-el
-rmv.rows = apply(el, 1, function(x) {
-  sum(is.na(x))
-})  # Go through each row and sum up all missing values
-row.names(rmv.rows)
-```
-
-Create data frame with lapatinib and erlotinib data
-```{r}
-fc<-(Treated-Untreated)
-fc<-data.frame(scale(fc))
-all<-data.frame(fc[grep("lapatinib|erlotinib", colnames(fc))])
-```
-
-since erlotinip contains more columns than lapatinib, we have to remove these columns
-```{r}
-
-all.rmv<-all[, -which(colnames(all) %in% c(
-                    "CCRF.CEM_erlotinib_0nM_24h", 
-                    "HL.60_erlotinib_0nM_24h", 
-                    "HT29_erlotinib_0nM_24h", 
-                    "K.562_erlotinib_0nM_24h", 
-                    "LOX_erlotinib_0nM_24h",
-                    "SR_erlotinib_0nM_24h",
-                    "COLO.205_lapatinib_0nM_24h"))]
-                   
-```
-
-
-Checking the rows
-```{r}
-la<-data.frame(all.rmv[grep("lapatinib", colnames(all.rmv))])
-ncol(la)
-er<-data.frame(all.rmv[grep("erlotinib", colnames(all.rmv))])
-ncol(er)
-
-erla<-data.frame(er,la)
-ncol(all.rmv) #to prove if the columns are removed
-```
 
 
 ###Anova 
 
 ###selection of Lapatinib and Erlotinib treated cells
 ```{r}
- 
-  library(dplyr)
+
 lapa<-data.frame(Metadata[which(Metadata[,'drug'] == "lapatinib"), ])
 erlo<-data.frame(Metadata[which(Metadata[,'drug'] == "erlotinib"), ])
 el<-right_join(lapa,erlo, by="cell")
@@ -1114,6 +1082,7 @@ row.names(rmv.rows)
 
 Create data frame with lapatinib and erlotinib data
 ```{r}
+
 fc<-data.frame(Treated-Untreated)
 dim(fc)
 all<-data.frame(fc[grep("lapatinib|erlotinib", colnames(fc))])
@@ -1123,7 +1092,7 @@ dim(all)
 
 since erlotinip contains more columns than lapatinib, we have to remove these columns
 ```{r}
-library(dplyr)
+
 all.rmv<-data.frame(all %>% select(
                     -"CCRF.CEM_erlotinib_10000nM_24h", 
                     -"HL.60_erlotinib_10000nM_24h", 
@@ -1149,7 +1118,6 @@ ncol(all.rmv) #to prove if the columns are removed
 
 
 ###Anova 
-p = 0.53 
 
 ```{r}
 drug<-c(rep('Erlotinib',53), rep('Lapatinib',53))
