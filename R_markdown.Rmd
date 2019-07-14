@@ -1088,24 +1088,73 @@ ncol(all.rmv) #to prove if the columns are removed
 
 
 ###Anova 
-p = 0.2 means that the result does not differ significantly. Thus, the two drugs did not differ significantly from each other.
 
-#```{r}
-#drug<-c(rep('Erlotinib',53), rep('Lapatinib',53))
-#expression_drug<-apply(erla, MARGIN = 2, sum)
-#df_drug<-data.frame(expression_drug, drug)
+###selection of Lapatinib and Erlotinib treated cells
+```{r}
+ 
+  library(dplyr)
+lapa<-data.frame(Metadata[which(Metadata[,'drug'] == "lapatinib"), ])
+erlo<-data.frame(Metadata[which(Metadata[,'drug'] == "erlotinib"), ])
+el<-right_join(lapa,erlo, by="cell")
+rmv.rows = apply(el, 1, function(x) {
+  sum(is.na(x))
+})  # Go through each row and sum up all missing values
+row.names(rmv.rows)
+```
+
+Create data frame with lapatinib and erlotinib data
+```{r}
+fc<-data.frame(Treated-Untreated)
+dim(fc)
+all<-data.frame(fc[grep("lapatinib|erlotinib", colnames(fc))])
+dim(all)
+
+```
+
+since erlotinip contains more columns than lapatinib, we have to remove these columns
+```{r}
+library(dplyr)
+all.rmv<-data.frame(all %>% select(
+                    -"CCRF.CEM_erlotinib_10000nM_24h", 
+                    -"HL.60_erlotinib_10000nM_24h", 
+                    -"HT29_erlotinib_10000nM_24h", 
+                    -"K.562_erlotinib_10000nM_24h", 
+                    -"LOX_erlotinib_10000nM_24h",
+                    -"SR_erlotinib_10000nM_24h",
+                    -"COLO.205_lapatinib_10000nM_24h"))
+dim(all.rmv)
+                   
+```
 
 
-#library(ggpubr)
-#ggboxplot (data = df_drug, x="drug", y="expression_drug", color = "drug",    
- #         add = "jitter", legend = "none")+
-  #        rotate_x_text(angle = 45)+
-   #       geom_hline(yintercept = mean(lapatinib$MCF7_lapatinib_0nM_24h), linetype = 2)+ # Add horizontal line at base mean
-    #      stat_compare_means(method = "anova")+        # Add global annova p-value
-     #     stat_compare_means(label = "p.signif", method = "t.test",
-      #    ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
+Checking the rows
+```{r}
+la<-data.frame(all.rmv[grep("lapatinib", colnames(all.rmv))])
+ncol(la)
+er<-data.frame(all.rmv[grep("erlotinib", colnames(all.rmv))])
+ncol(er)
+erla<-data.frame(er,la)
+ncol(all.rmv) #to prove if the columns are removed
+```
 
-#```
+
+###Anova 
+p = 0.53 
+
+```{r}
+drug<-c(rep('Erlotinib',53), rep('Lapatinib',53))
+expression_drug<-apply(erla, MARGIN = 2, sum)
+df_drug<-data.frame(expression_drug, drug)
+library(ggpubr)
+ggboxplot (data = df_drug, x="drug", y="expression_drug", color = "drug",    
+          add = "jitter", legend = "none")+
+          rotate_x_text(angle = 45)+
+          #geom_hline(yintercept = mean(lapatinib$MCF7_lapatinib_0nM_24h), linetype = 2)+ # Add horizontal line at base mean
+          stat_compare_means(method = "anova")+        # Add global annova p-value
+          stat_compare_means(label = "p.signif", method = "t.test",
+          ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
+```
+
 
 ##Question 3: Comparing lapatinib treated breast and cns celllines 
 ```{r}
