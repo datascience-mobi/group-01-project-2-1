@@ -340,7 +340,7 @@ boxplot(Untreated_t$ESR1, Treated_t$ESR1,
         xlab="Biomarker",
         ylab="expression")
 ```
-
+![](R_markdown_files/figure-html/Biomarker.jpg)
 
 ### creating some date
 ```{r}
