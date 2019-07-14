@@ -6,9 +6,7 @@ library(ggrepel)
 library(compare)
 library(viridis)
 library(pheatmap)
-install.packages("dendextend")
-install.packages("factoextra")
-install.packages("fpc")
+
 
 L_fc <- select(Fold_Change, contains("Lapa"))
 L_fc <- as.data.frame(t(L_fc))
@@ -191,7 +189,7 @@ tpc_comparison <- tpc_comparison[order(tpc_comparison$gene),]
 ## creating heat map of FCs to compare values 
 cor_mat <- cbind("breast" = tpb_comparison$Fold, "cns" = tpc_comparison$Fold)
 rownames(cor_mat) <- tpb_comparison$gene
-data <- read.delim
+
 
 
 pheatmap(
@@ -206,3 +204,26 @@ pheatmap(
   FC levels of CNS and breast top peak genes"
 )
 
+
+#correlation between top peak gene expression patterns in breast and cns tissues treated by lapatinib
+cor_mat <- as.data.frame(cor_mat)
+dif.FC.BC = data.frame(breast = cor_mat$breast -  mean(t(breastFC)), cns = cor_mat$cns -  mean(t(cnsFC))) #breast data - mean value, cns data - mean value
+dif.FC.BC$gene = rownames(cor_mat)
+
+
+
+# PLot
+
+ggplot(dif.FC.BC,aes(x = gene, y = breast)) +
+  geom_bar(stat = "identity", fill = "skyblue") + 
+  geom_text(aes(label = round(breast, 2)), vjust = -0.5, color = "black", size = 3) + 
+  coord_flip() + labs(title = "Mean graph plot of Fold Change for breast top peak genes")
+
+
+ggplot(dif.FC.BC,aes(x = gene, y = cns)) +
+  geom_bar(stat = "identity", fill = "skyblue") + 
+  geom_text(aes(label = round(cns, 2)), vjust = -0.5, color = "black", size = 3) + 
+  coord_flip() + labs(title = "Mean graph plot of Fold Change for CNS top peak genes")
+
+#correlation
+cor(cor_mat$breast, cor_mat$cns, method = "pearson")
