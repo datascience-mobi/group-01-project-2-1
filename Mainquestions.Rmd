@@ -265,8 +265,8 @@ rmv.rows = apply(n, 1, function(x) {
 })
 NLGI50.all = n[-which(rmv.rows > 0), ]  # Removing any row with 1 or more missing values
 rm(rmv.rows, n, NegLogGI50)
-cor.mat = as.data.frame(cor(NLGI50.all[, 1:ncol(NLGI50.all)], method = "pearson")) #Pearson correlation
-round(cor.mat, 2) #round values
+#cor.mat = as.data.frame(cor(NLGI50.all[, 1:ncol(NLGI50.all)], method = "pearson")) #Pearson correlation
+#round(cor.mat, 2) #round values
 ```
 
 ###Produce pairwise scatter plots
