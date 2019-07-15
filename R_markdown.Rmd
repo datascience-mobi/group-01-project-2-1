@@ -360,7 +360,7 @@ boxplot(LapTreat$GDF15,LapUn$GDF15,
         LapTreat$ATF3,LapUn$ATF3, 
         LapTreat$ASNS, LapUn$ASNS, 
         col = viridis(12),
-        names = c("ATF3 before", "ATF3 after ", "DDIT3 before", "DDIT3 after ", "GDF15 before", "GDF15 after ", "PPP1R15A before","PPP1R15A after", "CTH before", "CTH after ", "GABARAPL3 before",  "GABARAPL3 after"),
+        names = c("GDF15", " ", "NUPR1", " ", "DDIT3", " " ,"TRIB3"," ", "ATF3", " ", "ASNS",  " "),
         main="Expression of Biomakers before and after treatment with Lapatinib", 
         xlab="Biomarker",
         ylab="expression")
