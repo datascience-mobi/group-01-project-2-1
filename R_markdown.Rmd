@@ -11,21 +11,20 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 #library packages
 library(cluster) 
+library(compare)
+library(data.table)
 library(dendextend)
 library(dplyr)
 library(factoextra)
 library(fpc)
 library(ggplot2)
 library(ggpubr)
+library(ggrepel)
 library(matrixTests)
 library(pheatmap)
+library(plotly)
 library(RColorBrewer)
 library(viridis)
-library(plotly)
-library(ggrepel)
-library(compare)
-library(data.table)
-library(matrixTests)
 
 ```
 
@@ -326,9 +325,6 @@ Treated_t<-data.frame(t(Treated))
 Untreated_t<-data.frame(t(Untreated))
 ```
 
-###boxplot of biomakers before and after treatment with Lapatinib
-
-![](R_markdown_files/figure-html/Biomarker.jpg)
 
 
 ###searching for own biomarkers
@@ -1025,7 +1021,7 @@ pairs(NLGI50.all[, 1:ncol(NLGI50.all)], pch = 20, cex = 0.8, col = "royalblue3",
 *matrix of correlations*
 ```{r phetmap correlation map}
 cor = cor(NLGI50.all)
-pheatmap(cor, col = cm.colors(256))
+pheatmap(cor, col = cm.colors(256), main = "Pheatmap correlation")
 ```
 
 Erlotinib and lapatinib have a strong correlation.
@@ -1359,8 +1355,3 @@ pheatmap(
 )
 ```
 
-
-
-=======
-still in progress
->>>>>>> cd0d16c457bb9d18b398e24c369d80b672402313
