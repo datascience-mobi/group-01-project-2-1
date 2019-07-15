@@ -324,28 +324,7 @@ mtext("PCA of Fold Change  colored by tissue",
 Treated = data.frame(scale(NCI_TPW_gep_treated))
 Untreated = data.frame(scale(NCI_TPW_gep_untreated))
 Treated_t<-data.frame(t(Treated))
-Untreated_t<-data.frame(t(Untreated))
-```
-
-
-We found these genes in a paper as biomarkers and presented them in our presentation. Unfortunately, we can not use it as a biomarker.
-```{r Treated and Untreated, fig.height=8, fig.width=16, message=TRUE, paged.print=TRUE}
-boxplot(Untreated_t$ESR1, Treated_t$ESR1, 
-        Untreated_t$ERBB2, Treated_t$ERBB2,
-        Untreated_t$ERBB3, Treated_t$ERBB3, 
-        Untreated_t$ERBB4, Treated_t$ERBB4,
-        Untreated_t$KRT75, Treated_t$KRT75, 
-        Untreated_t$PGR, Treated_t$PGR,
-        col = viridis(12),
-        names = c("ESR1 before", "ESR1 after", "ERBB2 before", "ERBB2 after", "ERBB3 before", "ERBB3 after", "ERBB4     before","ERBB4 after", "KRT75 before", "KRT75 after", "PGR before",  "PGR after"),
-        main="Expression of Biomakers before and after treatment with Lapatinib", 
-        xlab="Biomarker",
-        ylab="expression")
-```
-
-###searching for our own biomarker
-```{r}
-LapatinibUntreated<-select(Untreated, contains("Lapa"))
+Untreated_t<-data.frame(t(Untreated))LapatinibUntreated<-select(Untreated, contains("Lapa"))
 LapatinibTreated<-select(Treated, contains("Lapa"))
 before=as.matrix(LapatinibUntreated)
 after=as.matrix(LapatinibTreated)
@@ -353,6 +332,26 @@ after=as.matrix(LapatinibTreated)
 
 LapUn<-data.frame(t(before))
 LapTreat<-data.frame(t(after))
+```
+
+
+We found these genes in a paper as biomarkers and presented them in our presentation. Unfortunately, we can not use it as a biomarker.
+```{r Treated and Untreated, fig.height=8, fig.width=16, message=TRUE, paged.print=TRUE}
+boxplot(LapUn$ESR1, LapTreat$ESR1, 
+        LapUn$ERBB2, LapTreat$ERBB2,
+        LapUn$ERBB3, LapTreat$ERBB3, 
+        LapUn$ERBB4, LapTreat$ERBB4,
+        LapUn$KRT75, LapTreat$KRT75, 
+        LapUn$PGR, LapTreat$PGR,
+        col = viridis(12),
+        names = c("ESR1 before", "ESR1 after", "ERBB2 before", "ERBB2 after", "ERBB3 before", "ERBB3 after", "ERBB4 before","ERBB4 after", "KRT75 before", "KRT75 after", "PGR before",  "PGR after"),
+        main="Expression of Biomakers before and after treatment with Lapatinib", 
+        xlab="Biomarker",
+        ylab="expression"
+```
+
+###searching for our own biomarker
+```{r}
 
 #searching for our own biomarker
 Treat<-colMeans(LapTreat, na.rm = TRUE)
