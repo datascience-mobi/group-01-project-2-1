@@ -348,7 +348,7 @@ head(ut_sort)
 ```
 
 ```{r, fig.height=5, fig.width=12, message=TRUE, paged.print=TRUE}
-library(viridis)
+
 boxplot(LapTreat$GDF15,LapUn$GDF15,
         LapTreat$NUPR1, LapUn$NUPR1, 
         LapTreat$DDIT3, LapUn$DDIT3, 
@@ -609,20 +609,6 @@ clusplot(topVarFold75, clus$cluster, color=TRUE, shade=TRUE, labels=1, lines=0, 
 
 ```
 
-```{r}
-#dendrogram
-cor.mat = cor(topVarFold75, method = "spearman")
-cor.dist = as.dist(1 - cor.mat)
-cor.hc = hclust(cor.dist, method = "ward.D2")
-cor.hc = as.dendrogram(cor.hc)
-#cor.hc %>% set("labels_col", value = c("purple", "pink", "lightseagreen"), k = 3) %>%  plot(main = "Color labels \n by cluster", horiz = TRUE)
-
-
-#PCA
-pca = prcomp(topVarFold75, center = T, scale. = T)  
-plot(pca, type = "l") #First two componets explain most of the variability in the data
-plot(pca$rotation[, 1], pca$rotation[, 2], col = c("maroon1", "turquoise3"), pch = 19, xlab = "PC1", ylab = "PC2")
-```
 
 ## PCA
 ```{r}
