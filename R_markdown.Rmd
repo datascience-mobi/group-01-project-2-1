@@ -327,21 +327,45 @@ Untreated_t<-data.frame(t(Untreated))
 ```
 
 ###boxplot of biomakers before and after treatment with Lapatinib
-```{r Treated and Untreated}
-boxplot(Untreated_t$ESR1, Treated_t$ESR1, 
-        Untreated_t$ERBB2, Treated_t$ERBB2,
-        Untreated_t$ERBB3, Treated_t$ERBB3, 
-        Untreated_t$ERBB4, Treated_t$ERBB4,
-        Untreated_t$KRT75, Treated_t$KRT75, 
-        Untreated_t$PGR, Treated_t$PGR,
+
+![](R_markdown_files/figure-html/Biomarker.jpg)
+
+
+###searching for own biomarkers
+```{r}
+LapatinibUntreated<-select(Untreated, contains("Lapa"))
+LapatinibTreated<-select(Treated, contains("Lapa"))
+before=as.matrix(LapatinibUntreated)
+after=as.matrix(LapatinibTreated)
+
+
+LapUn<-data.frame(t(before))
+LapTreat<-data.frame(t(after))
+
+#searching for our own biomarker
+Treat<-colMeans(LapTreat, na.rm = TRUE)
+Untreat<-colMeans(LapUn, na.rm = TRUE)
+dim(Treat)
+ut<-(Treat-Untreat)
+ut_sort<-sort(ut, decreasing = TRUE)
+head(ut_sort)
+```
+
+```{r, fig.height=5, fig.width=12, message=TRUE, paged.print=TRUE}
+library(viridis)
+boxplot(LapTreat$GDF15,LapUn$GDF15,
+        LapTreat$NUPR1, LapUn$NUPR1, 
+        LapTreat$DDIT3, LapUn$DDIT3, 
+        LapTreat$TRIB3, LapUn$TRIB3,
+        LapTreat$ATF3,LapUn$ATF3, 
+        LapTreat$ASNS, LapUn$ASNS, 
         col = viridis(12),
-        names = c("ESR1 before", "ESR1 after", "ERBB2 before", "ERBB2 after", "ERBB3 before", "ERBB3 after", "ERBB4     before","ERBB4 after", "KRT75 before", "KRT75 after", "PGR before",  "PGR after"),
+        names = c("ATF3 before", "ATF3 after ", "DDIT3 before", "DDIT3 after ", "GDF15 before", "GDF15 after ", "PPP1R15A before","PPP1R15A after", "CTH before", "CTH after ", "GABARAPL3 before",  "GABARAPL3 after"),
         main="Expression of Biomakers before and after treatment with Lapatinib", 
         xlab="Biomarker",
         ylab="expression")
-```
-![](R_markdown_files/figure-html/Biomarker.jpg)
 
+```
 ### creating some date
 ```{r}
 breastcells<-subset(Metadata, tissue == "Breast")
@@ -1126,7 +1150,6 @@ library(ggpubr)
 ggboxplot (data = df_drug, x="drug", y="expression_drug", color = "drug",    
           add = "jitter", legend = "none")+
           rotate_x_text(angle = 45)+
-          #geom_hline(yintercept = mean(lapatinib$MCF7_lapatinib_0nM_24h), linetype = 2)+ # Add horizontal line at base mean
           stat_compare_means(method = "anova")+        # Add global annova p-value
           stat_compare_means(label = "p.signif", method = "t.test",
           ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
