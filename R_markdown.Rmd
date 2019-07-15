@@ -1354,4 +1354,29 @@ pheatmap(
   FC levels of cns and breast top peak genes"
 )
 ```
+```{r}
+#correlation between top peak gene expression patterns in breast and cns tissues treated by lapatinib
+cor_mat <- as.data.frame(cor_mat)
+dif.FC.BC = data.frame(breast = cor_mat$breast -  mean(t(breastFC)), cns = cor_mat$cns -  mean(t(cnsFC))) #breast data - mean value, cns data - mean value
+dif.FC.BC$gene = rownames(cor_mat)
+```
+```{r}
+# PLot
+
+ggplot(dif.FC.BC,aes(x = gene, y = breast)) +
+  geom_bar(stat = "identity", fill = "skyblue") + 
+  geom_text(aes(label = round(breast, 2)), vjust = -0.5, color = "black", size = 3) + 
+  coord_flip() + labs(title = "Mean graph plot of Fold Change for breast top peak genes")
+
+
+ggplot(dif.FC.BC,aes(x = gene, y = cns)) +
+  geom_bar(stat = "identity", fill = "skyblue") + 
+  geom_text(aes(label = round(cns, 2)), vjust = -0.5, color = "black", size = 3) + 
+  coord_flip() + labs(title = "Mean graph plot of Fold Change for CNS top peak genes")
+
+```
+```{r}
+#correlation
+cor(cor_mat$breast, cor_mat$cns, method = "pearson")
+```
 
