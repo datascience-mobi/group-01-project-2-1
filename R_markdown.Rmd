@@ -137,15 +137,6 @@ kmeans(x = t(topVarTreated75), centers = k)$tot.withinss})
 plot(2:7, wss, type = "b", pch = 19, xlab = "Number of clusters K", ylab = "Total within-clusters sum of squares", main = "Determining the amount of clusters from Treated")
 ```
 As we wanted an "ellbow"to get a good result we can say in a way that our data are not really good to cluster.
-To look in a other way, we also provided the clusters by the silhouette-method.
-```{r,echo=FALSE}
-# Using the silhouett method
-D = dist(t(topVarTreated75))
-km = kmeans(x = t(topVarTreated75), centers = 10, nstart = 10)
-s = silhouette(km$cluster, D)
-plot(s)
-```
-
 
 ###PCA
 ```{r}
@@ -347,7 +338,7 @@ boxplot(LapUn$ESR1, LapTreat$ESR1,
         names = c("ESR1 before", "ESR1 after", "ERBB2 before", "ERBB2 after", "ERBB3 before", "ERBB3 after", "ERBB4 before","ERBB4 after", "KRT75 before", "KRT75 after", "PGR before",  "PGR after"),
         main="Expression of Biomakers before and after treatment with Lapatinib", 
         xlab="Biomarker",
-        ylab="expression"
+        ylab="expression")
 ```
 
 ###searching for our own biomarker

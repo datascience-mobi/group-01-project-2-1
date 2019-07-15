@@ -67,74 +67,101 @@ rm(NCI_TPW_gep_treated,NCI_TPW_gep_untreated,list,nlist)
 ##Analysis of the biomarker and t-test between treated and untreated cells
 
 
-###Expression of biomakers before and after the treatment with Lapatinib.
+###Expression of biomakers before and after the treatment of Lapatinib.
 ```{r}
-Treated_t<-data.frame(t(Treated))
-Untreated_t<-data.frame(t(Untreated))
+
+Treated_t=data.frame(t(Treated))
+Untreated_t=data.frame(t(Untreated))
+LapatinibUntreated<-select(Untreated, contains("Lapa"))
+LapatinibTreated=select(Treated, contains("Lapa"))
+before=as.matrix(LapatinibUntreated)
+after=as.matrix(LapatinibTreated)
+
+
+LapUn<-data.frame(t(before))
+LapTreat<-data.frame(t(after))
 ```
 
-###boxplot of biomakers before and after treatment with Lapatinib
-```{r Treated and Untreated}
-boxplot(Untreated_t$ESR1, Treated_t$ESR1, 
-        Untreated_t$ERBB2, Treated_t$ERBB2,
-        Untreated_t$ERBB3, Treated_t$ERBB3, 
-        Untreated_t$ERBB4, Treated_t$ERBB4,
-        Untreated_t$KRT75, Treated_t$KRT75, 
-        Untreated_t$PGR, Treated_t$PGR,
+
+We found these genes in a paper as biomarkers and presented them in our presentation. Unfortunately, we can not use it as a biomarker.
+```{r Treated and Untreated, fig.height=8, fig.width=16, message=TRUE, paged.print=TRUE}
+boxplot(LapUn$ESR1, LapTreat$ESR1, 
+        LapUn$ERBB2, LapTreat$ERBB2,
+        LapUn$ERBB3, LapTreat$ERBB3, 
+        LapUn$ERBB4, LapTreat$ERBB4,
+        LapUn$KRT75, LapTreat$KRT75, 
+        LapUn$PGR, LapTreat$PGR,
         col = viridis(12),
-        names = c("ESR1 before", "ESR1 after", "ERBB2 before", "ERBB2 after", "ERBB3 before", "ERBB3 after", "ERBB4     before","ERBB4 after", "KRT75 before", "KRT75 after", "PGR before",  "PGR after"),
+        names = c("ESR1 before", "ESR1 after", "ERBB2 before", "ERBB2 after", "ERBB3 before", "ERBB3 after", "ERBB4 before","ERBB4 after", "KRT75 before", "KRT75 after", "PGR before",  "PGR after"),
         main="Expression of Biomakers before and after treatment with Lapatinib", 
         xlab="Biomarker",
         ylab="expression")
 ```
 
+###searching for our own biomarker
+```{r}
+
+#searching for our own biomarker
+Treat<-colMeans(LapTreat, na.rm = TRUE)
+Untreat<-colMeans(LapUn, na.rm = TRUE)
+dim(Treat)
+ut<-(Treat-Untreat)
+ut_sort<-sort(ut, decreasing = TRUE)
+head(ut_sort)
+```
+
+
+
+Boxplot of our biomarker
+```{r, fig.height=8, fig.width=16, message=TRUE, paged.print=TRUE}
+boxplot(LapTreat$GDF15,LapUn$GDF15,
+        LapTreat$NUPR1, LapUn$NUPR1, 
+        LapTreat$DDIT3, LapUn$DDIT3, 
+        LapTreat$TRIB3, LapUn$TRIB3,
+        LapTreat$ATF3,LapUn$ATF3, 
+        LapTreat$ASNS, LapUn$ASNS, 
+        col = viridis(12),
+        names = c("GDF15 before", "GDF15 after", "NUPR1 before", "NUPR1 after ", "DDIT3 before", "DDIT3 after" ,"TRIB3 before","TRIB3 after", "ATF3 before", "ATF3 after", "ASNS before",  "ASNS after"),
+        main="Expression of Biomakers before and after treatment with Lapatinib", 
+        xlab="Biomarker",
+        ylab="expression")
+```
 
 ### creating some date
 ```{r}
 breastcells<-subset(Metadata, tissue == "Breast")
 breast<-subset(CCLE_basalexpression, breastcells$cell  %in%  colnames(CCLE_basalexpression))
 tbreastcells<-data.frame(t(breast))
-biomarker_genes <-c("ESR1", "ERBB2", "ERBB3", "ERBB4", "KRT75", "PGR")
-breast_marker <- c(tbreastcells$ESR1,tbreastcells$ERBB2, tbreastcells$ERBB3, tbreastcells$ERBB4, tbreastcells$KRT75, tbreastcells$PGR )
-breast_marker_matrix <- data.frame(tbreastcells$ESR1,tbreastcells$ERBB2, tbreastcells$ERBB3, tbreastcells$ERBB4, tbreastcells$KRT75, tbreastcells$PGR )
+breast_marker <- c(tbreastcells$GDF15,tbreastcells$NUPR1, tbreastcells$DDIT3, tbreastcells$TRIB3, tbreastcells$ATF3, tbreastcells$ASNS)
+breast_marker_matrix <- data.frame(tbreastcells$GDF15,tbreastcells$NUPR1, tbreastcells$DDIT3, tbreastcells$TRIB3, tbreastcells$ATF3, tbreastcells$ASNS)
 ```
 
 ###overview of the basalexpression of our biomarkers
 ```{r}
-cells<-c(rep('ESR1',45),rep('ERBB2',45),rep('ERBB3',45),rep('ERBB4',45),rep('KRT75',45),rep('PGR',45))
-expression<-c(tbreastcells$ESR1,tbreastcells$ERBB2, tbreastcells$ERBB3, tbreastcells$ERBB4, tbreastcells$KRT75, tbreastcells$PGR )
+
+cells<-c(rep('DF15',45),rep('NUPR1',45),rep('DDIT3',45),rep('TRIB3',45),rep('ATF3',45),rep('ASNS',45))
+expression<-c(tbreastcells$GDF15,tbreastcells$NUPR1, tbreastcells$DDIT3, tbreastcells$TRIB3, tbreastcells$ATF3, tbreastcells$ASNS)
+ #names = c("GDF15", " ", "NUPR1", " ", "DDIT3", " " ,"TRIB3"," ", "ATF3", " ", "ASNS",  " "),
 df_breast<-data.frame(cells,expression)
 plot(expression ~ cells, data=df_breast)
 ```
 
-###ggboxplot of basalexpression of biomarkers in breast cells
 
+
+###ggboxplot of basalexpression of biomarkers in breast cells
 Kruskal-Wallis test
 The null hypothesis is: there is no difference between the groups
 ```{r}
 ggboxplot(df_breast, x="cells", y="expression", color = "cells",
           add = "jitter", legend = "none")+
   rotate_x_text(angle = 45)+
-  stat_compare_means(method = "kruskal.test", label.y = 12)+        # Add global annova p-value
+  stat_compare_means(method = "kruskal.test", label.y = 12)+        # Add global kruskal wallis test p-value
   stat_compare_means(label = "p.signif", method = "t.test",
                      ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
 ```
 
-
-###pheatmap of the basalexpression
-to detect highly over expressed genes 
-```{r Basalexpression2}
-pheatmap(CCLE_basalexpression,
-         show_rownames = FALSE, 
-         show_colnames = FALSE, 
-         color = viridis(4),
-         drop_levels = TRUE, 
-         clustering_method = "ward.D2", 
-         scale="row")
-```
-
 ###pheatmap of the biomarker in breast cells
-The genes ERBB2 and ERBB3 showed the highest expression.
+
 ```{r}
 pheat_breast<-pheatmap(breast_marker_matrix ,
                       show_rownames = FALSE, 
@@ -148,128 +175,64 @@ pheat_breast<-pheatmap(breast_marker_matrix ,
 pheat_breast
 ```
 
-###pheatmap of all genes in breast cells
-This serves as an over view. Yellow fields are highly over expressed.
-```{r}
-all_genes_cells<-pheatmap(breast, 
-         show_rownames = FALSE, 
-         show_colnames = TRUE, 
-         color = viridis(4),
-         drop_levels = TRUE, 
-         clustering_method = "ward.D2", 
-         scale="row")
-all_genes_cells
-```
-
-###boxplot of biomarkers in basalexpression
-The boxplot shows the overexpression of the biomakers in the basalexpression
-
-```{r}
-t_basalexpression<-data.frame(t(CCLE_basalexpression))
-biomarker_genes <-c("ESR1", "ERBB2" ,"ERBB3", "ERBB4", "KRT75", "PGR")
-Matrix_biomarker<-c(t_basalexpression$ESR1, t_basalexpression$ERBB2, t_basalexpression$ERBB3, t_basalexpression$ERBB4, t_basalexpression$KRT75, t_basalexpression$PGR)
-summary(Matrix_biomarker)
-min(Matrix_biomarker)
-max(Matrix_biomarker)
-boxplot(Matrix_biomarker)
-```
-
-
-*setting a threshold to define overexpressed genes*
-```{r }
-rmv.rows = apply(CCLE_basalexpression, 1, function(x) {
-  sum(x<14)})
-which(rmv.rows <14)
-highest_expression = CCLE_basalexpression[-which(rmv.rows <14), ]  
-rm(rmv.rows)
-                                   
-```
-
-
-###pheatmap of highly expressed genes
-```{r}
-#install.packages("viridisLite")
-pheatmap(highest_expression,
-         show_rownames = FALSE, 
-         color=viridis(4),
-         show_colnames = FALSE, 
-         drop_levels = TRUE, 
-         clustering_method = "ward.D2", 
-         scale="row") 
-```
-
-###searching for our own biomarkers
-This command displays the six most expressed genes of basal expression.
-```{r}
-basalexpression <- data.frame(CCLE_basalexpression)
-b<-apply(basalexpression,1, max)
-highest_basalexpression<-sort(b, decreasing = TRUE)
-head(highest_basalexpression)
-```
-
-###boxplot of highly expressed genes before and after treatment with Lapatinib
-```{r }
-boxplot(Untreated_t$COX6C, Treated_t$COX6C, 
-        Untreated_t$'2', Treated_t$'2',
-        Untreated_t$RPS11, Treated_t$RPS11, 
-        Untreated_t$GAPDH, Treated_t$GAPDH,
-        Untreated_t$MT2A, Treated_t$MT2A, 
-        Untreated_t$TUBA1B, Treated_t$TUBA1B,
-        col = viridis(12),
-        names = c("COX6C ", "COX6C ", 
-                  "2 ", "2 ", 
-                  "RPS11 ", "RPS11 ", 
-                  "GAPDH ","GAPDH ", 
-                  "$MT2A ", "$MT2A ", 
-                  "TUBA1B ",  "TUBA1B "),
-        main="Expression of Biomakers before and after treatment with Lapatinib", 
-        xlab="Biomarker",
-        ylab="expression")
-```
-
-
 ##paired t-test between the Lapatinib treated und untreated data
 ###genome wide paired t-test
 ```{r }
-LapatinibUntreated<-grep("lapatinib", colnames(Untreated))
-LapatinibTreated<-grep("lapatinib", colnames(Treated))
+#genome wide paired t-test
+LapatinibUntreated<-select(Untreated, contains("Lapa"))
+LapatinibTreated<-select(Treated, contains("Lapa"))
 before=as.matrix(LapatinibUntreated)
 after=as.matrix(LapatinibTreated)
 t.test(before, after, paired=TRUE)
+
 ```
 
 ###ggboxplot to compare the treated an untreated data
 ```{r }
+#variance analysis before and after treatment
 my_data <- data.frame( 
-  group = rep(c("before", "after")),
-  expression = c(before,  after))
+               group = rep(c("before", "after")),
+                expression = c(before,  after))
+               
 
+
+library(ggpubr)
 ggboxplot(my_data, x = "group", y = "expression", 
-          color = "group", palette = c("#00AFBB", "#E7B800"),
-          order = c("before", "after"),
-          ylab = "expression", xlab = "group")
+                    color = "group", palette = c("#00AFBB", "#E7B800"),
+                    order = c("before", "after"),
+                    ylab = "expression", xlab = "group")
+
 ```
 The ggboxplots "before" and "after" are very similar. This suggests that lapatinib only modifies the expression of fewer genes. The theory makes sense because in cancer cells only certain genes, such as proliferation genes, are altered.
 
 
 ###t-test over each column 
--> paired t-test over cell lines
+paired t-test over cell lines
 
 ```{r}
-
 #t-test over each column -> cell lines
-col_t_paired(LapatinibUntreated, LapatinibTreated, alternative = "two.sided", mu = 0,conf.level = 0.95)
+library(matrixTests)
+#col_t_paired(before, after, alternative = "two.sided", mu = 0,conf.level = 0.95)
+
 ```
 
-###t-test over each row
--> paired t-test over genes, increased confidence level (99%) to minimize false positives
+###Paired t-test of our biomarker before and after treatment
+Our biomarkers are significant.
 ```{r}
-row_t_test<-as.data.frame(row_t_paired(LapatinibUntreated, LapatinibTreated, alternative = "two.sided", mu = 0,conf.level = 0.99))
-summary(row_t_test$pvalue)
-row_t_test$pvalue
+before_biomarker<-LapUn %>% select("GDF15", "NUPR1", "DDIT3", "TRIB3", "ATF3", "ASNS")
+after_biomarker<-LapTreat%>% select("GDF15", "NUPR1", "DDIT3", "TRIB3", "ATF3", "ASNS")
+col_t_paired(before_biomarker, after_biomarker, alternative = "two.sided", mu = 0,conf.level = 0.95)
 ```
 
 
+### paired t-test over genes, increased confidence level (99%) 
+```{r}
+###t-test over each row
+
+
+row_t_test<-as.data.frame(row_t_paired(before, after, alternative = "two.sided", mu = 0,conf.level = 0.99))
+summary(row_t_test$pvalue)
+```
 
 
 
@@ -312,14 +275,6 @@ clusplot(topVarFold75, clus$cluster, color=TRUE, shade=TRUE, labels=1, lines=0, 
 
 ```
 
-```{r}
-
-#PCA
-pca = prcomp(topVarFold75, center = T, scale. = T)  
-print(pca)
-plot(pca, type = "l") #First two componets explain most of the variability in the data
-plot(pca$rotation[, 1], pca$rotation[, 2], col = c("maroon1", "turquoise3"), pch = 19, xlab = "PC1", ylab = "PC2")
-```
 
 ## PCA
 ```{r}
