@@ -77,15 +77,14 @@ boxplot(TreatedNS,  ylab = "Gene expression profile", main = "Treated genexpress
 To check, if there is a connection between the different drugs, we coloured the plot concerning the drugs.
 
 ```{r coloured boxplots UNSCALED, creating a susbet of Metadata based on the amount of tested genes in Treated,echo=FALSE, fig.height = 5, fig.width = 7}
-Treated1 = readRDS(paste0(wd, "/Data/NCI_TPW_gep_treated.rds"))
-df = data.frame(t(Treated1))
+df = data.frame(t(TreatedNS))
 df.data <- data.frame(sample = rownames(df))
 adjustedMeda = subset(Metadata, sample %in% intersect(Metadata$sample, df.data$sample))
 rm(df,df.data)
 
 palette(magma(15))
 par(mar=c(5, 4, 5, 9))
-boxplot(Treated1, border=adjustedMeda$drug, 
+boxplot(TreatedNS, border=adjustedMeda$drug, 
         xlab= "Samples" ,
         ylab = "Gene expression profile",
         main = "Teated genexpressionprofiles ~ Unscaled",
@@ -112,10 +111,11 @@ legend("topright", inset = c(-0.35,0), legend= drugs, xpd = TRUE, pch=19,
 
 ```
 
-As you can see the scaling is necessary to compensate the batch effect. Scaling is then applyed on Untreated aswell before furhter analysis.
+As you can see the scaling is necessary to compensate the batch effect. Scaling is then applied on Untreated as well before further analysis.
 
 ### Densityplot 
-As a other method to get in touch with the data, we checked if there is a differenc between the treated and untreated genexpression. 
+
+As a other method to get in touch with the data, we checked if there is a difference between the treated and untreated genexpression. 
 The abline shows the 3 quantiles (      25%       50%       75%    )
 
 ```{r,echo=FALSE}
@@ -127,10 +127,13 @@ legend("topright", legend = c("Treated", "Untreated"), col = c("black", "indianr
 abline(v = quantile(NCI_TPW_gep_treated)[2:4], col = c("lightblue", "blue",  "orange"), lty = 2)
 ```
 
-As assumed, the expressionpaterns don`t differentiate much.
+As assumed, the expression patterns don't differentiate much.
+
 
 ###k-means clustering
-To look for clusters in the raw data we performed a k-menas clustering and searched for potentially clusters using the most variable (>75% Var), thus informative genes. Summary and dimmension of the the found genes:
+
+To look for clusters in the raw data we performed a k-menas clustering and searched for potentially clusters using the most variable (>75% Var), thus informative genes.
+
 ```{r, echo=FALSE}
 topVarTreated = apply(Treated, 1, var)
 
@@ -140,9 +143,7 @@ topVarTreated75 = Treated[topVarTreated > quantile(topVarTreated, probs = 0.75),
 
 
 ```
-
 Running a loop for the best cluster-amount (searching for an "ellbow")
-
 ```{r,echo=FALSE}
 wss = sapply(1:7, function(k) {
 kmeans(x = t(topVarTreated75), centers = k)$tot.withinss})            

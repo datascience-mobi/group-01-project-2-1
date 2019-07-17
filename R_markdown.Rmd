@@ -74,80 +74,94 @@ rm(rmv.rows, n, NegLogGI50)
 
 # 1. Broad analysis
 
-###Boxplots (already normalized)
-This step was done before scaling the data. The boxplots showed a deviation which is the reason for scaling the data.
-```{r, echo=FALSE}
-boxplot(Treated)
-```
+###Boxplots 
 
-```{r, echo=FALSE}
-boxplot(Untreated)
-```
-
-
+As a very first step of our data analysis, we checked the for normalzation.
 
 ```{r,echo=FALSE}
-boxplot(Treated,  ylab = "Gene expression profile", main = "Treated genexpressionprofiles",xaxt = "n")
+TreatedNS = readRDS(paste0(wd, "/Data/NCI_TPW_gep_treated.rds"))
+boxplot(TreatedNS,  ylab = "Gene expression profile", main = "Treated genexpressionprofiles",xaxt = "n")
 
-boxplot(Untreated, ylab = "Gene expression profile", main = "Untreated genexpressionprofiles",xaxt = "n")
-
-boxplot(Treated[,1:10], ylab = "Gene expression profile", main = "First 10 reated genexpressionprofiles")
 ```
 
 
-```{r coloured boxplots, creating a susbet of Metadata based on the amount of tested genes in Treated,echo=FALSE}
-Treated1 = readRDS(paste0(wd, "/Data/NCI_TPW_gep_treated.rds"))
-df = data.frame(t(Treated1))
+To check, if there is a connection between the different drugs, we coloured the plot concerning the drugs.
+
+```{r coloured boxplots UNSCALED, creating a susbet of Metadata based on the amount of tested genes in Treated,echo=FALSE, fig.height = 5, fig.width = 7}
+df = data.frame(t(TreatedNS))
 df.data <- data.frame(sample = rownames(df))
 adjustedMeda = subset(Metadata, sample %in% intersect(Metadata$sample, df.data$sample))
-rm(df,df.data, Treated1)
-palette(rainbow(15))
-boxplot(Treated, border=adjustedMeda$drug,xlab= "Different Drugs" ,ylab = "Gene expression profile", main = "Teated genexpressionprofiles",xaxt ="n")
+rm(df,df.data)
+
+palette(magma(15))
+par(mar=c(5, 4, 5, 9))
+boxplot(TreatedNS, border=adjustedMeda$drug, 
+        xlab= "Samples" ,
+        ylab = "Gene expression profile",
+        main = "Teated genexpressionprofiles ~ Unscaled",
+        xaxt ="n" )
+drugs = as.factor(levels(adjustedMeda$drug))
+
+legend("topright", inset = c(-0.35,0), legend= drugs, xpd = TRUE, pch=19,
+       col = drugs, title = "Drugs")
+
 ```
 
+
+As shown, there is a connection between the different "boxes" and the different drugs. This could be the reason for different batches so we scale the data.
+
+```{r coloured boxplots SCALED, creating a susbet of Metadata based on the amount of tested genes in Treated,echo=FALSE, fig.height = 5, fig.width = 7}
+TreatedS = scale((Treated))
+par(mar=c(5, 4, 5, 9))
+boxplot(TreatedS, border=adjustedMeda$drug,xlab= "Samples" ,ylab = "Gene expression profile",
+        main = "Teated genexpressionprofiles ~ Scaled",xaxt ="n" )
+drugs = as.factor(levels(adjustedMeda$drug))
+
+legend("topright", inset = c(-0.35,0), legend= drugs, xpd = TRUE, pch=19,
+       col = drugs, title = "Drugs")
+
+```
+
+As you can see the scaling is necessary to compensate the batch effect. Scaling is then applied on Untreated as well before further analysis.
+
 ### Densityplot 
+
+As a other method to get in touch with the data, we checked if there is a difference between the treated and untreated genexpression. 
 The abline shows the 3 quantiles (      25%       50%       75%    )
+
 ```{r,echo=FALSE}
 NCI_TPW_gep_treated = readRDS(paste0(wd, "/Data/NCI_TPW_gep_treated.rds"))
 NCI_TPW_gep_untreated = readRDS(paste0(wd, "/Data/NCI_TPW_gep_untreated.rds"))
-plot(density(NCI_TPW_gep_treated), "Densityplot Treated vs Untreated")
+plot(density(NCI_TPW_gep_treated), "Densityplot Treated vs Untreated",xlab= "Expressionvalue")
 lines(density(NCI_TPW_gep_untreated), col = "indianred2")
-legend("topright", legend = c("treated", "untreated"), col = c("black", "indianred2"), pch = 20)
+legend("topright", legend = c("Treated", "Untreated"), col = c("black", "indianred2"), pch = 20)
 abline(v = quantile(NCI_TPW_gep_treated)[2:4], col = c("lightblue", "blue",  "orange"), lty = 2)
 ```
 
+As assumed, the expression patterns don't differentiate much.
+
 
 ###k-means clustering
-To look for clusters in the raw data we performed a k-menas clustering and searched for potentially clusters.
+
+To look for clusters in the raw data we performed a k-menas clustering and searched for potentially clusters using the most variable (>75% Var), thus informative genes.
+
 ```{r, echo=FALSE}
-# Performing a k-means on Treated
-#Determining the number of clusters
 topVarTreated = apply(Treated, 1, var)
-summary(topVarTreated)
 
-# Using the most variable, thus informative genes
+
+
 topVarTreated75 = Treated[topVarTreated > quantile(topVarTreated, probs = 0.75), ]
-dim(topVarTreated75)
+
 
 ```
-
-```{r, echo=FALSE}
-km = kmeans(x = t(topVarTreated75), centers = 3, nstart = 10)
-km$tot.withinss
-```
-
-```{r, echo=FALSE}
-km = kmeans(x = t(topVarTreated75), centers = 2, nstart = 10)
-km$tot.withinss
-```
-
+Running a loop for the best cluster-amount (searching for an "ellbow")
 ```{r,echo=FALSE}
-#running a loop for the best n (searching for "ellbow")
-wss = sapply(2:7, function(k) {
+wss = sapply(1:7, function(k) {
 kmeans(x = t(topVarTreated75), centers = k)$tot.withinss})            
-plot(2:7, wss, type = "b", pch = 19, xlab = "Number of clusters K", ylab = "Total within-clusters sum of squares", main = "Determining the amount of clusters from Treated")
+plot(1:7, wss, type = "b", pch = 19, xlab = "Number of clusters K", ylab = "Total within-clusters sum of squares", main = "Determining the amount of clusters from Treated")
 ```
-As we wanted an "ellbow"to get a good result we can say in a way that our data are not really good to cluster.
+
+As we wanted an "ellbow", it is hard to determine the amount of clusters.
 
 ###PCA
 ```{r}
@@ -711,11 +725,20 @@ lm(Cellline_Annotation$Inoculation_Density~ Cellline_Annotation$Doubling_Time)
 abline(lm(Cellline_Annotation$Inoculation_Density ~ Cellline_Annotation$Doubling_Time), col = "red", lwd = 2)
 ```
 
+
 # 3. Main questions
-##Question 1: Pedicted GI50-values
-As we mentioned in our presentation, we want to create a model to predict GI50-values thus to predict, if Lapatinib is a good choice.,
+
+
+##Question 1: Does the cell doubling time correlate with reduced drug sensitivity?
+
+As we mentioned in our presentation, we want to create a model to predict GI50-values thus to predict, if Lapatinib is a good choice. Therefore, we took several data and performed 3 regression analyzes.
+
+
+### Linear regression ~ Doublingtime
+
 The first linear model trys to predict the G-50 value under the data of the doubling time.
-```{r}
+
+```{r, echo = FALSE}
 
 Fold_ChangeLap = select(Fold_Change, contains("Lapa"))
 NegLogGI50Lap = NegLogGI50[9,]
@@ -757,22 +780,13 @@ colnames(combined1) = names1
                       
 lmFold = lm(NegLogI50Lap ~ Fold_Changemeans, data = combined1)
 
-summary(lmFold)
-
-qqnorm(lmFold$residuals, main = "Test for normaldistribution of residuals")
-qqline(lmFold$residuals)
-
-plot(combined1$NegLogI50Lap, lmFold$fitted.values, pch = 20, col = "blue", xlab = "Real values", 
-     ylab = "Predicted values", main = "Comparison: real and predicted values ~ linear regression (Fold_Changemeans)")
-abline(0, 1, col = "red")
-
-cor(combined1$NegLogI50Lap,combined1$Fold_Changemeans)
-
-#Split the data (Training - Testing)
+#cor(combined1$NegLogI50Lap,combined1$Fold_Changemeans)
 
 n = nrow(combined1)
 rmse1 = sqrt(1/n * sum(lmFold$residuals^2))
-rmse1
+#rmse1
+
+#Split the data (Training - Testing)
 
 i1.train = sample(1:nrow(combined1), 44)
 
@@ -780,23 +794,32 @@ dat1.train = combined1[i1.train, ]
 dat1.test = combined1[-i1.train, ]
 
 l1.train = lm(NegLogI50Lap ~ Fold_Changemeans, data = dat1.train)
-summary(l1.train)
+#summary(l1.train)
+
+qqnorm(l1.train$residuals, main = "Test for normaldistribution of residuals")
+qqline(l1.train$residuals)
+
+plot(dat1.train$NegLogI50Lap, l1.train$fitted.values, pch = 20, col = "blue", xlab = "Real values", 
+     ylab = "Predicted values", main = "Linear regression ~ Fold_Changemeans ~ Training")
+abline(0, 1, col = "red")
 
 n = nrow(dat1.train)
 rmse1.train = sqrt(1/n * sum(l1.train$residuals^2))
-rmse1.train
+#rmse1.train
 
 pred1 = predict(l1.train, newdata = dat1.test)
 
 n = nrow(dat1.test)
 residuals = dat1.test$NegLogI50Lap - pred1
-rmse1.test1 = sqrt(1/n * sum(residuals^2))
-rmse1.test1
+rmse1.test = sqrt(1/n * sum(residuals^2))
+#rmse1.test
 
 ```
 
+### Linear regression ~ Foldchange-means
+
 The second linear model trys to predict the G-50 value under the data of the Foldchange-means.
-```{r}
+```{r,echo = FALSE}
 NegLogGI50Lap = NegLogGI50[9,]
 
 #Sort by Cellline-Name
@@ -813,22 +836,17 @@ combined2 =na.omit(combined2)
 
 lmDouble = lm(NegLogI50Lap ~ Doubling_Time, data = combined2)
 
-summary(lmDouble)
+#summary(lmDouble)
 
-qqnorm(lmDouble$residuals, main = "Test for normaldistribution of residuals")
-qqline(lmDouble$residuals)
+#cor(combined2$NegLogI50Lap,combined2$Doubling_Time)
 
-plot(combined2$NegLogI50Lap, lmDouble$fitted.values, pch = 20, col = "blue", xlab = "Real values", 
-     ylab = "Predicted values", main = "Comparison: real and predicted values ~ linear regression (Doubling-Time)")
-abline(0, 1, col = "red")
 
-cor(combined2$NegLogI50Lap,combined2$Doubling_Time)
 
 #Split the data (Training - Testing)
 
 n = nrow(combined2)
 rmse2 = sqrt(1/n * sum(lmDouble$residuals^2))
-rmse2
+#rmse2
 
 i2.train = sample(1:nrow(combined2), 48)
 
@@ -836,22 +854,31 @@ dat2.train = combined2[i2.train, ]
 dat2.test = combined2[-i2.train, ]
 
 l2.train = lm(NegLogI50Lap ~ Doubling_Time, data = dat2.train)
-summary(l2.train)
+#summary(l2.train)
+
+qqnorm(l2.train$residuals, main = "Test for normaldistribution of residuals")
+qqline(l2.train$residuals)
+
+plot(dat2.train$NegLogI50Lap, l2.train$fitted.values, pch = 20, col = "blue", xlab = "Real values", 
+     ylab = "Predicted values", main = "Linear regression ~ Doubling-Time ~ Training")
+abline(0, 1, col = "red")
 
 n = nrow(dat2.train)
 rmse2.train = sqrt(1/n * sum(l2.train$residuals^2))
-rmse2.train
+#rmse2.train
 
 pred2 = predict(l2.train, newdata = dat2.test)
 
 n = nrow(dat1.test)
 residuals = dat2.test$NegLogI50Lap - pred2
 rmse2.test = sqrt(1/n * sum(residuals^2))
-rmse2.test
+#rmse2.test
 ```
 
+### Multiple regression
+
 As a last part, we did a multiple regression with both datasets to predict GI50-values.
-```{r}
+```{r,echo = FALSE}
 b1 = gsub(x =Doublingtime$`df$Cell_Line_Name`, pattern = "-", replacement = ".")
 Doublingtime1 =  rbind(b1,Doublingtime$`df$Doubling_Time`)
 Doublingtime1 = as.data.frame(t(Doublingtime1)) 
@@ -866,44 +893,63 @@ colnames(combined3) = names3
 
 mlr = lm(NegLogI50Lap ~ ., data = combined3)
 
-summary(mlr)
-
-qqnorm(mlr$residuals, main = "Test for normaldistribution of residuals")
-qqline(mlr$residuals)
-
-plot(combined3$NegLogI50Lap, mlr$fitted.values, pch = 20, col = "blue", xlab = "Real values", 
-     ylab = "Predicted values" , main = "Comparison: real and predicted values ~ multiple regression")
-abline(0, 1, col = "red")
-
+#summary(mlr)
 
 
 #Split the data (Training - Testing)
 
 n = nrow(combined3)
 rmse3 = sqrt(1/n * sum(mlr$residuals^2))
-rmse3
+#rmse3
 
-i3.train = sample(1:nrow(combined2), 44)
+i3.train = sample(1:nrow(combined3), 44)
 
 dat3.train = combined3[i3.train, ]
 dat3.test = combined3[-i3.train, ]
 
 l3.train = lm(NegLogI50Lap ~ ., data = dat3.train)
-summary(l3.train)
+#summary(l3.train)
+
+qqnorm(l3.train$residuals, main = "Test for normaldistribution of residuals")
+qqline(l3.train$residuals)
+
+plot(dat3.train$NegLogI50Lap, l3.train$fitted.values, pch = 20, col = "blue", xlab = "Real values", 
+     ylab = "Predicted values", main = "Multiple regression ~ Training")
+abline(0, 1, col = "red")
 
 n = nrow(dat3.train)
 rmse3.train = sqrt(1/n * sum(l3.train$residuals^2))
-rmse3.train
+#rmse3.train
 
 pred3 = predict(l3.train, newdata = dat3.test)
 
 n = nrow(dat3.test)
 residuals = dat3.test$NegLogI50Lap - pred3
 rmse3.test = sqrt(1/n * sum(residuals^2))
-rmse3.test
+#rmse3.test
 ```
 
-As you can see from the data, All three regression models are not really good.
+
+### Table of conclusion
+
+The following table shows important values. 
+
+```{r, results='asis',echo = FALSE}
+Rsrd =  c(summary(l1.train)$r.squared, summary(l2.train)$r.squared, summary(l3.train)$r.squared)
+F_Stat = c(summary(l1.train)$fstatistic[1],summary(l2.train)$fstatistic[1],summary(l3.train)$fstatistic[1])
+Sum_RMSE = c(rmse1.test,rmse2.test,rmse3.test)
+Rsrd1 = as.data.frame(t(Rsrd))
+table = rbind(Rsrd1,F_Stat,Sum_RMSE)
+colnames(table) = c("Foldchange","Doublingtime","Multiple regression")
+rownames(table) = c("R-squared-value","F-statistic","RMSE of test-dataset")
+knitr::kable(table, format = "markdown")
+
+```
+
+
+The data are hard to discuss, because we use random values for our test and training dataset. Hence you get  different values on every run. We could use "selected values" (First 20) but this would be a kind of cheating.
+
+
 
 ##Question 2: Does Lapatinib have a similar effect on lung cancer as Erlotinib?
 
