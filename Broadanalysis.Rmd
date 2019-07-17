@@ -30,7 +30,7 @@ library(matrixTests)
 ```
 
 
-## data loading
+## Data loading
 ```{r }
 
 
@@ -49,7 +49,7 @@ Treated = data.frame(NCI_TPW_gep_treated)
 Untreated = data.frame(NCI_TPW_gep_untreated)
 ```
 
-## data scaling
+## Data scaling
 After checking for normalization, we scaled our data in the first place to provide the scaled data for further analysis.
 ```{r }
 list = list(Treated,Untreated)
@@ -64,81 +64,94 @@ rm(NCI_TPW_gep_treated,NCI_TPW_gep_untreated,list,nlist)
 
 # 1. Broad analysis
 
-###Boxplots (already normalized)
-This step was done before scaling the data. The boxplots showed a deviation which is the reason for scaling the data.
-```{r, echo=FALSE}
-boxplot(Treated)
-```
-
-```{r, echo=FALSE}
-boxplot(Untreated)
-```
-
-
+###Boxplots 
+As a very first step of our data analysis, we checked the for normalzation.
 
 ```{r,echo=FALSE}
-boxplot(Treated,  ylab = "Gene expression profile", main = "Treated genexpressionprofiles",xaxt = "n")
+TreatedNS = readRDS(paste0(wd, "/Data/NCI_TPW_gep_treated.rds"))
+boxplot(TreatedNS,  ylab = "Gene expression profile", main = "Treated genexpressionprofiles",xaxt = "n")
 
-boxplot(Untreated, ylab = "Gene expression profile", main = "Untreated genexpressionprofiles",xaxt = "n")
-
-boxplot(Treated[,1:10], ylab = "Gene expression profile", main = "First 10 reated genexpressionprofiles")
 ```
 
 
-```{r coloured boxplots, creating a susbet of Metadata based on the amount of tested genes in Treated,echo=FALSE}
+To check, if there is a connection between the different drugs, we coloured the plot concerning the drugs.
+
+```{r coloured boxplots UNSCALED, creating a susbet of Metadata based on the amount of tested genes in Treated,echo=FALSE, fig.height = 5, fig.width = 7}
 Treated1 = readRDS(paste0(wd, "/Data/NCI_TPW_gep_treated.rds"))
 df = data.frame(t(Treated1))
 df.data <- data.frame(sample = rownames(df))
 adjustedMeda = subset(Metadata, sample %in% intersect(Metadata$sample, df.data$sample))
-rm(df,df.data, Treated1)
-palette(rainbow(15))
-boxplot(Treated, border=adjustedMeda$drug,xlab= "Different Drugs" ,ylab = "Gene expression profile", main = "Teated genexpressionprofiles",xaxt ="n")
+rm(df,df.data)
+
+palette(magma(15))
+par(mar=c(5, 4, 5, 9))
+boxplot(Treated1, border=adjustedMeda$drug, 
+        xlab= "Samples" ,
+        ylab = "Gene expression profile",
+        main = "Teated genexpressionprofiles ~ Unscaled",
+        xaxt ="n" )
+drugs = as.factor(levels(adjustedMeda$drug))
+
+legend("topright", inset = c(-0.35,0), legend= drugs, xpd = TRUE, pch=19,
+       col = drugs, title = "Drugs")
+
 ```
 
+
+As shown, there is a connection between the different "boxes" and the different drugs. This could be the reason for different batches so we scale the data.
+
+```{r coloured boxplots SCALED, creating a susbet of Metadata based on the amount of tested genes in Treated,echo=FALSE, fig.height = 5, fig.width = 7}
+TreatedS = scale((Treated))
+par(mar=c(5, 4, 5, 9))
+boxplot(TreatedS, border=adjustedMeda$drug,xlab= "Samples" ,ylab = "Gene expression profile",
+        main = "Teated genexpressionprofiles ~ Scaled",xaxt ="n" )
+drugs = as.factor(levels(adjustedMeda$drug))
+
+legend("topright", inset = c(-0.35,0), legend= drugs, xpd = TRUE, pch=19,
+       col = drugs, title = "Drugs")
+
+```
+
+As you can see the scaling is necessary to compensate the batch effect. Scaling is then applyed on Untreated aswell before furhter analysis.
+
 ### Densityplot 
+As a other method to get in touch with the data, we checked if there is a differenc between the treated and untreated genexpression. 
 The abline shows the 3 quantiles (      25%       50%       75%    )
+
 ```{r,echo=FALSE}
 NCI_TPW_gep_treated = readRDS(paste0(wd, "/Data/NCI_TPW_gep_treated.rds"))
 NCI_TPW_gep_untreated = readRDS(paste0(wd, "/Data/NCI_TPW_gep_untreated.rds"))
-plot(density(NCI_TPW_gep_treated), "Densityplot Treated vs Untreated")
+plot(density(NCI_TPW_gep_treated), "Densityplot Treated vs Untreated",xlab= "Expressionvalue")
 lines(density(NCI_TPW_gep_untreated), col = "indianred2")
-legend("topright", legend = c("treated", "untreated"), col = c("black", "indianred2"), pch = 20)
+legend("topright", legend = c("Treated", "Untreated"), col = c("black", "indianred2"), pch = 20)
 abline(v = quantile(NCI_TPW_gep_treated)[2:4], col = c("lightblue", "blue",  "orange"), lty = 2)
 ```
 
+As assumed, the expressionpaterns don`t differentiate much.
 
 ###k-means clustering
-To look for clusters in the raw data we performed a k-menas clustering and searched for potentially clusters.
+To look for clusters in the raw data we performed a k-menas clustering and searched for potentially clusters using the most variable (>75% Var), thus informative genes. Summary and dimmension of the the found genes:
 ```{r, echo=FALSE}
-# Performing a k-means on Treated
-#Determining the number of clusters
 topVarTreated = apply(Treated, 1, var)
-summary(topVarTreated)
 
-# Using the most variable, thus informative genes
+
+
 topVarTreated75 = Treated[topVarTreated > quantile(topVarTreated, probs = 0.75), ]
-dim(topVarTreated75)
+
 
 ```
 
-```{r, echo=FALSE}
-km = kmeans(x = t(topVarTreated75), centers = 3, nstart = 10)
-km$tot.withinss
-```
-
-```{r, echo=FALSE}
-km = kmeans(x = t(topVarTreated75), centers = 2, nstart = 10)
-km$tot.withinss
-```
+Running a loop for the best cluster-amount (searching for an "ellbow")
 
 ```{r,echo=FALSE}
-#running a loop for the best n (searching for "ellbow")
-wss = sapply(2:7, function(k) {
+wss = sapply(1:7, function(k) {
 kmeans(x = t(topVarTreated75), centers = k)$tot.withinss})            
-plot(2:7, wss, type = "b", pch = 19, xlab = "Number of clusters K", ylab = "Total within-clusters sum of squares", main = "Determining the amount of clusters from Treated")
+plot(1:7, wss, type = "b", pch = 19, xlab = "Number of clusters K", ylab = "Total within-clusters sum of squares", main = "Determining the amount of clusters from Treated")
 ```
-As we wanted an "ellbow"to get a good result we can say in a way that our data are not really good to cluster.
 
+As we wanted an "ellbow", it is hard to determine the amount of clusters.
+
+###PCA
 ```{r}
 pca <- prcomp(t(Fold_Change), scale = TRUE)
 
