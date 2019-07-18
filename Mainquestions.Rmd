@@ -7,7 +7,7 @@ output:
   pdf_document: default
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, echo = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 #library packages
 library(cluster) 
@@ -30,7 +30,6 @@ library(matrixTests)
 ```
 
 
-## data loading
 ```{r, echo=FALSE}
 
 
@@ -49,8 +48,6 @@ Treated = data.frame(NCI_TPW_gep_treated)
 Untreated = data.frame(NCI_TPW_gep_untreated)
 ```
 
-## data scaling
-After checking for normalization, we scaled our data in the first place to provide the scaled data for further analysis.
 ```{r ,echo=FALSE}
 list = list(Treated,Untreated)
 nlist = lapply(list,scale)
@@ -63,10 +60,18 @@ rm(NCI_TPW_gep_treated,NCI_TPW_gep_untreated,list,nlist)
 ```
 
 # 3. Main questions
-##Question 1: Pedicted GI50-values
-As we mentioned in our presentation, we want to create a model to predict GI50-values thus to predict, if Lapatinib is a good choice.,
+
+
+##Question 1: Does the cell doubling time correlate with reduced drug sensitivity?
+
+As we mentioned in our presentation, we want to create a model to predict GI50-values thus to predict, if Lapatinib is a good choice. Therefore, we took several data and performed 3 regression analyzes.
+
+
+### Linear regression ~ Doublingtime
+
 The first linear model trys to predict the G-50 value under the data of the doubling time.
-```{r}
+
+```{r, echo = FALSE}
 
 Fold_ChangeLap = select(Fold_Change, contains("Lapa"))
 NegLogGI50Lap = NegLogGI50[9,]
@@ -108,22 +113,13 @@ colnames(combined1) = names1
                       
 lmFold = lm(NegLogI50Lap ~ Fold_Changemeans, data = combined1)
 
-summary(lmFold)
-
-qqnorm(lmFold$residuals, main = "Test for normaldistribution of residuals")
-qqline(lmFold$residuals)
-
-plot(combined1$NegLogI50Lap, lmFold$fitted.values, pch = 20, col = "blue", xlab = "Real values", 
-     ylab = "Predicted values", main = "Comparison: real and predicted values ~ linear regression (Fold_Changemeans)")
-abline(0, 1, col = "red")
-
-cor(combined1$NegLogI50Lap,combined1$Fold_Changemeans)
-
-#Split the data (Training - Testing)
+#cor(combined1$NegLogI50Lap,combined1$Fold_Changemeans)
 
 n = nrow(combined1)
 rmse1 = sqrt(1/n * sum(lmFold$residuals^2))
-rmse1
+#rmse1
+
+#Split the data (Training - Testing)
 
 i1.train = sample(1:nrow(combined1), 44)
 
@@ -131,23 +127,32 @@ dat1.train = combined1[i1.train, ]
 dat1.test = combined1[-i1.train, ]
 
 l1.train = lm(NegLogI50Lap ~ Fold_Changemeans, data = dat1.train)
-summary(l1.train)
+#summary(l1.train)
+
+qqnorm(l1.train$residuals, main = "Test for normaldistribution of residuals")
+qqline(l1.train$residuals)
+
+plot(dat1.train$NegLogI50Lap, l1.train$fitted.values, pch = 20, col = "blue", xlab = "Real values", 
+     ylab = "Predicted values", main = "Linear regression ~ Fold_Changemeans ~ Training")
+abline(0, 1, col = "red")
 
 n = nrow(dat1.train)
 rmse1.train = sqrt(1/n * sum(l1.train$residuals^2))
-rmse1.train
+#rmse1.train
 
 pred1 = predict(l1.train, newdata = dat1.test)
 
 n = nrow(dat1.test)
 residuals = dat1.test$NegLogI50Lap - pred1
-rmse1.test1 = sqrt(1/n * sum(residuals^2))
-rmse1.test1
+rmse1.test = sqrt(1/n * sum(residuals^2))
+#rmse1.test
 
 ```
 
+### Linear regression ~ Foldchange-means
+
 The second linear model trys to predict the G-50 value under the data of the Foldchange-means.
-```{r}
+```{r,echo = FALSE}
 NegLogGI50Lap = NegLogGI50[9,]
 
 #Sort by Cellline-Name
@@ -164,22 +169,17 @@ combined2 =na.omit(combined2)
 
 lmDouble = lm(NegLogI50Lap ~ Doubling_Time, data = combined2)
 
-summary(lmDouble)
+#summary(lmDouble)
 
-qqnorm(lmDouble$residuals, main = "Test for normaldistribution of residuals")
-qqline(lmDouble$residuals)
+#cor(combined2$NegLogI50Lap,combined2$Doubling_Time)
 
-plot(combined2$NegLogI50Lap, lmDouble$fitted.values, pch = 20, col = "blue", xlab = "Real values", 
-     ylab = "Predicted values", main = "Comparison: real and predicted values ~ linear regression (Doubling-Time)")
-abline(0, 1, col = "red")
 
-cor(combined2$NegLogI50Lap,combined2$Doubling_Time)
 
 #Split the data (Training - Testing)
 
 n = nrow(combined2)
 rmse2 = sqrt(1/n * sum(lmDouble$residuals^2))
-rmse2
+#rmse2
 
 i2.train = sample(1:nrow(combined2), 48)
 
@@ -187,22 +187,31 @@ dat2.train = combined2[i2.train, ]
 dat2.test = combined2[-i2.train, ]
 
 l2.train = lm(NegLogI50Lap ~ Doubling_Time, data = dat2.train)
-summary(l2.train)
+#summary(l2.train)
+
+qqnorm(l2.train$residuals, main = "Test for normaldistribution of residuals")
+qqline(l2.train$residuals)
+
+plot(dat2.train$NegLogI50Lap, l2.train$fitted.values, pch = 20, col = "blue", xlab = "Real values", 
+     ylab = "Predicted values", main = "Linear regression ~ Doubling-Time ~ Training")
+abline(0, 1, col = "red")
 
 n = nrow(dat2.train)
 rmse2.train = sqrt(1/n * sum(l2.train$residuals^2))
-rmse2.train
+#rmse2.train
 
 pred2 = predict(l2.train, newdata = dat2.test)
 
 n = nrow(dat1.test)
 residuals = dat2.test$NegLogI50Lap - pred2
 rmse2.test = sqrt(1/n * sum(residuals^2))
-rmse2.test
+#rmse2.test
 ```
 
+### Multiple regression
+
 As a last part, we did a multiple regression with both datasets to predict GI50-values.
-```{r}
+```{r,echo = FALSE}
 b1 = gsub(x =Doublingtime$`df$Cell_Line_Name`, pattern = "-", replacement = ".")
 Doublingtime1 =  rbind(b1,Doublingtime$`df$Doubling_Time`)
 Doublingtime1 = as.data.frame(t(Doublingtime1)) 
@@ -217,47 +226,70 @@ colnames(combined3) = names3
 
 mlr = lm(NegLogI50Lap ~ ., data = combined3)
 
-summary(mlr)
-
-qqnorm(mlr$residuals, main = "Test for normaldistribution of residuals")
-qqline(mlr$residuals)
-
-plot(combined3$NegLogI50Lap, mlr$fitted.values, pch = 20, col = "blue", xlab = "Real values", 
-     ylab = "Predicted values" , main = "Comparison: real and predicted values ~ multiple regression")
-abline(0, 1, col = "red")
-
+#summary(mlr)
 
 
 #Split the data (Training - Testing)
 
 n = nrow(combined3)
 rmse3 = sqrt(1/n * sum(mlr$residuals^2))
-rmse3
+#rmse3
 
-i3.train = sample(1:nrow(combined2), 44)
+i3.train = sample(1:nrow(combined3), 44)
 
 dat3.train = combined3[i3.train, ]
 dat3.test = combined3[-i3.train, ]
 
 l3.train = lm(NegLogI50Lap ~ ., data = dat3.train)
-summary(l3.train)
+#summary(l3.train)
+
+qqnorm(l3.train$residuals, main = "Test for normaldistribution of residuals")
+qqline(l3.train$residuals)
+
+plot(dat3.train$NegLogI50Lap, l3.train$fitted.values, pch = 20, col = "blue", xlab = "Real values", 
+     ylab = "Predicted values", main = "Multiple regression ~ Training")
+abline(0, 1, col = "red")
 
 n = nrow(dat3.train)
 rmse3.train = sqrt(1/n * sum(l3.train$residuals^2))
-rmse3.train
+#rmse3.train
 
 pred3 = predict(l3.train, newdata = dat3.test)
 
 n = nrow(dat3.test)
 residuals = dat3.test$NegLogI50Lap - pred3
 rmse3.test = sqrt(1/n * sum(residuals^2))
-rmse3.test
+#rmse3.test
 ```
 
-As you can see from the data, All three regression models are not really good.
 
-##Question 2: Erlotinib vs Lapatinib
-```{r correlation}
+### Table of conclusion
+
+The following table shows important values. 
+
+```{r, results='asis',echo = FALSE}
+Rsrd =  c(summary(l1.train)$r.squared, summary(l2.train)$r.squared, summary(l3.train)$r.squared)
+F_Stat = c(summary(l1.train)$fstatistic[1],summary(l2.train)$fstatistic[1],summary(l3.train)$fstatistic[1])
+Sum_RMSE = c(rmse1.test,rmse2.test,rmse3.test)
+Rsrd1 = as.data.frame(t(Rsrd))
+table = rbind(Rsrd1,F_Stat,Sum_RMSE)
+colnames(table) = c("Foldchange","Doublingtime","Multiple regression")
+rownames(table) = c("R-squared-value","F-statistic","RMSE of test-dataset")
+knitr::kable(table, format = "markdown")
+
+```
+
+
+The data are hard to discuss, because we use random values for our test and training dataset. Hence you get  different values on every run. We could use "selected values" (First 20) but this would be a kind of cheating.
+
+
+
+
+## Question 2: Does Lapatinib have a similar effect on lung cancer as Erlotinib?
+
+As we read in the paper "Antitumor and antiangiogenic effect of the dual EGFR and HER-2 tyrosine kinase inhibitor lapatinib in a lung cancer model. (Diaz et al., 2010)", lapatinib and erlotinib are said to have similar effects. To verify this, we first looked at the correlation of the drugsand then created a graph showing the difference between GI50 for a certain cell line and the middle GI50 for both drugs.
+
+```{r correlation, echo = FALSE}
 # correlation in general 
 n= as.data.frame(t(NegLogGI50))
 rmv.rows = apply(n, 1, function(x) {
@@ -265,26 +297,21 @@ rmv.rows = apply(n, 1, function(x) {
 })
 NLGI50.all = n[-which(rmv.rows > 0), ]  # Removing any row with 1 or more missing values
 rm(rmv.rows, n, NegLogGI50)
-#cor.mat = as.data.frame(cor(NLGI50.all[, 1:ncol(NLGI50.all)], method = "pearson")) #Pearson correlation
-#round(cor.mat, 2) #round values
-```
-
-###Produce pairwise scatter plots
-```{r correlation map}
-pairs(NLGI50.all[, 1:ncol(NLGI50.all)], pch = 20, cex = 0.8, col = "royalblue3", main = "Correlation_NegLogGI50") 
 
 ```
 
-###matrix of correlations
-```{r phetmap correlation map}
+
+### Matrix of correlations
+```{r correlation heatmap, fig.height = 6, fig.width = 10, echo = FALSE}
 cor = cor(NLGI50.all)
-pheatmap(cor, col = cm.colors(256), main = "Pheatmap correlation")
+pheatmap(cor, col = cm.colors(256), main = "Correlation NLGI50")
+
 ```
 
 Erlotinib and lapatinib have a strong correlation.
 
-###plot erlotinib all genes, coloured by tissue
-```{r plot erlotinib}
+### Plot Erlotinib and Lapatinib, coloured by tissue
+```{r plot erlotinib, fig.height=12, fig.width=16, echo = FALSE}
 
 #differece
 diff = data.frame(erlotinib = NLGI50.all$erlotinib - mean(NLGI50.all$erlotinib), lapatinib = NLGI50.all$lapatinib- mean(NLGI50.all$lapatinib))
@@ -301,33 +328,34 @@ rm(tissue)
 
 diff$celllines = factor(diff$celllines, levels = diff$celllines[order(diff$tissue)]) #Classified by tissue
 
-ggplot(diff, aes(x = celllines, y = erlotinib, fill = tissue))+geom_bar(stat = "identity") + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Erlotinib")
+e =  ggplot(diff, aes(x = celllines, y = erlotinib, fill = tissue))+ geom_bar(stat = "identity") + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Erlotinib")
+l = ggplot(diff, aes(x = celllines, y = lapatinib, fill = tissue)) + geom_bar(stat="identity") + coord_flip() + labs(title="Mean graph plot of NLGI50 values for Lapatinib")
+
+ggarrange(e, l,
+          labels = c("A", "B"),
+          ncol = 2, nrow = 1)
+rm(e,l)
 
 ```
- 
-The difference from the NegLogGI50 for a particular cell line and the mean NegLogGI50 is plotted here for Erlotinib.
- 
-###plot lapatinib all genes, coloured by tissue
-```{r plot lapatinib}
-ggplot(diff, aes(x = celllines, y = lapatinib, fill = tissue)) + geom_bar(stat="identity") + coord_flip() + labs(title="Mean graph plot of NLGI50 values for Lapatinib")
-```
 
-The difference from the NegLogGI50 for a particular cell line and the mean NegLogGI50 is plotted here for Lapatinib.
+The difference from the NegLogGI50 for a particular cell line and the mean NegLogGI50 is plotted here for Erlotinib and Lapatinib.
 
-###correlation erlotinib , lapatinib
-```{r correlation erlotinib, lapatinib}
+```{r correlation erlotinib, lapatinib, echo = FALSE}
+#Pearson correlation
 cor(NLGI50.all$erlotinib, NLGI50.all$lapatinib, method = "pearson")
 ```
 
-A Pearson correlation coefficient of ~ 0.65 confirms that these patterns are similar.
+A Pearson correlation coefficient of ~ 0.65 confirms that these patterns are similar. One reason for this is that both erlotinib and lapatinib are EGFR inhibitors. Cell lines that were more sensitive are displayed as bars that project to the right of the mean. Cell lines that were less sensitive are displayed with bars projected to the left.
 
-*Lung genes*
-```{r main question, lung genes}
+### Lung cellines
+To answer our more specific question, whether lapatinib also has an effect on lung cancer, we will only look at the cell lines in lung cancer.
+
+```{r lung genes, fig.height = 7, fig.width = 14, echo = FALSE}
 #only lung with mean all
 ### load data
 Metadata_Lapatinib_treated = Metadata[which(Metadata$drug == "lapatinib" & Metadata$dose != "0nM"),]
 NegLogGI50 = as.data.frame(readRDS(paste0(wd, "/Data/NegLogGI50.rds")))
-#lung genes from Metadata
+#lung cells from Metadata
 Lung_Metadata_L_treated = Metadata[which(Metadata$drug == "lapatinib" & Metadata$dose != "0nM" & Metadata$tissue == "Lung"),] 
 celllines = Lung_Metadata_L_treated$cell
 NegLogGI50.lung = as.data.frame(t(NegLogGI50[c("erlotinib", "lapatinib"), celllines]))
@@ -336,27 +364,28 @@ NegLogGI50.lung = as.data.frame(t(NegLogGI50[c("erlotinib", "lapatinib"), cellli
 dif.NegLogGI50.lung = data.frame(erlotinib = NegLogGI50.lung$erlotinib -  mean(NLGI50.all$erlotinib), lapatinib = NegLogGI50.lung$lapatinib -  mean(NLGI50.all$lapatinib)) #erlotinib data - mean value, lapatinib data - mean value
 dif.NegLogGI50.lung$celllines = rownames(NegLogGI50.lung)
 
-# PLot Erlotinib
+# PLot Erlotinib and Lapatinib
 
-ggplot(dif.NegLogGI50.lung,aes(x = celllines, y = erlotinib)) + geom_bar(stat = "identity", fill = "skyblue") + geom_text(aes(label = round(erlotinib, 2)), vjust = -0.5, color = "black", size = 3) + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Erlotinib, only Lung genes")
+e = ggplot(dif.NegLogGI50.lung,aes(x = celllines, y = erlotinib)) + geom_bar(stat = "identity", fill = "skyblue") + geom_text(aes(label=round(erlotinib, 2)), vjust = -0.5, color = "black", size = 3) + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Erlotinib, only lung genes")
+l = ggplot(dif.NegLogGI50.lung,aes(x = celllines, y = lapatinib)) + geom_bar(stat = "identity", fill = "skyblue") + geom_text(aes(label=round(lapatinib, 2)), vjust = -0.5, color = "black", size = 3) + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Lapatinib, only lung genes")
+
+ggarrange(e, l,
+          labels = c("A", "B"),
+          ncol = 2, nrow = 1)
+rm(e,l)
+
 ```
 
-
-```{r plot lapatinib, lung}
-# Plot Lapatinib
-
-ggplot(dif.NegLogGI50.lung,aes(x = celllines, y = lapatinib)) + geom_bar(stat = "identity", fill = "skyblue") + geom_text(aes(label=round(lapatinib, 2)), vjust = -0.5, color = "black", size = 3) + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Lapatinib, only Lung genes")
-```
+The difference from the NegLogGI50 for cell line from lung tissue and the mean NegLogGI50 is plotted here for Erlotinib and Lapatinib.
 
 
-```{r pearson correlation lung}
-#correlation lung
-
+```{r pearson correlation lung, echo = FALSE}
+#Pearson correlation
 cor(NegLogGI50.lung$erlotinib, NegLogGI50.lung$lapatinib, method = "pearson")
 
 ```
 
-A pearson correlation coefficent of ~ 0.96 suggests that Lapatinib has a similar effect on lung cancer as Erlotinib
+A pearson correlation coefficent of ~ 0.96 suggests that Lapatinib has a similar effect on lung cancer as Erlotinib.
 
 
 ###Anova 
@@ -416,7 +445,7 @@ ncol(all.rmv) #to prove if the columns are removed
 drug<-c(rep('Erlotinib',53), rep('Lapatinib',53))
 expression_drug<-apply(erla, MARGIN = 2, sum)
 df_drug<-data.frame(expression_drug, drug)
-library(ggpubr)
+
 ggboxplot (data = df_drug, x="drug", y="expression_drug", color = "drug",    
           add = "jitter", legend = "none")+
           rotate_x_text(angle = 45)+
