@@ -164,30 +164,32 @@ plot(1:7, wss, type = "b", pch = 19, xlab = "Number of clusters K", ylab = "Tota
 As we wanted an "ellbow", it is hard to determine the amount of clusters.
 
 ###PCA
+
+Since the clustering method by performing k means clustering was not successful, we performed a principal component analysis for dimensionality reduction as another method for identifying clusters or patterns while preserving as much information of the original data set as possible.
 ```{r}
 pca <- prcomp(t(Fold_Change), scale = TRUE)
-
 ```
+By plotting a scree plot of the variation percentage, we can display how much variation a principal component captures from the original data. 
 ```{r}
-# sdev calculates variation each PC accounts for
-pca.var <- pca$sdev^2  
-# since percentages make more sense then normal variation values
-# calculate % or variation, which is much more interesing
-pca.var.per <- round(pca.var/sum(pca.var)*100, 1) 
 
-barplot(pca.var.per, main = "Scree plot", xlab = "Principal Components", ylab = "% variation")
-plot(pca.var.per[1:10], main = "Elbow plot", type = "l", xlab = "Principal Components", ylab = "% variation")
+pca.var <- pca$sdev^2  # sdev calculates variation each PC accounts for
+
+pca.var.per <- round(pca.var/sum(pca.var)*100, 1) # since percentages make more sense than normal variation values calculate % of variation
+
+plot(pca.var.per[1:10], main = "Scree plot", type = "b", xlab = "Principal Components", ylab = "% variation")
 plot(cumsum(pca.var.per[1:15]), main = "cumulative variation", type = "l", xlab = "Principal Components", ylab = "% variation") 
 
 ```
-```{r}
-#creating data frame with all pcs 
-#cleaning up sample names as they differed between matrices 
+As seen in the scree plot, the first three or four PCs have capture most of the information since the curve bends at an "elbow" at PC4 - this is our cutting off point.
+```{r, echo=FALSE}
+# creating data frame with all PCs 
+# cleaning up sample names as they differ between matrices 
 pca.data <- data.frame(pca$x)
 rownames(pca.data) <- gsub(x = rownames(pca.data), pattern = "X786", replacement = "786")
 pca.data <- cbind(sample =rownames(pca.data), pca.data)
 
 ```
+PCs describe variation and account for the varied influences of the original characteristics. Such influences, or loadings, can be traced back from the PCA to find out which genes contribute most to the single PCS. 
 ```{r}
 ## get names of top 10 genes that contribute most to pc1
 loading_scores_1 <- pca$rotation[,1]
@@ -198,7 +200,7 @@ gene_score_ranked <- sort(gene_score, decreasing = TRUE)
 top_10_genes <- names(gene_score_ranked[1:10])
 top_10_genes # show names of top 10 genes
 ```
-```{r}
+```{r, echo=FALSE}
 ### Metadata color matrix for coloring 
 Metadata$sample <- gsub(x = Metadata$sample, pattern = "-", replacement = ".")
 
@@ -210,8 +212,7 @@ metad.cl$mechanism <- Drug_Annotation$Mechanism[match(metad.cl$drug, Drug_Annota
 metad.cl$msi <- Cellline_Annotation$Microsatellite_instability_status[match(metad.cl$cell, Cellline_Annotation$Cell_Line_Name)]
 
 ```
-```{r}
-
+```{r, echo=FALSE}
 # plotting all informative PCs
 #color vectors for coloring by drug and tissue
 viridis <- viridis(9)
@@ -221,7 +222,9 @@ tissue <- levels(metad.cl$tissue)
 magma <- magma(15)
 color_drug = magma[metad.cl$drug]
 drug <- levels(metad.cl$drug)
-
+```
+To determine clusters of samples based on their similarity, we plotted PC1 and PC2 aswell as a PC2 and PC3 while colouring by tissue type and drug respectively.
+```{r}
 
 ## colored by drug
 #plot PC1 and PC2
@@ -327,7 +330,7 @@ mtext("PCA of Fold Change  colored by tissue",
       outer = TRUE)
 
 ```
-
+As we can see, in contrast to the k means method, clusters can be determined. Respecting the colour annotation, it is clear to say that the samples cluster according to drug treatment.   
 
 
 # 2. Specific analysis: lapatinib
@@ -558,8 +561,8 @@ pca.var.per <- round(pca.var/sum(pca.var)*100, 1)
 # since percentages make more sense then normal variation values
 # calculate % or variation, which is much more interesing
 
-barplot(pca.var.per, main = "Scree plot", xlab = "Principal Components", ylab = "% variation")
-plot(pca.var.per[1:10], main = "Elbow plot", type = "l", xlab = "Principal Components", ylab = "% variation")
+
+plot(pca.var.per[1:10], main = "Scree plot", type = "l", xlab = "Principal Components", ylab = "% variation")
 plot(cumsum(pca.var.per[1:15]), main = "cumulative variation", type = "l", xlab = "Principal Components", ylab = "% variation") 
 ```
 ```{r}
@@ -602,21 +605,24 @@ magma <- magma(9)
 color_tissue = magma[metad.cl$tissue]
 tissue <- levels(metad.cl$tissue)
 
+par(mfrow=c(2,2), cex=0.7, oma=c(2,3,2,2))
+par(mar=c(4, 6, 3, 3))
 
 ## colored by msi
 #plot PC1 and PC2
-plot(pca$x[,1], 
-     pca$x[,2], 
-     col = color_msi,
-     pch = 19, 
-     xlab = paste("PC1 (",pca.var.per[1],"%)"), 
-     ylab = paste("PC2 (",pca.var.per[2],"%)"))
+msi12 <- plot(pca$x[,1], 
+          pca$x[,2], 
+          col = color_msi,
+          pch = 19, 
+          xlab = paste("PC1 (",pca.var.per[1],"%)"), 
+          ylab = paste("PC2 (",pca.var.per[2],"%)"))
+
 #create legend
-legend("bottomright", 
+legend(450, 0, 
        legend = msi, 
        col = colormsi, 
        pch = 19, 
-       xpd = "TRUE",
+       xpd = "FALSE",
        bty = "n",
        cex = 0.75
 )
@@ -625,45 +631,32 @@ mtext("PCA of Fold Change colored by MSI",
       side = 3, 
       line = -2,
       cex = 1.2,
-      font = 2, 
+      font = 2,
       outer = TRUE)
 
+
 #plot PC2 and PC3
-plot(pca$x[,2], 
-     pca$x[,3], 
-     col = color_msi,
-     pch = 19, 
-     xlab = paste("PC2 (",pca.var.per[2],"%)"), 
-     ylab = paste("PC3 (",pca.var.per[3],"%)"))
-#create legend
-legend("topleft", 
-       legend = msi, 
-       col = colormsi, 
-       pch = 19, 
-       xpd = "TRUE",
-       bty = "n",
-       cex = 0.75
-)
-#create title
-mtext("PCA of Fold Change colored by MSI", 
-      side = 3, 
-      line = -2,
-      cex = 1.2,
-      font = 2, 
-      outer = TRUE)
+msi23 <- plot(pca$x[,2], 
+          pca$x[,3], 
+          col = color_msi,
+          pch = 19, 
+          xlab = paste("PC2 (",pca.var.per[2],"%)"), 
+          ylab = paste("PC3 (",pca.var.per[3],"%)"))
+    
 
 
 
 ##colored by tissue
 #plot PC1 and PC2
-plot(pca$x[,1], 
-     pca$x[,2], 
-     col = color_tissue,
-     pch = 19, 
-     xlab = paste("PC1 (",pca.var.per[1],"%)"), 
-     ylab = paste("PC2 (",pca.var.per[2],"%)"))
+tissue12 <- plot(pca$x[,1], 
+              pca$x[,2], 
+              col = color_tissue,
+              pch = 19, 
+              xlab = paste("PC1 (",pca.var.per[1],"%)"), 
+              ylab = paste("PC2 (",pca.var.per[2],"%)"))
+             
 #create legend
-legend("bottomright", 
+legend(450, 0, 
        legend = tissue, 
        col = magma, 
        pch = 19, 
@@ -674,34 +667,18 @@ legend("bottomright",
 #create title
 mtext("PCA of Fold Change colored by tissue", 
       side = 3, 
-      line = -2,
+      line = -16,
       cex = 1.2,
-      font = 2, 
+      font = 2,
       outer = TRUE)
 
 #plot PC2 and PC3
-plot(pca$x[,2], 
-     pca$x[,3], 
-     col = color_tissue,
-     pch = 19, 
-     xlab = paste("PC2 (",pca.var.per[2],"%)"), 
-     ylab = paste("PC3 (",pca.var.per[3],"%)"))
-#create legend
-legend("bottomleft", 
-       legend = tissue, 
-       col = magma, 
-       pch = 19, 
-       xpd = "TRUE",
-       bty = "n",
-       cex = 0.75
-)
-#create title
-mtext("PCA of Fold Change colored by tissue", 
-      side = 3, 
-      line = -2,
-      cex = 1.2,
-      font = 2, 
-      outer = TRUE)
+tissue23 <- plot(pca$x[,2], 
+              pca$x[,3], 
+              col = color_tissue,
+              pch = 19, 
+              xlab = paste("PC2 (",pca.var.per[2],"%)"), 
+              ylab = paste("PC3 (",pca.var.per[3],"%)"))
 
 
 ```
