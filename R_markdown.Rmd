@@ -602,15 +602,17 @@ colormsi <- brewer.pal(3, "Set1")
 color_msi = colormsi[metad.cl$msi]
 msi <- levels(metad.cl$msi)
 
-magma <- magma(9)
+magma <- c("springgreen", "olivedrab4", "yellow2", "orange", "red2", "orchid1", "purple",  "turquoise2",   "navy")
 color_tissue = magma[metad.cl$tissue]
 tissue <- levels(metad.cl$tissue)
 
-par(mfrow=c(2,2), cex=0.7, oma=c(2,3,2,2))
-par(mar=c(4, 6, 3, 3))
+#par(mfrow=c(2,2), cex=0.7, oma=c(2,3,2,2))
+#par(mar=c(4, 6, 3, 3))
 ```
 To determine clusters of samples based on their similarity, we plotted PC1 and PC2 aswell as a PC2 and PC3 while colouring by tissue type and drug respectively.
 ```{r}
+par(mfrow=c(2,2), cex=0.7, oma=c(2,3,2,2))
+par(mar=c(4, 6, 3, 3))
 ## colored by msi
 #plot PC1 and PC2
 msi12 <- plot(pca$x[,1], 
