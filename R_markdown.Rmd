@@ -703,22 +703,24 @@ abline(lm(Cellline_Annotation$Inoculation_Density ~ Cellline_Annotation$Doubling
 ```
 
 
-# 3. Main questions
+# 3. Main questions {#anchor1}
 
 
-##Question 1: Does the cell doubling time correlate with reduced drug sensitivity?
+##Question 1: Does the cell doubling time correlate with reduced drug sensitivity? {#anchor2}
 
-As we mentioned in our presentation, we want to create a model to predict GI50-values thus to predict, if Lapatinib is a good choice. Therefore, we took several data and performed 3 regression analyzes.
+As mentioned in our presentation, we want to create a model to predict GI50-values and thus to predict, if Lapatinib is a good choice. Therefore, we took several datasets and performed 4 regression analyses.
 
 
-### Linear regression ~ Doublingtime
+### Linear regression ~ Foldchange-means
 
-The first linear model trys to predict the G-50 value under the data of the doubling time.
+The first linear model tries to predict the G-50 value under the data of the Foldchange-means.
+
 
 ```{r, echo = FALSE}
 
-Fold_ChangeLap = select(Fold_Change, contains("Lapa"))
 NegLogGI50Lap = NegLogGI50[9,]
+Fold_ChangeLap = select(Fold_Change, contains("Lapa"))
+Fold_ChangeLap_t = t(Fold_ChangeLap)
 means = colMeans(Fold_ChangeLap)
 Fold_Changemeans = as.data.frame(t(means))
 
@@ -744,18 +746,18 @@ c2 =as.data.frame(c2)
 
 c3 = subset(c1, `1` %in% intersect(c1$`1`, c2$V1))
 c4 = as.numeric(as.character(c3$lapatinib))
-adjustedNeglogI50Lap = as.data.frame(c4)
+adjustedNeglogGI50Lap = as.data.frame(c4)
 
 
 
 Fold_Changemeans = as.data.frame(t(Fold_Changemeans))
 
-combined1 = cbind(adjustedNeglogI50Lap, Fold_Changemeans)
+combined1 = cbind(adjustedNeglogGI50Lap, Fold_Changemeans)
 
-names1 = c( "NegLogI50Lap","Fold_Changemeans")
+names1 = c( "NegLogGI50Lap","Fold_Changemeans")
 colnames(combined1) = names1
                       
-lmFold = lm(NegLogI50Lap ~ Fold_Changemeans, data = combined1)
+lmFold = lm(NegLogGI50Lap ~ Fold_Changemeans, data = combined1)
 
 #cor(combined1$NegLogI50Lap,combined1$Fold_Changemeans)
 
@@ -770,13 +772,13 @@ i1.train = sample(1:nrow(combined1), 44)
 dat1.train = combined1[i1.train, ]
 dat1.test = combined1[-i1.train, ]
 
-l1.train = lm(NegLogI50Lap ~ Fold_Changemeans, data = dat1.train)
+l1.train = lm(NegLogGI50Lap ~ Fold_Changemeans, data = dat1.train)
 #summary(l1.train)
 
 qqnorm(l1.train$residuals, main = "Test for normaldistribution of residuals")
 qqline(l1.train$residuals)
 
-plot(dat1.train$NegLogI50Lap, l1.train$fitted.values, pch = 20, col = "blue", xlab = "Real values", 
+plot(dat1.train$NegLogGI50Lap, l1.train$fitted.values, pch = 20, col = "blue", xlab = "Real values", 
      ylab = "Predicted values", main = "Linear regression ~ Fold_Changemeans ~ Training")
 abline(0, 1, col = "red")
 
@@ -787,15 +789,118 @@ rmse1.train = sqrt(1/n * sum(l1.train$residuals^2))
 pred1 = predict(l1.train, newdata = dat1.test)
 
 n = nrow(dat1.test)
-residuals = dat1.test$NegLogI50Lap - pred1
+residuals = dat1.test$NegLogGI50Lap - pred1
 rmse1.test = sqrt(1/n * sum(residuals^2))
 #rmse1.test
 
 ```
 
-### Linear regression ~ Foldchange-means
+### Linear regression ~ Foldchange-means biomarkers 
 
-The second linear model trys to predict the G-50 value under the data of the Foldchange-means.
+Linear regression is not suitable here, as the mean fold-change per cell line is not a meaningful indicator in a biological context.
+Hence, we selected the top 20 genes to calculate our mean values. Afterwards linear regression was performed.
+
+```{r, echo = FALSE}
+Treated_t<-data.frame(t(Treated))
+Untreated_t<-data.frame(t(Untreated))
+LapatinibUntreated<-select(Untreated, contains("Lapa"))
+LapatinibTreated<-select(Treated, contains("Lapa"))
+LapTreat=as.data.frame(t(LapatinibUntreated))
+LapUn=as.data.frame(t(LapatinibTreated))
+
+m1<-colMeans(LapTreat, na.rm = TRUE)
+m2<-colMeans(LapUn, na.rm = TRUE)
+
+ut<-(m1-m2)
+utabs = abs(ut)
+ut_sort<-sort(utabs, decreasing = TRUE)
+biomark= as.data.frame(ut_sort[1:20])
+n1 = rownames(biomark)
+biomark = cbind(n1,biomark)
+
+
+Fold_ChangeLap = select(Fold_Change, contains("Lapa"))
+Fold_ChangeLap_t = as.data.frame(Fold_ChangeLap)
+Fold_ChangeLapBM = subset(Fold_ChangeLap_t, rownames(Fold_ChangeLap_t) %in% biomark$n1)
+
+NegLogGI50Lap = NegLogGI50[9,]
+means = colMeans(Fold_ChangeLapBM)
+Fold_ChangemeansBM = as.data.frame(t(means))
+
+a2 = gsub(x = colnames (Fold_ChangemeansBM), pattern = "_lapatinib_10000nM_24h", replacement = "")
+colnames(Fold_ChangemeansBM) = a2
+
+a3 = gsub(x = a2, pattern = "X7", replacement = "7")
+colnames(Fold_ChangemeansBM) = a3
+
+
+a1 = gsub(x = colnames (NegLogGI50Lap), pattern = "-", replacement = ".")
+colnames(NegLogGI50Lap) = a1
+
+c1 = rbind(a1,NegLogGI50Lap)
+c2 = rbind(a3,Fold_ChangemeansBM)
+
+c1 = t(c1)
+c2 = t(c2)
+
+c1 =as.data.frame(c1)
+c2 =as.data.frame(c2)
+
+
+c3 = subset(c1, `1` %in% intersect(c1$`1`, c2$V1))
+c4 = as.numeric(as.character(c3$lapatinib))
+adjustedNeglogGI50Lap = as.data.frame(c4)
+
+
+
+Fold_ChangemeansBM = as.data.frame(t(Fold_ChangemeansBM))
+
+combined11 = cbind(adjustedNeglogGI50Lap, Fold_ChangemeansBM)
+
+names11 = c( "NegLogGI50Lap","Fold_ChangemeansBM")
+colnames(combined11) = names11
+                      
+lmFold1 = lm(NegLogGI50Lap ~ Fold_ChangemeansBM, data = combined11)
+
+#cor(combined1$NegLogI50Lap,combined1$Fold_Changemeans)
+
+n = nrow(combined11)
+rmse11 = sqrt(1/n * sum(lmFold1$residuals^2))
+#rmse11
+
+#Split the data (Training - Testing)
+
+i11.train = sample(1:nrow(combined11), 44)
+
+dat11.train = combined11[i11.train, ]
+dat11.test = combined11[-i11.train, ]
+
+l11.train = lm(NegLogGI50Lap ~ Fold_ChangemeansBM, data = dat11.train)
+#summary(l11.train)
+
+qqnorm(l11.train$residuals, main = "Test for normaldistribution of residuals")
+qqline(l11.train$residuals)
+
+plot(dat11.train$NegLogGI50Lap, l11.train$fitted.values, pch = 20, col = "blue", xlab = "Real values", 
+     ylab = "Predicted values", main = "Linear regression ~ Fold_ChangemeansBM ~ Training")
+abline(0, 1, col = "red")
+
+n = nrow(dat11.train)
+rmse11.train = sqrt(1/n * sum(l11.train$residuals^2))
+#rmse11.train
+
+pred11 = predict(l11.train, newdata = dat11.test)
+
+n = nrow(dat11.test)
+residuals = dat11.test$NegLogGI50Lap - pred11
+rmse11.test = sqrt(1/n * sum(residuals^2))
+#rmse11.test
+```
+
+
+### Linear regression ~ Doubling-time
+
+The second linear model tries to predict the G-50 value under the data of the Doubling-time.
 ```{r,echo = FALSE}
 NegLogGI50Lap = NegLogGI50[9,]
 
@@ -806,12 +911,12 @@ Doublingtime = cbind.data.frame (df$Cell_Line_Name, df$Doubling_Time)
 c21 = as.data.frame(t(NegLogGI50Lap))
 
 combined2 = cbind(c21, Doublingtime$`df$Doubling_Time`)
-names2 = c( "NegLogI50Lap","Doubling_Time")
+names2 = c( "NegLogGI50Lap","Doubling_Time")
 colnames(combined2) = names2
 
 combined2 =na.omit(combined2)
 
-lmDouble = lm(NegLogI50Lap ~ Doubling_Time, data = combined2)
+lmDouble = lm(NegLogGI50Lap ~ Doubling_Time, data = combined2)
 
 #summary(lmDouble)
 
@@ -830,13 +935,13 @@ i2.train = sample(1:nrow(combined2), 48)
 dat2.train = combined2[i2.train, ]
 dat2.test = combined2[-i2.train, ]
 
-l2.train = lm(NegLogI50Lap ~ Doubling_Time, data = dat2.train)
+l2.train = lm(NegLogGI50Lap ~ Doubling_Time, data = dat2.train)
 #summary(l2.train)
 
 qqnorm(l2.train$residuals, main = "Test for normaldistribution of residuals")
 qqline(l2.train$residuals)
 
-plot(dat2.train$NegLogI50Lap, l2.train$fitted.values, pch = 20, col = "blue", xlab = "Real values", 
+plot(dat2.train$NegLogGI50Lap, l2.train$fitted.values, pch = 20, col = "blue", xlab = "Real values", 
      ylab = "Predicted values", main = "Linear regression ~ Doubling-Time ~ Training")
 abline(0, 1, col = "red")
 
@@ -847,14 +952,14 @@ rmse2.train = sqrt(1/n * sum(l2.train$residuals^2))
 pred2 = predict(l2.train, newdata = dat2.test)
 
 n = nrow(dat1.test)
-residuals = dat2.test$NegLogI50Lap - pred2
+residuals = dat2.test$NegLogGI50Lap - pred2
 rmse2.test = sqrt(1/n * sum(residuals^2))
 #rmse2.test
 ```
 
 ### Multiple regression
 
-As a last part, we did a multiple regression with both datasets to predict GI50-values.
+Finally, we did a multiple regression with both datasets to predict GI50-values.
 ```{r,echo = FALSE}
 b1 = gsub(x =Doublingtime$`df$Cell_Line_Name`, pattern = "-", replacement = ".")
 Doublingtime1 =  rbind(b1,Doublingtime$`df$Doubling_Time`)
@@ -864,11 +969,11 @@ c31 = subset(Doublingtime1, b1 %in% intersect(Doublingtime1$b1, c2$V1))
 c41 = as.numeric(as.character(c31$V2))
 adjustedDoubling_Time = as.data.frame(c41)
 
-combined3 = cbind(adjustedNeglogI50Lap, Fold_Changemeans, adjustedDoubling_Time)
-names3 = c( "NegLogI50Lap","Fold_Changemeans","Doubling_Time")
+combined3 = cbind(adjustedNeglogGI50Lap, Fold_ChangemeansBM, adjustedDoubling_Time)
+names3 = c( "NegLogGI50Lap","Fold_ChangemeansBM","Doubling_Time")
 colnames(combined3) = names3
 
-mlr = lm(NegLogI50Lap ~ ., data = combined3)
+mlr = lm(NegLogGI50Lap ~ ., data = combined3)
 
 #summary(mlr)
 
@@ -884,13 +989,13 @@ i3.train = sample(1:nrow(combined3), 44)
 dat3.train = combined3[i3.train, ]
 dat3.test = combined3[-i3.train, ]
 
-l3.train = lm(NegLogI50Lap ~ ., data = dat3.train)
+l3.train = lm(NegLogGI50Lap ~ ., data = dat3.train)
 #summary(l3.train)
 
 qqnorm(l3.train$residuals, main = "Test for normaldistribution of residuals")
 qqline(l3.train$residuals)
 
-plot(dat3.train$NegLogI50Lap, l3.train$fitted.values, pch = 20, col = "blue", xlab = "Real values", 
+plot(dat3.train$NegLogGI50Lap, l3.train$fitted.values, pch = 20, col = "blue", xlab = "Real values", 
      ylab = "Predicted values", main = "Multiple regression ~ Training")
 abline(0, 1, col = "red")
 
@@ -901,7 +1006,7 @@ rmse3.train = sqrt(1/n * sum(l3.train$residuals^2))
 pred3 = predict(l3.train, newdata = dat3.test)
 
 n = nrow(dat3.test)
-residuals = dat3.test$NegLogI50Lap - pred3
+residuals = dat3.test$NegLogGI50Lap - pred3
 rmse3.test = sqrt(1/n * sum(residuals^2))
 #rmse3.test
 ```
@@ -912,20 +1017,20 @@ rmse3.test = sqrt(1/n * sum(residuals^2))
 The following table shows important values. 
 
 ```{r, results='asis',echo = FALSE}
-Rsrd =  c(summary(l1.train)$r.squared, summary(l2.train)$r.squared, summary(l3.train)$r.squared)
-F_Stat = c(summary(l1.train)$fstatistic[1],summary(l2.train)$fstatistic[1],summary(l3.train)$fstatistic[1])
-Sum_RMSE = c(rmse1.test,rmse2.test,rmse3.test)
+Rsrd =  c(summary(l1.train)$r.squared, summary(l11.train)$r.squared, summary(l2.train)$r.squared, summary(l3.train)$r.squared)
+F_Stat = c(summary(l1.train)$fstatistic[1],summary(l11.train)$fstatistic[1],
+           summary(l2.train)$fstatistic[1],summary(l3.train)$fstatistic[1])
+Sum_RMSE = c(rmse1.test,rmse11.test,rmse2.test,rmse3.test)
 Rsrd1 = as.data.frame(t(Rsrd))
 table = rbind(Rsrd1,F_Stat,Sum_RMSE)
-colnames(table) = c("Foldchange","Doublingtime","Multiple regression")
+colnames(table) = c("Foldchange","FoldchangeBM","Doublingtime","Multiple regression")
 rownames(table) = c("R-squared-value","F-statistic","RMSE of test-dataset")
 knitr::kable(table, format = "markdown")
 
 ```
 
 
-The data are hard to discuss, because we use random values for our test and training dataset. Hence you get  different values on every run. We could use "selected values" (First 20) but this would be a kind of cheating.
-
+The data is hard to discuss, because we used random values for our test and training dataset. Hence, different values on every run are obtained. We could use "selected values" (First 20) but this would be a kind of cheating.
 
 
 ## Question 2: Does Lapatinib have a similar effect on lung cancer as Erlotinib?
