@@ -69,7 +69,7 @@ rmv.rows = apply(n, 1, function(x) {
 })
 NLGI50.all = n[-which(rmv.rows > 0), ]  # Removing any row with 1 or more missing values
 rm(rmv.rows, n, NegLogGI50)
-
+# used for second main question 
 ```
 
 # 1. Broad analysis
@@ -951,7 +951,7 @@ The data are hard to discuss, because we use random values for our test and trai
 
 
 
-##Question 2: Does Lapatinib have a similar effect on lung cancer as Erlotinib?
+## Question 2: Does Lapatinib have a similar effect on lung cancer as Erlotinib?
 
 As we read in the paper "Antitumor and antiangiogenic effect of the dual EGFR and HER-2 tyrosine kinase inhibitor lapatinib in a lung cancer model. (Diaz et al., 2010)", lapatinib and erlotinib are said to have similar effects. To verify this, we first looked at the correlation of the drugsand then created a graph showing the difference between GI50 for a certain cell line and the middle GI50 for both drugs.
 
@@ -963,26 +963,21 @@ rmv.rows = apply(n, 1, function(x) {
 })
 NLGI50.all = n[-which(rmv.rows > 0), ]  # Removing any row with 1 or more missing values
 rm(rmv.rows, n, NegLogGI50)
-#cor.mat = as.data.frame(cor(NLGI50.all[, 1:ncol(NLGI50.all)], method = "pearson")) #Pearson correlation
-#round(cor.mat, 2) #round values
-```
-
-###Produce pairwise scatter plots
-```{r correlation map, echo=FALSE}
-#pairs(NLGI50.all[, 1:ncol(NLGI50.all)], pch = 20, cex = 0.8, col = "royalblue3", main = "Correlation_NegLogGI50") 
 
 ```
 
-###matrix of correlations
+
+### Matrix of correlations
 ```{r correlation heatmap, echo = FALSE}
 cor = cor(NLGI50.all)
 pheatmap(cor, col = cm.colors(256), main = "Correlation NLGI50")
+
 ```
 
 Erlotinib and lapatinib have a strong correlation.
 
-###plot erlotinib all genes, coloured by tissue
-```{r plot erlotinib, fig.height=8, fig.width=8, echo = FALSE}
+### Plot Erlotinib and Lapatinib, coloured by tissue
+```{r plot erlotinib, fig.height=12, fig.width=16, echo = FALSE}
 
 #differece
 diff = data.frame(erlotinib = NLGI50.all$erlotinib - mean(NLGI50.all$erlotinib), lapatinib = NLGI50.all$lapatinib- mean(NLGI50.all$lapatinib))
@@ -999,13 +994,6 @@ rm(tissue)
 
 diff$celllines = factor(diff$celllines, levels = diff$celllines[order(diff$tissue)]) #Classified by tissue
 
-ggplot(diff, aes(x = celllines, y = erlotinib, fill = tissue))+geom_bar(stat = "identity") + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Erlotinib")
-
-```
-
- 
-###plot erlotinib and lapatinib, coloured by tissue
-```{r two plots, fig.height=10, fig.width=16, echo = FALSE}
 e =  ggplot(diff, aes(x = celllines, y = erlotinib, fill = tissue))+ geom_bar(stat = "identity") + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Erlotinib")
 l = ggplot(diff, aes(x = celllines, y = lapatinib, fill = tissue)) + geom_bar(stat="identity") + coord_flip() + labs(title="Mean graph plot of NLGI50 values for Lapatinib")
 
@@ -1013,21 +1001,22 @@ ggarrange(e, l,
           labels = c("A", "B"),
           ncol = 2, nrow = 1)
 rm(e,l)
+
 ```
 
-The difference from the NegLogGI50 for a particular cell line and the mean NegLogGI50 is plotted here for Lapatinib.
+The difference from the NegLogGI50 for a particular cell line and the mean NegLogGI50 is plotted here for Erlotinib and Lapatinib.
 
-###correlation erlotinib , lapatinib
+### correlation erlotinib , lapatinib
 ```{r correlation erlotinib, lapatinib, echo = FALSE}
 cor(NLGI50.all$erlotinib, NLGI50.all$lapatinib, method = "pearson")
 ```
 
 A Pearson correlation coefficient of ~ 0.65 confirms that these patterns are similar. One reason for this is that both erlotinib and lapatinib are EGFR inhibitors. Cell lines that were more sensitive are displayed as bars that project to the right of the mean. Cell lines that were less sensitive are displayed with bars projected to the left.
 
-
+### Lung cellines
 To answer our more specific question, whether lapatinib also has an effect on lung cancer, we will only look at the cell lines in lung cancer.
 
-```{r main question, lung genes, echo = FALSE}
+```{r lung genes, fig.height = 7, fig.width = 14, echo = FALSE}
 #only lung with mean all
 ### load data
 Metadata_Lapatinib_treated = Metadata[which(Metadata$drug == "lapatinib" & Metadata$dose != "0nM"),]
@@ -1041,23 +1030,19 @@ NegLogGI50.lung = as.data.frame(t(NegLogGI50[c("erlotinib", "lapatinib"), cellli
 dif.NegLogGI50.lung = data.frame(erlotinib = NegLogGI50.lung$erlotinib -  mean(NLGI50.all$erlotinib), lapatinib = NegLogGI50.lung$lapatinib -  mean(NLGI50.all$lapatinib)) #erlotinib data - mean value, lapatinib data - mean value
 dif.NegLogGI50.lung$celllines = rownames(NegLogGI50.lung)
 
-# PLot Erlotinib
+# PLot Erlotinib and Lapatinib
 
-ggplot(dif.NegLogGI50.lung,aes(x = celllines, y = erlotinib)) + geom_bar(stat = "identity", fill = "skyblue") + geom_text(aes(label = round(erlotinib, 2)), vjust = -0.5, color = "black", size = 3) + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Erlotinib, only Lung genes")
-```
-
-
-```{r plot both, fig.height=6, fig.width=14, echo = FALSE}
-# Plot Lapatinib
-
-e = ggplot(dif.NegLogGI50.lung,aes(x = celllines, y = erlotinib)) + geom_bar(stat = "identity", fill = "skyblue") + geom_text(aes(label=round(lapatinib, 2)), vjust = -0.5, color = "black", size = 3) + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Erlotinib, only lung genes")
+e = ggplot(dif.NegLogGI50.lung,aes(x = celllines, y = erlotinib)) + geom_bar(stat = "identity", fill = "skyblue") + geom_text(aes(label=round(erlotinib, 2)), vjust = -0.5, color = "black", size = 3) + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Erlotinib, only lung genes")
 l = ggplot(dif.NegLogGI50.lung,aes(x = celllines, y = lapatinib)) + geom_bar(stat = "identity", fill = "skyblue") + geom_text(aes(label=round(lapatinib, 2)), vjust = -0.5, color = "black", size = 3) + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Lapatinib, only lung genes")
 
 ggarrange(e, l,
           labels = c("A", "B"),
           ncol = 2, nrow = 1)
 rm(e,l)
+
 ```
+
+The difference from the NegLogGI50 for cell line from lung tissue and the mean NegLogGI50 is plotted here for Erlotinib and Lapatinib.
 
 
 ```{r pearson correlation lung, echo = FALSE}
@@ -1070,7 +1055,7 @@ cor(NegLogGI50.lung$erlotinib, NegLogGI50.lung$lapatinib, method = "pearson")
 A pearson correlation coefficent of ~ 0.96 suggests that Lapatinib has a similar effect on lung cancer as Erlotinib.
 
 
-###Anova 
+### Anova 
 
 ###selection of Lapatinib and Erlotinib treated cells
 ```{r}
