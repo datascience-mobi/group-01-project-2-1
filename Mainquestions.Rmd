@@ -420,8 +420,10 @@ The data is hard to discuss, because we used random values for our test and trai
 
 ## Question 2: Does Lapatinib have a similar effect on lung cancer as Erlotinib? {#css_id2}
 
-<div style = "text-align: justify"> 
-As we read in the paper "Antitumor and antiangiogenic effect of the dual EGFR and HER-2 tyrosine kinase inhibitor lapatinib in a lung cancer model. (Diaz et al., 2010)", lapatinib and erlotinib are said to have similar effects. To verify this, we first looked at the correlation of the drugs and then created a graph showing the difference between GI50 for a certain cell line and the middle GI50 for both drugs. 
+<div style = "text-align: justify">
+
+As we read in the paper "Antitumor and antiangiogenic effect of the dual EGFR and HER-2 tyrosine kinase inhibitor lapatinib in a lung cancer model. (Diaz et al., 2010)", lapatinib and erlotinib are said to have similar effects. To verify this, we first looked at the correlation of the drugs and then created a graph showing the difference between GI50 for a certain cell line and the middle GI50 for both drugs.
+
 </div>
 
 ```{r correlation, echo = FALSE}
@@ -443,7 +445,11 @@ pheatmap(cor, col = cm.colors(256), main = "Correlation NLGI50")
 
 ```
 
-<div style = "text-align: justify"> Erlotinib and lapatinib have a strong correlation. </div>
+<div style = "text-align: justify"> 
+
+Erlotinib and lapatinib have a strong correlation. 
+
+</div>
 
 ### Plot Erlotinib and Lapatinib, coloured by tissue
 ```{r plot erlotinib, fig.height=12, fig.width=16, echo = FALSE}
@@ -463,8 +469,15 @@ rm(tissue)
 
 diff$celllines = factor(diff$celllines, levels = diff$celllines[order(diff$tissue)]) #Classified by tissue
 
-e =  ggplot(diff, aes(x = celllines, y = erlotinib, fill = tissue))+ geom_bar(stat = "identity") + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Erlotinib")
-l = ggplot(diff, aes(x = celllines, y = lapatinib, fill = tissue)) + geom_bar(stat="identity") + coord_flip() + labs(title="Mean graph plot of NLGI50 values for Lapatinib")
+e =  ggplot(diff, aes(x = celllines, y = erlotinib, fill = tissue)) +
+  geom_bar(stat = "identity") +
+  coord_flip() + 
+  labs(title = "Mean graph plot of NLGI50 values for Erlotinib")
+
+l = ggplot(diff, aes(x = celllines, y = lapatinib, fill = tissue)) + 
+  geom_bar(stat="identity") + 
+  coord_flip() + 
+  labs(title="Mean graph plot of NLGI50 values for Lapatinib")
 
 ggarrange(e, l,
           labels = c("A", "B"),

@@ -1165,8 +1165,15 @@ rm(tissue)
 
 diff$celllines = factor(diff$celllines, levels = diff$celllines[order(diff$tissue)]) #Classified by tissue
 
-e =  ggplot(diff, aes(x = celllines, y = erlotinib, fill = tissue))+ geom_bar(stat = "identity") + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Erlotinib")
-l = ggplot(diff, aes(x = celllines, y = lapatinib, fill = tissue)) + geom_bar(stat="identity") + coord_flip() + labs(title="Mean graph plot of NLGI50 values for Lapatinib")
+e =  ggplot(diff, aes(x = celllines, y = erlotinib, fill = tissue))+ 
+  geom_bar(stat = "identity") + 
+  coord_flip() + 
+  labs(title = "Mean graph plot of NLGI50 values for Erlotinib")
+
+l = ggplot(diff, aes(x = celllines, y = lapatinib, fill = tissue)) + 
+  geom_bar(stat="identity") + 
+  coord_flip() + 
+  labs(title="Mean graph plot of NLGI50 values for Lapatinib")
 
 ggarrange(e, l,
           labels = c("A", "B"),
