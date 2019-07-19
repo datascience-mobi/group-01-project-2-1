@@ -1,14 +1,15 @@
 ---
 title: "Project02 - Group01"
 author: "Eva, Tobi, Kathi, Laura"
-date: "14 Juni 2019"
+date: "24. July 2019"
 output:
   pdf_document: default
   html_document: default
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE,
+                      chache = TRUE)
 #library packages
 library(cluster) 
 library(compare)
@@ -28,9 +29,79 @@ library(viridis)
 
 ```
 
+# Table of content
+
+[1. Broad analysis](#anchor1)
+
+    [Boxplots](#css_class1.1)
+    
+    [Densityplot](#css_class1.2)
+    
+    [k-means clustering](#css_class1.3)
+    
+    [PCA](#css_class1.4)
+
+
+[2. Specific analysis: lapatinib](#anchor2)
+
+  [](#css_id2.1)
+
+    [](#css_class2.1.1)
+    
+    [](#css_class2.1.2)
+    
+    [](#css_class2.1.3)
+  
+  [](#css_id2.2)
+  
+    [](#css_class2.2.1)
+    
+    [](#css_class2.2.2)
+    
+    [](#css_class2.2.3)
+    
+    [](#css_class2.2.4)
+    
+    [](#css_class2.2.5)
+  
+  [](#css_id2.3)
+  
+  [](#css_id2.4)
+  
+    [](#css_class2.4.1)
+
+
+[3. Main questions](#anchor3)
+
+  [Question 1: Does the cell doubling time correlate with reduced drug sensitivity?](#css_id3.1)
+
+    [Linear regression ~ Foldchange-means](#css_class3.1.1)
+
+    [Linear regression ~ Foldchange-means biomarkers](#css_class3.1.2)
+    
+    [Linear regression ~ Doubling-time](#css_class3.1.3)
+
+    [Multiple regression](#css_class3.1.4)
+
+    [Table of conclusion](#css_class3.1.5)
+
+  [Question 2: Does Lapatinib have a similar effect on lung cancer as Erlotinib?](#css_id3.2)
+
+    [Matrix of correlations](#css_class3.2.1)
+
+    [Plot Erlotinib and Lapatinib, coloured by tissue](#css_class3.2.2)
+    
+    [correlation erlotinib , lapatinib](#css_class3.2.3)
+    
+    [Lung cellines](#css_class3.2.4)
+    
+    [Anova](#css_class3.2.5)
+
+  [Question 3: Comparing lapatinib treated breast and cns celllines](#css_id3.3)
+
 
 ## data loading
-```{r, echo=FALSE}
+```{r data_loading, echo=FALSE}
 
 
 wd = getwd()
@@ -50,7 +121,7 @@ Untreated = data.frame(NCI_TPW_gep_untreated)
 
 ## data scaling
 After checking for normalization, we scaled our data in the first place to provide the scaled data for further analysis.
-```{r ,echo=FALSE}
+```{r scaling}
 list = list(Treated,Untreated)
 nlist = lapply(list,scale)
 Treated = as.data.frame(nlist[[1]])
@@ -62,7 +133,7 @@ rm(NCI_TPW_gep_treated,NCI_TPW_gep_untreated,list,nlist)
 ```
 
 ## remove missing values
-```{r}
+```{r remove_NAs}
 n= as.data.frame(t(NegLogGI50))
 rmv.rows = apply(n, 1, function(x) {
   sum(is.na(x))
@@ -74,7 +145,7 @@ rm(rmv.rows, n, NegLogGI50)
 
 # 1. Broad analysis
 
-###Boxplots 
+### Boxplots 
 
 As a very first step of our data analysis, we checked the for normalzation.
 
@@ -141,7 +212,7 @@ abline(v = quantile(NCI_TPW_gep_treated)[2:4], col = c("lightblue", "blue",  "or
 As assumed, the expression patterns don't differentiate much.
 
 
-###k-means clustering
+### k-means clustering
 
 To look for clusters in the raw data we performed a k-menas clustering and searched for potentially clusters using the most variable (>75% Var), thus informative genes.
 
@@ -154,7 +225,9 @@ topVarTreated75 = Treated[topVarTreated > quantile(topVarTreated, probs = 0.75),
 
 
 ```
+
 Running a loop for the best cluster-amount (searching for an "ellbow")
+
 ```{r,echo=FALSE}
 wss = sapply(1:7, function(k) {
 kmeans(x = t(topVarTreated75), centers = k)$tot.withinss})            
@@ -163,7 +236,7 @@ plot(1:7, wss, type = "b", pch = 19, xlab = "Number of clusters K", ylab = "Tota
 
 As we wanted an "ellbow", it is hard to determine the amount of clusters.
 
-###PCA
+### PCA
 
 Since the clustering method by performing k means clustering was not successful, we performed a principal component analysis for dimensionality reduction as another method for identifying clusters or patterns while preserving as much information of the original data set as possible.
 ```{r}
@@ -335,7 +408,7 @@ As we can see, in contrast to the k means method, clusters can be determined. Re
 
 # 2. Specific analysis: lapatinib
 
-##Analysis of the biomarker and t-test between treated and untreated cells
+## Analysis of the biomarker and t-test between treated and untreated cells
 
 
 ###Expression of biomakers before and after the treatment of Lapatinib.
@@ -690,10 +763,9 @@ tissue23 <- plot(pca$x[,2],
 As we can see, rarely any clusters can be determined. In Addition, the colour annotation does not reveal any pattern of clustering.
 
 ### Spearman correlation
-```{r, echo=FALSE}
-# Pearson correlation
-cor(Cellline_Annotation$Doubling_Time, Cellline_Annotation$Inoculation_Density, method = "pearson")
-```
+
+Modelling of a linear relationship between cell doubling time and inoculation density.
+
 
 ```{r}
 # Spearman correlation
@@ -708,11 +780,14 @@ lm(Cellline_Annotation$Inoculation_Density~ Cellline_Annotation$Doubling_Time)
 abline(lm(Cellline_Annotation$Inoculation_Density ~ Cellline_Annotation$Doubling_Time), col = "red", lwd = 2)
 ```
 
+As you can see from the plot, there is a positive correlation between inoculation density and doubling time. This means that the higher the inoculation density, the higher the doubling time, which means that the tumour grows slowly because the cells need more time to divide.
 
-# 3. Main questions {#anchor1}
 
 
-##Question 1: Does the cell doubling time correlate with reduced drug sensitivity? {#anchor2}
+# 3. Main questions {#anchor}
+
+
+## Question 1: Does the cell doubling time correlate with reduced drug sensitivity? {#anchor2}
 
 As mentioned in our presentation, we want to create a model to predict GI50-values and thus to predict, if Lapatinib is a good choice. Therefore, we took several datasets and performed 4 regression analyses.
 
@@ -1041,7 +1116,7 @@ The data is hard to discuss, because we used random values for our test and trai
 
 ## Question 2: Does Lapatinib have a similar effect on lung cancer as Erlotinib?
 
-As we read in the paper "Antitumor and antiangiogenic effect of the dual EGFR and HER-2 tyrosine kinase inhibitor lapatinib in a lung cancer model. (Diaz et al., 2010)", lapatinib and erlotinib are said to have similar effects. To verify this, we first looked at the correlation of the drugsand then created a graph showing the difference between GI50 for a certain cell line and the middle GI50 for both drugs.
+As we read in the paper "Antitumor and antiangiogenic effect of the dual EGFR and HER-2 tyrosine kinase inhibitor lapatinib in a lung cancer model. (Diaz et al., 2010)", lapatinib and erlotinib are said to have similar effects. To verify this, we first looked at the correlation of the drugs and then created a graph showing the difference between GI50 for a certain cell line and the middle GI50 for both drugs.
 
 ```{r correlation, echo = FALSE}
 # correlation in general 
@@ -1145,7 +1220,7 @@ A pearson correlation coefficent of ~ 0.96 suggests that Lapatinib has a similar
 
 ### Anova 
 
-###selection of Lapatinib and Erlotinib treated cells
+### selection of Lapatinib and Erlotinib treated cells
 ```{r}
 
 lapa<-data.frame(Metadata[which(Metadata[,'drug'] == "lapatinib"), ])
@@ -1210,7 +1285,7 @@ ggboxplot (data = df_drug, x="drug", y="expression_drug", color = "drug",
 ```
 
 
-##Question 3: Comparing lapatinib treated breast and cns celllines 
+## Question 3: Comparing lapatinib treated breast and cns celllines
 As a proven fact, lapatinb crosses the brain-blood barrier. Since breast cancer tends to spread and form metastasis in brain cells and lapatinib is used in anti-breast cancer therapy, we wanted to analyse our data for similar effects after lapatinib treatment in breast and cns tissue cells. 
 
 At first, we selected lapatinib response genes by creating matrices with cns- and breast-cell line fold change values. 
