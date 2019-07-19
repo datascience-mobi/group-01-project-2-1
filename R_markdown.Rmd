@@ -6,6 +6,14 @@ output:
   pdf_document: default
   html_document: default
 ---
+#Introduction
+Our project is about lapatinib and divided into three parts:
+Broad analysis, specific analysis and our three main questions.
+The main questions are the most important part of our project. They address whether cell doubling time correlates with reduced drug sensitivity and the effect of lapatinib on lung cancer and brain metastasis.
+Twenty-five per cent of breast cancers overexpress ErbB2 / HER which leads to a more aggressive phenotype. Lapatinib blocks tyrosine kinases that belong to the HER2 receptor, which is increasingly found on the cell surface of cancer cells.
+HER2 is a receptor for the growth factor epidermal growth factor (EGF), which stimulates the cell division of cancer cells. By blocking these HER2 receptors, the unregulated growth of cancer cells can be controlled again. Lapatinib binds the ATP-binding site of the receptor's intracellular domain and inhibits the survival and proliferation pathways of the tumor cell.
+
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,
