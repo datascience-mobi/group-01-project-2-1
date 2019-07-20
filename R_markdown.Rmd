@@ -42,35 +42,26 @@ library(viridis)
   [2.3 K-means clustering](#css_id2.3)  
   [2.4 PCA](#css_id2.4)  
 
-
 [3. Specific analysis: lapatinib](#anchor3)
 
-  [](#css_id2.1)
+  [3.1 Analysis of biomarker and t-test between treated and untreated cells](#css_id3.1)  
+    [3.1.1. Expression of biomakers before and after the treatment of Lapatinib](#css_class3.1.1)  
+    [3.1.2 Searching for our own biomarkers](#css_class3.1.2)  
+    [3.1.3 Boxplot of our biomarkers](#css_class3.1.3)  
+    [3.1.4 ggBoxplot of our biomarkers' basalexpression in breast cells with Kruskal-Wallis test](#css_class3.1.4)  
+    [3.1.5 Heatmap of biomarkers in breast cells](#css_class3.1.5)  
 
-    [](#css_class2.1.1)
-    
-    [](#css_class2.1.2)
-    
-    [](#css_class2.1.3)
-  
-  [](#css_id2.2)
-  
-    [](#css_class2.2.1)
-    
-    [](#css_class2.2.2)
-    
-    [](#css_class2.2.3)
-    
-    [](#css_class2.2.4)
-    
-    [](#css_class2.2.5)
-  
-  [](#css_id2.3)
-  
-  [](#css_id2.4)
-  
-    [](#css_class2.4.1)
+  [3.2. Paired t-test between the Lapatinib treated und untreated data](#css_id3.2)  
+    [3.2.1 Genome wide paired t-test](#css_class3.2.1)  
+    [3.2.2 Paired t-test of our biomarker before and after treatment](#css_class3.2.2)  
+    [3.2.3 Paired t-test over genes, increased confidence level (99 %)](#css_class3.2.3)  
+    [3.2.4 Visualization of the genome-wide paired t-test in a vulcano plot](#css_class3.2.4)  
 
+  [3.3 K-means](#css_id3.3)
+  
+  [3.4 PCA](#css_id3.4)
+  
+  [3.5 Spearman correlation](#css_id3.5)
 
 [4. Main questions](#anchor4)  
   [4.1 Question 1: Does the cell doubling time correlate with reduced drug sensitivity?](#css_id4.1)  
@@ -88,7 +79,9 @@ library(viridis)
     [4.2.5 Anova](#css_class4.2.5)  
 
   [4.3 Question 3: Comparing lapatinib treated breast and cns celllines](#css_id4.3)  
-    [4.3.x Volcano plot](#css_class4.3.x)
+    [4.3.1 Volcano plot](#css_class4.3.1)
+    [4.3.2 Heat map for visualization](#css_class4.3.2)
+    [4.3.3 Investigation of correlation](#css_class4.3.3)
     
     
 <div style = "text-align: justify">
@@ -143,7 +136,7 @@ rmv.rows = apply(n, 1, function(x) {
   sum(is.na(x))
 })
 NLGI50.all = n[-which(rmv.rows > 0), ]  # Removing any row with 1 or more missing values
-rm(rmv.rows, n, NegLogGI50)
+rm(rmv.rows, n)
 # used for second main question 
 ```
 
@@ -440,13 +433,11 @@ As we can see, in contrast to the k means method, clusters can be determined. Re
 
 <div style="text-align: justify">  
 # 3. Specific Analysis: Lapatinib {#anchor3}
-<div style="text-align: justify">  
-# 2. Specific Analysis: Lapatinib
 
-##Analysis of biomarker and t-test between treated and untreated cells
+## 3.1 Analysis of biomarker and t-test between treated and untreated cells {#css_id3.1}
 
 
-###Expression of biomakers before and after the treatment of Lapatinib.
+### 3.1.1. Expression of biomakers before and after the treatment of Lapatinib {#css_class3.1.1}
 </div>
 ```{r}
 Treated_t<-data.frame(t(Treated))
@@ -476,8 +467,11 @@ boxplot(LapUn$ESR1, LapTreat$ESR1,
         ylab="Expression")
 ```
 <div style="text-align: justify"> 
-##Searching for our own biomarkers
+
+### 3.1.2 Searching for our own biomarkers {#css_class3.1.2}
+
 The log2FoldChange was examined from the mean of all genes before and after treatment with lapatinib.</div>
+
 ```{r}
 Treat<-colMeans(LapTreat, na.rm = TRUE)
 Untreat<-colMeans(LapUn, na.rm = TRUE)
@@ -500,7 +494,7 @@ ASNS stands for Asparagine Synthetase: The enzyme catalyzes the production of th
 </div>
 
 <div style="text-align: justify"> 
-###Boxplot of our biomarkers
+### 3.1.3 Boxplot of our biomarkers {#css_class3.1.3}
 </div>
 ```{r, fig.height=8, fig.width=18, message=TRUE, paged.print=TRUE}
 boxplot(LapTreat$GDF15,LapUn$GDF15,
@@ -536,9 +530,11 @@ df_breast<-data.frame(Expression, Biomarkers)
 ```
 
 <div style="text-align: justify"> 
-###ggBoxplot of our biomarkers' basalexpression in breast cells with Kruskal-Wallis test
+### 3.1.4 ggBoxplot of our biomarkers' basalexpression in breast cells with Kruskal-Wallis test {#css_class3.1.4}
+
 The null hypothesis is: there is no difference between the groups.
 The Kruskal-Wallis test is for independent samples. It tests whether the central trends of several independent samples differ. </div>
+
 ```{r, fig.height=5, fig.width=8, message=TRUE}
 
 ggboxplot(df_breast, x="Biomarkers", y="Expression", color = "Biomarkers",
@@ -549,7 +545,7 @@ ggboxplot(df_breast, x="Biomarkers", y="Expression", color = "Biomarkers",
                      ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
 ```
 
-###Heatmap of biomarkers in breast cells
+### 3.1.5 Heatmap of biomarkers in breast cells {#css_class3.1.5}
 
 ```{r, fig.height=5, fig.width=8, message=TRUE}
 pheat_breast<-pheatmap(breast_marker_matrix ,
@@ -564,8 +560,10 @@ pheat_breast<-pheatmap(breast_marker_matrix ,
 pheat_breast
 ```
 <div style="text-align: justify"> 
-##Paired t-test between the Lapatinib treated und untreated data
-###Genome wide paired t-test
+
+## 3.2. Paired t-test between the Lapatinib treated und untreated data {#css_id3.2}
+
+### 3.2.1 Genome wide paired t-test {#css_class3.2.1}
 </div>
 ```{r, echo=FALSE }
 LapatinibUntreated<-dplyr::select(Untreated, contains("Lapa"))
@@ -579,8 +577,10 @@ ba<-data.frame(before, after)
 t.test(before, after, paired=TRUE)
 ```
 <div style="text-align: justify"> 
-###Paired t-test of our biomarker before and after treatment
+### 3.2.2 Paired t-test of our biomarker before and after treatment {#css_class3.2.2}
+
 The paired t-test shows a statistical significance of our biomarkers.</div>
+
 ```{r, table1}
 before_biomarker<-LapUn %>% dplyr::select("GDF15", "NUPR1", "DDIT3", "TRIB3", "ATF3", "ASNS")
 after_biomarker<-LapTreat %>% dplyr::select("GDF15", "NUPR1", "DDIT3", "TRIB3", "ATF3", "ASNS")
@@ -591,7 +591,7 @@ table[, .(Marker,pvalue)]
 ```
 
 <div style="text-align: justify"> 
-### Paired t-test over genes, increased confidence level (99%) 
+### 3.2.3 Paired t-test over genes, increased confidence level (99 %) {#css_class3.2.3} 
 </div>
 ```{r}
 row_t_test<-as.data.frame(row_t_paired(before, after, alternative = "two.sided", mu = 0,conf.level = 0.99))
@@ -599,7 +599,7 @@ summary(row_t_test$pvalue)
 ```
 
 <div style="text-align: justify"> 
-###Visualization of the genome-wide paired t-test in a vulcano plot
+### 3.2.4 Visualization of the genome-wide paired t-test in a vulcano plot {#css_class3.2.4}
 </div>
 ```{r, fig.height=12, fig.width=12, message=TRUE, paged.print=TRUE}
 Lap_t_test<-data.table(col_t_paired(LapUn, LapTreat, alternative = "two.sided", mu = 0,conf.level = 0.95))
@@ -623,7 +623,7 @@ with(subset(vulcano, padj<.05 & abs(log2FoldChange)>1), textxy(log2FoldChange, -
 
 
 
-##k-means
+## 3.3 K-means {#css_id3.3}
 ```{r}
 LapatinibFold = select(Fold_Change, contains("Lapa"))
 
@@ -655,16 +655,11 @@ s = silhouette(km$cluster, D)
 plot(s)
 ```
 
-```{r, echo = FALSE}
-#plot kmeans
-clus <- kmeans(topVarFold75, centers=3)
-clusplot(topVarFold75, clus$cluster, color=TRUE, shade=TRUE, labels=1, lines=0, col.clus = c("purple", "pink", "lightseagreen"), main = "K-means Plot", col.p = c("purple", "pink", "lightseagreen"))
 
-```
+## 3.4 PCA {#css_id3.4}
 
-
-## PCA
 Since the clustering method by performing k means clustering again was not successful, we performed a principal component analysis over the selected lapatinib samples for identifying clusters or patterns while preserving as much information of the original data set as possible.
+
 ```{r,}
 L_fc <- select(Fold_Change, contains("Lapa"))
 
@@ -672,7 +667,9 @@ L_fc <- select(Fold_Change, contains("Lapa"))
 pca <- prcomp(t(L_fc), scale = TRUE)
 
 ```
+
 By plotting a scree plot of the variation percentage, we can display how much variation a principal component captures from the original data.
+
 ```{r}
 pca.var <- pca$sdev^2  # sdev calculates variation each PC accounts for
 pca.var.per <- round(pca.var/sum(pca.var)*100, 1) 
@@ -723,8 +720,10 @@ color_tissue = magma[metad.cl$tissue]
 tissue <- levels(metad.cl$tissue)
 
 ```
+
 To determine clusters of samples based on their similarity, we plotted PC1 and PC2 aswell as a PC2 and PC3 while colouring by tissue type and drug respectively.
-```{r}
+
+```{r, fig.height = 4.5, fig.width = 7.2}
 par(mfrow=c(2,2), cex=0.7, oma=c(2,3,2,2))
 par(mar=c(4, 6, 3, 3))
 ## colored by msi
@@ -801,9 +800,11 @@ tissue23 <- plot(pca$x[,2],
 
 
 ```
+
 As we can see, rarely any clusters can be determined. In Addition, the colour annotation does not reveal any pattern of clustering.
 
-### Spearman correlation
+
+## 3.5 Spearman correlation {#css_id3.5}
 
 Modelling of a linear relationship between cell doubling time and inoculation density.
 
@@ -821,7 +822,7 @@ lm(Cellline_Annotation$Inoculation_Density~ Cellline_Annotation$Doubling_Time)
 abline(lm(Cellline_Annotation$Inoculation_Density ~ Cellline_Annotation$Doubling_Time), col = "red", lwd = 2)
 ```
 
-As you can see from the plot, there is a positive correlation between inoculation density and doubling time. This means that the higher the inoculation density, the higher the doubling time, which means that the tumour grows slowly because the cells need more time to divide.
+As you can see from the plot, there is a positive correlation between inoculation density and doubling time. This means that the higher the inoculation density, the higher the doubling time, which suggests that the tumour grows slowly because the cells need more time to divide.
 
 
 
@@ -1161,20 +1162,9 @@ The data is hard to discuss, because we used random values for our test and trai
 
 As we read in the paper "Antitumor and antiangiogenic effect of the dual EGFR and HER-2 tyrosine kinase inhibitor lapatinib in a lung cancer model. (Diaz et al., 2010)", lapatinib and erlotinib are said to have similar effects. To verify this, we first looked at the correlation of the drugs and then created a graph showing the difference between GI50 for a certain cell line and the middle GI50 for both drugs.
 
-```{r correlation, echo = FALSE}
-# correlation in general 
-n= as.data.frame(t(NegLogGI50))
-rmv.rows = apply(n, 1, function(x) {
-  sum(is.na(x))
-})
-NLGI50.all = n[-which(rmv.rows > 0), ]  # Removing any row with 1 or more missing values
-rm(rmv.rows, n, NegLogGI50)
-
-```
-
 
 ### 4.2.1 Heatmap {#css_class4.2.1}
-```{r correlation heatmap, echo = FALSE}
+```{r correlation heatmap}
 cor = cor(NLGI50.all)
 pheatmap(cor, col = cm.colors(256), main = "Correlation NLGI50")
 
@@ -1184,7 +1174,7 @@ Erlotinib and lapatinib have a strong correlation.
 
 
 ### 4.2.2 Plot Erlotinib and Lapatinib, coloured by tissue {#css_class4.2.2}
-```{r plot erlotinib, fig.height=12, fig.width=16, echo = FALSE}
+```{r plot erlotinib, fig.height=12, fig.width=16}
 
 #differece
 diff = data.frame(erlotinib = NLGI50.all$erlotinib - mean(NLGI50.all$erlotinib), lapatinib = NLGI50.all$lapatinib- mean(NLGI50.all$lapatinib))
@@ -1221,7 +1211,7 @@ rm(e,l)
 The difference from the NegLogGI50 for a particular cell line and the mean NegLogGI50 is plotted here for Erlotinib and Lapatinib.
 
 ### 4.2.3 Pearson correlation {#css_class4.2.3}
-```{r correlation erlotinib, lapatinib, echo = FALSE}
+```{r correlation erlotinib, lapatinib}
 cor(NLGI50.all$erlotinib, NLGI50.all$lapatinib, method = "pearson")
 ```
 
@@ -1230,7 +1220,7 @@ A Pearson correlation coefficient of ~ 0.65 confirms that these patterns are sim
 ### 4.2.4 Lung cellines {#css_class4.2.4}
 To answer our more specific question, whether lapatinib also has an effect on lung cancer, we will only look at the cell lines in lung cancer.
 
-```{r lung genes, fig.height = 7, fig.width = 14, echo = FALSE}
+```{r lung genes, fig.height = 7, fig.width = 14}
 #only lung with mean all
 ### load data
 Metadata_Lapatinib_treated = Metadata[which(Metadata$drug == "lapatinib" & Metadata$dose != "0nM"),]
@@ -1259,7 +1249,7 @@ rm(e,l)
 The difference from the NegLogGI50 for cell line from lung tissue and the mean NegLogGI50 is plotted here for Erlotinib and Lapatinib.
 
 
-```{r pearson correlation lung, echo = FALSE}
+```{r pearson correlation lung}
 #correlation lung
 
 cor(NegLogGI50.lung$erlotinib, NegLogGI50.lung$lapatinib, method = "pearson")
@@ -1270,7 +1260,7 @@ A pearson correlation coefficent of ~ 0.96 suggests that Lapatinib has a similar
 
 
 <div style="text-align: justify"> 
-###Selection of Lapatinib and Erlotinib treated cells
+### Selection of Lapatinib and Erlotinib treated cells
 </div>
 ```{r}
 lapa<-data.frame(Metadata[which(Metadata[,'drug'] == "lapatinib"), ])
@@ -1309,8 +1299,8 @@ df_drug<-data.frame(log2FoldChange, Drug)
 ```
 
 <div style="text-align: justify"> 
-##Anova 
-###Checking requirements for ANOVA
+### 4.2.5 Anova {#css_class4.2.5}
+### Checking requirements for ANOVA
 First, the fold change data of lapatinib and erlotinib must be checked for normality. Anova can be used if the data is distributed normally.</div>
 ```{r}
 qqnorm(log2FoldChange, pch = 1, frame = FALSE)
@@ -1322,7 +1312,6 @@ Anova anticipates homogeneity of variances. If the p-value of the Fligner-Killee
 fligner.test(log2FoldChange ~ Drug, data=df_drug )
 ```
 
-###Anova
 <div style="text-align: justify"> 
 Anova tests whether the means of several independent groups differ.
 A p-value of 0.53 means that the result is not significant. Therefore, there is no significant difference between Erlotinib and Lapatinib.</div>
@@ -1334,6 +1323,7 @@ ggboxplot (data = df_drug, x="Drug", y="log2FoldChange", color = "Drug",
           stat_compare_means(label = "p.signif", method = "t.test",
           ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
 ```
+
 
 
 ## 4.3 Question 3: Does lapatinib have a similar effect on brain metastasis as it does on breast cancer? {#css_id4.3}
@@ -1510,6 +1500,7 @@ plot_cns
 ```
 
 ### 4.3.2 Heat map for visualization {#css_class4.3.2}
+
 To visualize the expression patterns of the top peak genes present in both tissue types we calculated a heat map, comparing the expression profiles of the two tissue types.
 
 ```{r}
@@ -1543,6 +1534,7 @@ pheatmap(
 ```
 
 ### 4.3.3 Investigation of correlation {#css_class4.3.3}
+
 For better visualization of the expression patterns of the top peak genes among breast and cns tissues we computed a heat map of the mean fold changes for direct comparison. 
 
 ```{r}
