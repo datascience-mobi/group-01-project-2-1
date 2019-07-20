@@ -29,33 +29,23 @@ library(viridis)
 ```
 
 # Table of content
-[3. Main questions](#anchor3)
+[4. Main questions](#anchor4)  
+  [4.1 Question 1: Does the cell doubling time correlate with reduced drug sensitivity?](#css_id4.1)  
+    [4.1.1 Linear regression ~ Foldchange-means](#css_class4.1.1)  
+    [4.1.2 Linear regression ~ Foldchange-means biomarkers](#css_class4.1.2)  
+    [4.1.3 Linear regression ~ Doubling-time](#css_class4.1.3)  
+    [4.1.4 Multiple regression](#css_class4.1.4)  
+    [4.1.5 Table of conclusion](#css_class4.1.5)  
 
-  [Question 1: Does the cell doubling time correlate with reduced drug sensitivity?](#css_id3.1)
+  [4.2 Question 2: Does Lapatinib have a similar effect on lung cancer as Erlotinib?](#css_id4.2)  
+    [4.2.1 Heatmap](#css_class4.2.1)  
+    [4.2.2 Plot Erlotinib and Lapatinib, coloured by tissue](#css_class4.2.2)  
+    [4.2.3 Pearson correlation](#css_class4.2.3)  
+    [4.2.4 Lung cellines](#css_class4.2.4)  
+    [4.2.5 Anova](#css_class4.2.5)  
 
-    [Linear regression ~ Foldchange-means](#css_class3.1.1)
-
-    [Linear regression ~ Foldchange-means biomarkers](#css_class3.1.2)
-    
-    [Linear regression ~ Doubling-time](#css_class3.1.3)
-
-    [Multiple regression](#css_class3.1.4)
-
-    [Table of conclusion](#css_class3.1.5)
-
-  [Question 2: Does Lapatinib have a similar effect on lung cancer as Erlotinib?](#css_id3.2)
-
-    [Matrix of correlations](#css_class3.2.1)
-
-    [Plot Erlotinib and Lapatinib, coloured by tissue](#css_class3.2.2)
-    
-    [correlation erlotinib , lapatinib](#css_class3.2.3)
-    
-    [Lung cellines](#css_class3.2.4)
-    
-    [Anova](#css_class3.2.5)
-
-  [Question 3: Comparing lapatinib treated breast and cns celllines](#css_id3.3)
+  [4.3 Question 3: Comparing lapatinib treated breast and cns celllines](#css_id4.3)  
+    [4.3.x Volcano plot](#css_class4.3.x)
   
   
 
@@ -88,15 +78,16 @@ rm(NCI_TPW_gep_treated,NCI_TPW_gep_untreated,list,nlist)
 
 ```
 
-# 3. Main questions {#anchor}
+# 4. Main questions {#anchor4}
 
 
-## Question 1: Does the cell doubling time correlate with reduced drug sensitivity? {#css_id1}
+## 4.1 Question 1: Does the cell doubling time correlate with reduced drug sensitivity? {#css_id4.1}
 
+<div style = "text-align: justify">
 As mentioned in our presentation, we want to create a model to predict GI50-values and thus to predict, if Lapatinib is a good choice. Therefore, we took several datasets and performed 4 regression analyses.
 
 
-### Linear regression ~ Foldchange-means {.css_class}
+### 4.1.1 Linear regression ~ Foldchange-means {#css_class4.1.1}
 
 The first linear model tries to predict the G-50 value under the data of the Foldchange-means.
 
@@ -180,7 +171,7 @@ rmse1.test = sqrt(1/n * sum(residuals^2))
 
 ```
 
-### Linear regression ~ Foldchange-means biomarkers 
+### 4.1.2 Linear regression ~ Foldchange-means biomarkers {#css_class4.1.2}
 
 Linear regression is not suitable here, as the mean fold-change per cell line is not a meaningful indicator in a biological context.
 Hence, we selected the top 20 genes to calculate our mean values. Afterwards linear regression was performed.
@@ -283,7 +274,7 @@ rmse11.test = sqrt(1/n * sum(residuals^2))
 ```
 
 
-### Linear regression ~ Doubling-time
+### 4.1.3 Linear regression ~ Doubling-time {#css_class4.1.3}
 
 The second linear model tries to predict the G-50 value under the data of the Doubling-time.
 ```{r,echo = FALSE}
@@ -342,7 +333,8 @@ rmse2.test = sqrt(1/n * sum(residuals^2))
 #rmse2.test
 ```
 
-### Multiple regression
+
+### 4.1.4 Multiple regression {#css_class4.1.4}
 
 Finally, we did a multiple regression with both datasets to predict GI50-values.
 ```{r,echo = FALSE}
@@ -397,7 +389,7 @@ rmse3.test = sqrt(1/n * sum(residuals^2))
 ```
 
 
-### Table of conclusion
+### 4.1.5 Table of conclusion {#css_class4.1.5}
 
 The following table shows important values. 
 
@@ -415,16 +407,12 @@ knitr::kable(table, format = "markdown")
 ```
 
 
-The data is hard to discuss, because we used random values for our test and training dataset. Hence, different values on every run are obtained. We could use "selected values" (First 20) but this would be a kind of cheating.
+The data is hard to discuss, because we used random values for our test and training dataset. Hence, different values on every run are obtained. We could use "selected values" (First 20) but this would be kind of cheating.
 
 
-## Question 2: Does Lapatinib have a similar effect on lung cancer as Erlotinib? {#css_id2}
-
-<div style = "text-align: justify">
+## 4.2 Question 2: Does Lapatinib have a similar effect on lung cancer as Erlotinib? {#css_id4.2}
 
 As we read in the paper "Antitumor and antiangiogenic effect of the dual EGFR and HER-2 tyrosine kinase inhibitor lapatinib in a lung cancer model. (Diaz et al., 2010)", lapatinib and erlotinib are said to have similar effects. To verify this, we first looked at the correlation of the drugs and then created a graph showing the difference between GI50 for a certain cell line and the middle GI50 for both drugs.
-
-</div>
 
 ```{r correlation, echo = FALSE}
 # correlation in general 
@@ -438,20 +426,17 @@ rm(rmv.rows, n, NegLogGI50)
 ```
 
 
-### Matrix of correlations {#css_class}
+### 4.2.1 Heatmap {#css_class4.2.1}
 ```{r correlation heatmap, echo = FALSE}
 cor = cor(NLGI50.all)
 pheatmap(cor, col = cm.colors(256), main = "Correlation NLGI50")
 
 ```
 
-<div style = "text-align: justify"> 
+Erlotinib and lapatinib have a strong correlation.
 
-Erlotinib and lapatinib have a strong correlation. 
 
-</div>
-
-### Plot Erlotinib and Lapatinib, coloured by tissue
+### 4.2.2 Plot Erlotinib and Lapatinib, coloured by tissue {#css_class4.2.2}
 ```{r plot erlotinib, fig.height=12, fig.width=16, echo = FALSE}
 
 #differece
@@ -469,8 +454,8 @@ rm(tissue)
 
 diff$celllines = factor(diff$celllines, levels = diff$celllines[order(diff$tissue)]) #Classified by tissue
 
-e =  ggplot(diff, aes(x = celllines, y = erlotinib, fill = tissue)) +
-  geom_bar(stat = "identity") +
+e =  ggplot(diff, aes(x = celllines, y = erlotinib, fill = tissue))+ 
+  geom_bar(stat = "identity") + 
   coord_flip() + 
   labs(title = "Mean graph plot of NLGI50 values for Erlotinib")
 
@@ -488,14 +473,14 @@ rm(e,l)
 
 The difference from the NegLogGI50 for a particular cell line and the mean NegLogGI50 is plotted here for Erlotinib and Lapatinib.
 
-### correlation erlotinib, lapatinib
+### 4.2.3 Pearson correlation {#css_class4.2.3}
 ```{r correlation erlotinib, lapatinib, echo = FALSE}
 cor(NLGI50.all$erlotinib, NLGI50.all$lapatinib, method = "pearson")
 ```
 
 A Pearson correlation coefficient of ~ 0.65 confirms that these patterns are similar. One reason for this is that both erlotinib and lapatinib are EGFR inhibitors. Cell lines that were more sensitive are displayed as bars that project to the right of the mean. Cell lines that were less sensitive are displayed with bars projected to the left.
 
-### Lung cellines
+### 4.2.4 Lung cellines {#css_class4.2.4}
 To answer our more specific question, whether lapatinib also has an effect on lung cancer, we will only look at the cell lines in lung cancer.
 
 ```{r lung genes, fig.height = 7, fig.width = 14, echo = FALSE}
@@ -536,12 +521,11 @@ cor(NegLogGI50.lung$erlotinib, NegLogGI50.lung$lapatinib, method = "pearson")
 
 A pearson correlation coefficent of ~ 0.96 suggests that Lapatinib has a similar effect on lung cancer as Erlotinib.
 
+<div style="text-align: justify"> 
 
-### Anova 
-
-###selection of Lapatinib and Erlotinib treated cells
-```{r}
-
+####Selection of Lapatinib and Erlotinib treated cells
+</div>
+```{r, echo = FALSE}
 lapa<-data.frame(Metadata[which(Metadata[,'drug'] == "lapatinib"), ])
 erlo<-data.frame(Metadata[which(Metadata[,'drug'] == "erlotinib"), ])
 el<-right_join(lapa,erlo, by="cell")
@@ -551,20 +535,14 @@ rmv.rows = apply(el, 1, function(x) {
 row.names(rmv.rows)
 ```
 
-Create data frame with lapatinib and erlotinib data
-```{r}
-
+<div style="text-align: justify"> 
+Create data frame with Lapatinib and Erlotinib data </div>
+```{r, echo = FALSE}
 fc<-data.frame(Treated-Untreated)
-dim(fc)
 all<-data.frame(fc[grep("lapatinib|erlotinib", colnames(fc))])
-dim(all)
 
-```
 
-since erlotinip contains more columns than lapatinib, we have to remove these columns
-```{r}
-
-all.rmv<-data.frame(all %>% select(
+all.rmv<-data.frame(all %>% dplyr::select(
                     -"CCRF.CEM_erlotinib_10000nM_24h", 
                     -"HL.60_erlotinib_10000nM_24h", 
                     -"HT29_erlotinib_10000nM_24h", 
@@ -572,39 +550,47 @@ all.rmv<-data.frame(all %>% select(
                     -"LOX_erlotinib_10000nM_24h",
                     -"SR_erlotinib_10000nM_24h",
                     -"COLO.205_lapatinib_10000nM_24h"))
-dim(all.rmv)
-                   
-```
-
-
-Checking the rows
-```{r}
+                  
 la<-data.frame(all.rmv[grep("lapatinib", colnames(all.rmv))])
-ncol(la)
+
 er<-data.frame(all.rmv[grep("erlotinib", colnames(all.rmv))])
-ncol(er)
 erla<-data.frame(er,la)
-ncol(all.rmv) #to prove if the columns are removed
+drug<-c(rep('Erlotinib',53), rep('Lapatinib',53))
+fc_drug<-apply(erla, MARGIN = 2, FUN = mean)
+df_drug<-data.frame(fc_drug, drug)
+
 ```
 
+<div style="text-align: justify"> 
 
-###Anova 
+### 4.2.5 Anova {#css_class4.2.5}
+
+First, the fold change data of lapatinib and erlotinib must be checked for normality. Only when the data is normalized can anova be used.</div>
 
 ```{r}
-drug<-c(rep('Erlotinib',53), rep('Lapatinib',53))
-expression_drug<-apply(erla, MARGIN = 2, sum)
-df_drug<-data.frame(expression_drug, drug)
-library(ggpubr)
-ggboxplot (data = df_drug, x="drug", y="expression_drug", color = "drug",    
+qqnorm(fc_drug, pch = 1, frame = FALSE)
+qqline(fc_drug, col = "steelblue", lwd = 2)
+```
+<div style="text-align: justify"> 
+Anova anticipates variance homogeneity. If the p-value of this test is greater than 0.05, the variance of variance is not rejected and this condition is met.</div>
+```{r}
+fligner.test(fc_drug ~ drug, data=df_drug )
+```
+
+p = 0.53 means that the result is not significant. Thus, the two drugs did not differ significantly from each other.
+
+```{r}
+ggboxplot (data = df_drug, x="drug", y="fc_drug", color = "drug",    
           add = "jitter", legend = "none")+
           rotate_x_text(angle = 45)+
-          stat_compare_means(method = "anova")+        # Add global annova p-value
+          stat_compare_means(method = "anova",  label.x = 2)+ # Add global anova p-value
           stat_compare_means(label = "p.signif", method = "t.test",
           ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
 ```
 
 
-## Question 3: Comparing lapatinib treated breast and cns celllines 
+## 4.3 Question 3: Comparing lapatinib treated breast and cns celllines {#css_id4.3}
+
 As a proven fact, lapatinb crosses the brain-blood barrier. Since breast cancer tends to spread and form metastasis in brain cells and lapatinib is used in anti-breast cancer therapy, we wanted to analyse our data for similar effects after lapatinib treatment in breast and cns tissue cells. 
 
 At first, we selected lapatinib response genes by creating matrices with cns- and breast-cell line fold change values. 
@@ -640,7 +626,9 @@ cnsFC <- subset(L_fc, rownames(L_fc) %in% rownames(cns))
 cnsTreated <- subset(L_treated, rownames(L_treated) %in% rownames(cns))
 cnsUntreated <- subset(L_untreated, rownames(L_untreated) %in% rownames(cns))
 ```
+
 Next, we performed a paired t-test of treated and untreated cns and breast samples, respectively, to determine statistical significant fold change values. Since we are performing multiple testing over different cell lines from breast and cns tissues, we want to adjust our p value by performing a Benjamini Hochberg correction.
+
 ```{r}
 #performing a paired t-test of treated and untreated samples
 t_test_cns <- col_t_paired(cnsTreated, cnsUntreated, alternative = "two.sided", mu = 0,conf.level = 0.95)
@@ -659,7 +647,12 @@ breastFCm <- as.numeric(colMeans(breastFC))
 cnsFCm <- as.numeric(colMeans(cnsFC))
 genes <- colnames(breastFC)
 ```
+
+
+### 4.3.x Volcano plot {#css_class4.3.x}
+
 For visualization of the biological significance (fold change values) and the statistical significance (adjusted p-values), we plotted our data in an interactive volcano plot. 
+
 ```{r}
 ## breast volcano plot
 #creating a matrix containg all needed values for plotting
@@ -768,7 +761,9 @@ plot_cns <- plot_ly(data = diff_df_cns, x = diff_df_cns$Fold, y = -log10(diff_df
 plot_cns
 
 ```
+
 To visualize the expression patterns of the top peak genes present in both tissue types we calculated a heat map, comparing the expression profiles of the two tissue types.
+
 ```{r}
 # selecet top peak genes common in cns and breast tissue
 tpb_comparison <- subset(top_peaks_breast, gene %in% top_peaks_cns$gene)
@@ -806,26 +801,32 @@ dif.FC.BC = data.frame(breast = cor_mat$breast -  mean(t(breastFC)), cns = cor_m
 dif.FC.BC$gene = rownames(cor_mat)
 ```
 
-```{r}
+```{r, fig.height = 7, fig.width = 14}
 # PLot
 
-ggplot(dif.FC.BC,aes(x = gene, y = breast)) +
+b = ggplot(dif.FC.BC,aes(x = gene, y = breast)) +
   geom_bar(stat = "identity", fill = "skyblue") + 
   geom_text(aes(label = round(breast, 2)), vjust = -0.5, color = "black", size = 3) + 
   coord_flip() + labs(title = "Mean graph plot of Fold Change for breast top peak genes")
 
 
-ggplot(dif.FC.BC,aes(x = gene, y = cns)) +
+c = ggplot(dif.FC.BC,aes(x = gene, y = cns)) +
   geom_bar(stat = "identity", fill = "skyblue") + 
   geom_text(aes(label = round(cns, 2)), vjust = -0.5, color = "black", size = 3) + 
   coord_flip() + labs(title = "Mean graph plot of Fold Change for CNS top peak genes")
 
+ggarrange(b, c,
+          labels = c("A", "B"),
+          ncol = 2, nrow = 1)
+rm(b,c)
 ```
-At last, we investigated the expression regulation in both tissue types by calculating the pearson correlation between the fold change values of the top peak genes. 
+
+At last, we investigated the expression regulation in both tissue types by calculating the pearson correlation between the fold change values of the top peak genes.
+
 ```{r}
 #correlation
 cor(cor_mat$breast, cor_mat$cns, method = "pearson")
 ```
-The obtained correlation value of 0.92 indicates that lapatinib treatment yields a similar effect on gene expression in breast and cns tissue cells and therefore might be possible to treat cancer in brain metastasis. 
 
-
+The obtained correlation value of 0.92 indicates that lapatinib treatment yields a similar effect on gene expression in breast and cns tissue cells and therefore might be possible to treat cancer in brain metastasis.  
+</div>
