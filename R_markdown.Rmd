@@ -7,7 +7,7 @@ output: html_document
 
 
 
-```{r setup, include=FALSE, warning = FALSE}
+```{r setup, include=FALSE, warning = FALSE, error = FALSE}
 knitr::opts_chunk$set(echo = TRUE,
                       chache = TRUE)
 #library packages
@@ -29,6 +29,7 @@ library(RColorBrewer)
 library(viridis)
 
 ```
+<div style = "text-align: justify">
 
 # Table of content
 
@@ -42,45 +43,38 @@ library(viridis)
   [2.3 K-means clustering](#css_id2.3)  
   [2.4 PCA](#css_id2.4)  
 
-[3. Specific analysis: lapatinib](#anchor3)
-
-  [3.1 Analysis of biomarker and t-test between treated and untreated cells](#css_id3.1)  
-    [3.1.1. Expression of biomakers before and after the treatment of Lapatinib](#css_class3.1.1)  
+[3. Specific analysis: lapatinib](#anchor3)  
+  [3.1 Analysis of biomarker and t-test between treated and untreated cells](#css_id3.1)    
+    [3.1.1 Expression of biomakers before and after the treatment of Lapatinib](#css_class3.1.1)  
     [3.1.2 Searching for our own biomarkers](#css_class3.1.2)  
     [3.1.3 Boxplot of our biomarkers](#css_class3.1.3)  
     [3.1.4 ggBoxplot of our biomarkers' basalexpression in breast cells with Kruskal-Wallis test](#css_class3.1.4)  
     [3.1.5 Heatmap of biomarkers in breast cells](#css_class3.1.5)  
-
   [3.2. Paired t-test between the Lapatinib treated und untreated data](#css_id3.2)  
     [3.2.1 Genome wide paired t-test](#css_class3.2.1)  
     [3.2.2 Paired t-test of our biomarker before and after treatment](#css_class3.2.2)  
     [3.2.3 Paired t-test over genes, increased confidence level (99 %)](#css_class3.2.3)  
     [3.2.4 Visualization of the genome-wide paired t-test in a vulcano plot](#css_class3.2.4)  
-
-  [3.3 K-means](#css_id3.3)
-  
-  [3.4 PCA](#css_id3.4)
-  
-  [3.5 Spearman correlation](#css_id3.5)
+  [3.3 K-means](#css_id3.3)  
+  [3.4 PCA](#css_id3.4)  
+  [3.5 Spearman correlation](#css_id3.5)  
 
 [4. Main questions](#anchor4)  
   [4.1 Question 1: Does the cell doubling time correlate with reduced drug sensitivity?](#css_id4.1)  
-    [4.1.1 Linear regression ~ Inoculation_Density](#css_class4.1.1)  
-    [4.1.2 Linear regression ~ Doubling-time](#css_class4.1.2)
-    [4.1.3 Multiple regression](#css_class4.1.3)
-    [4.1.4 Table of conclusion](#css_class4.1.4)  
-
+    [4.1.1 Linear regression ~ Inoculation_Density](#css_class4.1.1)    
+    [4.1.2 Linear regression ~ Doubling-time](#css_class4.1.2)  
+    [4.1.3 Multiple regression](#css_class4.1.3)  
+    [4.1.4 Table of conclusion](#css_class4.1.4)    
   [4.2 Question 2: Does Lapatinib have a similar effect on lung cancer as Erlotinib?](#css_id4.2)  
     [4.2.1 Heatmap](#css_class4.2.1)  
     [4.2.2 Plot Erlotinib and Lapatinib, coloured by tissue](#css_class4.2.2)  
     [4.2.3 Pearson correlation](#css_class4.2.3)  
     [4.2.4 Lung cellines](#css_class4.2.4)  
     [4.2.5 Anova](#css_class4.2.5)  
-
-  [4.3 Question 3: Comparing lapatinib treated breast and cns celllines](#css_id4.3)  
-    [4.3.1 Volcano plot](#css_class4.3.1)
-    [4.3.2 Heat map for visualization](#css_class4.3.2)
-    [4.3.3 Investigation of correlation](#css_class4.3.3)
+  [4.3 Question 3: Does Lapatinib have a similar effect on brain metastasis as it does on breast cancer?](#css_id4.3)  
+    [4.3.1 Volcano plot](#css_class4.3.1)  
+    [4.3.2 Heatmap for visualization](#css_class4.3.2)  
+    [4.3.3 Investigation of correlation](#css_class4.3.3)  
     
     
 <div style = "text-align: justify">
@@ -310,7 +304,7 @@ tissue <- levels(metad.cl$tissue)
 
 To determine clusters of samples based on their similarity, we plotted PC1 and PC2 aswell as a PC2 and PC3 while colouring by tissue type and drug respectively.
 
-```{r, PCA drug+tissue, fig.height=6, fig.width=12}
+```{r, PCA drug+tissue, fig.height=6, fig.width=12, warning = FALSE}
 par(mfrow=c(1,2), cex=0.7)
 #par(mar=c(4, 6, 3, 3))
 
@@ -436,7 +430,7 @@ As we can see, in contrast to the k means method, clusters can be determined. Re
 ## 3.1 Analysis of biomarker and t-test between treated and untreated cells {#css_id3.1}
 
 
-### 3.1.1. Expression of biomakers before and after the treatment of Lapatinib {#css_class3.1.1}
+### 3.1.1 Expression of biomakers before and after the treatment of Lapatinib {#css_class3.1.1}
 </div>
 ```{r}
 Treated_t<-data.frame(t(Treated))
@@ -659,7 +653,7 @@ plot(s)
 
 Since the clustering method by performing k means clustering again was not successful, we performed a principal component analysis over the selected lapatinib samples for identifying clusters or patterns while preserving as much information of the original data set as possible.
 
-```{r,}
+```{r}
 L_fc <- select(Fold_Change, contains("Lapa"))
 
 # PCA
@@ -722,7 +716,7 @@ tissue <- levels(metad.cl$tissue)
 
 To determine clusters of samples based on their similarity, we plotted PC1 and PC2 aswell as a PC2 and PC3 while colouring by tissue type and drug respectively.
 
-```{r, fig.height = 4.5, fig.width = 7.2}
+```{r, fig.height = 4.5, fig.width = 7.2, warning = FALSE}
 par(mfrow=c(2,2), cex=0.7, oma=c(2,3,2,2))
 par(mar=c(4, 6, 3, 3))
 ## colored by msi
@@ -1038,7 +1032,7 @@ pheatmap(cor, col = cm.colors(256), main = "Correlation NLGI50")
 
 ```
 
-Erlotinib and lapatinib have a strong correlation.
+Erlotinib and Lapatinib have a strong correlation.
 
 
 ### 4.2.2 Plot Erlotinib and Lapatinib, coloured by tissue {#css_class4.2.2}
@@ -1062,12 +1056,16 @@ diff$celllines = factor(diff$celllines, levels = diff$celllines[order(diff$tissu
 e =  ggplot(diff, aes(x = celllines, y = erlotinib, fill = tissue))+ 
   geom_bar(stat = "identity") + 
   coord_flip() + 
-  labs(title = "Mean graph plot of NLGI50 values for Erlotinib")
+  labs(title = "Mean graph plot of NLGI50 values for Erlotinib")+
+  theme(plot.title = element_text(hjust = 0.5, size = 19),
+        axis.title = element_text(size=17))
 
 l = ggplot(diff, aes(x = celllines, y = lapatinib, fill = tissue)) + 
   geom_bar(stat="identity") + 
   coord_flip() + 
-  labs(title="Mean graph plot of NLGI50 values for Lapatinib")
+  labs(title="Mean graph plot of NLGI50 values for Lapatinib")+
+  theme(plot.title = element_text(hjust = 0.5, size = 19),
+        axis.title = element_text(size=17)) #change size and center title
 
 ggarrange(e, l,
           labels = c("A", "B"),
@@ -1104,8 +1102,13 @@ dif.NegLogGI50.lung$celllines = rownames(NegLogGI50.lung)
 
 # PLot Erlotinib and Lapatinib
 
-e = ggplot(dif.NegLogGI50.lung,aes(x = celllines, y = erlotinib)) + geom_bar(stat = "identity", fill = "skyblue") + geom_text(aes(label=round(erlotinib, 2)), vjust = -0.5, color = "black", size = 3) + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Erlotinib, only lung genes")
-l = ggplot(dif.NegLogGI50.lung,aes(x = celllines, y = lapatinib)) + geom_bar(stat = "identity", fill = "skyblue") + geom_text(aes(label=round(lapatinib, 2)), vjust = -0.5, color = "black", size = 3) + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Lapatinib, only lung genes")
+e = ggplot(dif.NegLogGI50.lung,aes(x = celllines, y = erlotinib)) + geom_bar(stat = "identity", fill = "skyblue") + geom_text(aes(label=round(erlotinib, 2)), vjust = -0.5, color = "black", size = 3) + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Erlotinib, only lung genes")+
+  theme(plot.title = element_text(size = 15),
+        axis.title = element_text(size=15))
+
+l = ggplot(dif.NegLogGI50.lung,aes(x = celllines, y = lapatinib)) + geom_bar(stat = "identity", fill = "skyblue") + geom_text(aes(label=round(lapatinib, 2)), vjust = -0.5, color = "black", size = 3) + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Lapatinib, only lung genes")+
+  theme(plot.title = element_text(size = 15),
+        axis.title = element_text(size=15))
 
 ggarrange(e, l,
           labels = c("A", "B"),
@@ -1194,7 +1197,7 @@ ggboxplot (data = df_drug, x="Drug", y="log2FoldChange", color = "Drug",
 
 
 
-## 4.3 Question 3: Does lapatinib have a similar effect on brain metastasis as it does on breast cancer? {#css_id4.3}
+## 4.3 Question 3: Does Lapatinib have a similar effect on brain metastasis as it does on breast cancer? {#css_id4.3}
 
 As a proven fact, lapatinb crosses the brain-blood barrier. Since breast cancer tends to spread and form metastasis in brain cells and lapatinib is used in anti-breast cancer therapy, we wanted to analyse our data for similar effects after lapatinib treatment in breast and cns tissue cells. 
 
@@ -1367,7 +1370,7 @@ plot_cns
 
 ```
 
-### 4.3.2 Heat map for visualization {#css_class4.3.2}
+### 4.3.2 Heatmap for visualization {#css_class4.3.2}
 
 To visualize the expression patterns of the top peak genes present in both tissue types we calculated a heat map, comparing the expression profiles of the two tissue types.
 
@@ -1420,13 +1423,17 @@ To gather a more detailed conception of the gene expression regulation values (a
 b = ggplot(dif.FC.BC,aes(x = gene, y = breast)) +
   geom_bar(stat = "identity", fill = "skyblue") + 
   geom_text(aes(label = round(breast, 2)), vjust = -0.5, color = "black", size = 3) + 
-  coord_flip() + labs(title = "Mean of Fold Change for breast top peak genes")
+  coord_flip() + labs(title = "Mean of Fold Change for breast top peak genes")+
+  theme(plot.title = element_text(hjust = 0.5,size = 15),
+        axis.title = element_text(size = 15))
 
 
 c = ggplot(dif.FC.BC,aes(x = gene, y = cns)) +
   geom_bar(stat = "identity", fill = "skyblue") + 
   geom_text(aes(label = round(cns, 2)), vjust = -0.5, color = "black", size = 3) + 
-  coord_flip() + labs(title = "Mean of Fold Change for CNS top peak genes")
+  coord_flip() + labs(title = "Mean of Fold Change for CNS top peak genes")+
+  theme(plot.title = element_text(hjust = 0.5, size = 15),
+        axis.title = element_text(size = 15))
 
 ggarrange(b, c,
           labels = c("A", "B"),
