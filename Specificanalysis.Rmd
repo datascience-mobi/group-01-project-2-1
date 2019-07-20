@@ -1,31 +1,30 @@
 ---
 title: "Project02 - Group01"
 author: "Eva, Tobi, Kathi, Laura"
-date: "14 Juni 2019"
-output:
-  html_document: default
-  pdf_document: default
+date: "24 July 2019"
+output: html_document
+  
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
 #library packages
+library(calibrate)
 library(cluster) 
+library(compare)
+library(data.table)
 library(dendextend)
 library(dplyr)
 library(factoextra)
 library(fpc)
 library(ggplot2)
 library(ggpubr)
+library(ggrepel)
 library(matrixTests)
 library(pheatmap)
+library(plotly)
 library(RColorBrewer)
 library(viridis)
-library(plotly)
-library(ggrepel)
-library(compare)
-library(data.table)
-library(matrixTests)
 
 ```
 
@@ -61,111 +60,149 @@ Fold_Change = data.frame(Fold_Change)
 rm(NCI_TPW_gep_treated,NCI_TPW_gep_untreated,list,nlist)
 
 ```
+# Table of content
+[3. Specific analysis: lapatinib](#anchor3)
 
-# 2. Specific analysis: lapatinib
+  [3.1 Analysis of biomarker and t-test between treated and untreated cells](#css_id3.1)  
+    [3.1.1. Expression of biomakers before and after the treatment of Lapatinib](#css_class3.1.1)  
+    [3.1.2 Searching for our own biomarkers](#css_class3.1.2)  
+    [3.1.3 Boxplot of our biomarkers](#css_class3.1.3)  
+    [3.1.4 ggBoxplot of our biomarkers' basalexpression in breast cells with Kruskal-Wallis test](#css_class3.1.4)  
+    [3.1.5 Heatmap of biomarkers in breast cells](#css_class3.1.5)  
 
-##Analysis of the biomarker and t-test between treated and untreated cells
+  [3.2. Paired t-test between the Lapatinib treated und untreated data](#css_id3.2)  
+    [3.2.1 Genome wide paired t-test](#css_class3.2.1)  
+    [3.2.2 Paired t-test of our biomarker before and after treatment](#css_class3.2.2)  
+    [3.2.3 Paired t-test over genes, increased confidence level (99 %)](#css_class3.2.3)  
+    [3.2.4 Visualization of the genome-wide paired t-test in a vulcano plot](#css_class3.2.4)  
+
+  [3.3 K-means](#css_id3.3)
+  
+  [3.4 PCA](#css_id3.4)
+  
+  [3.5 Spearman correlation](#css_id3.5)
+  
+  
+
+# 3. Specific Analysis: Lapatinib {#anchor3}
+
+## 3.1 Analysis of biomarker and t-test between treated and untreated cells {#css_id3.1}
 
 
-###Expression of biomakers before and after the treatment of Lapatinib.
+### 3.1.1. Expression of biomakers before and after the treatment of Lapatinib {#css_class3.1.1}
+</div>
 ```{r}
-
-Treated_t=data.frame(t(Treated))
-Untreated_t=data.frame(t(Untreated))
-LapatinibUntreated<-select(Untreated, contains("Lapa"))
-LapatinibTreated=select(Treated, contains("Lapa"))
+Treated_t<-data.frame(t(Treated))
+Untreated_t<-data.frame(t(Untreated))
+LapatinibUntreated<-dplyr::select(Untreated, contains('Lapa'))
+LapatinibTreated<-dplyr::select(Treated, contains('Lapa'))
 before=as.matrix(LapatinibUntreated)
 after=as.matrix(LapatinibTreated)
-
-
 LapUn<-data.frame(t(before))
 LapTreat<-data.frame(t(after))
 ```
 
-
-We found these genes in a paper as biomarkers and presented them in our presentation. Unfortunately, we can not use it as a biomarker.
-```{r Treated and Untreated, fig.height=8, fig.width=16, message=TRUE, paged.print=TRUE}
+<div style="text-align: justify">  
+We found these genes as biomarkers in a paper and presented them in our first presentation. Unfortunately, we can not use them as a biomarkers.
+(Source of the paper: Basal-Like Breast Cancer Defined by Five Biomarkers Has Superior Prognostic Value than Triple-Negative Phenotype, by Maggie C.U. Cheang, David Voduc, Chris Bajdik, et al. Clin Cancer Res 2008; 14:1368-1376)</div>
+```{r Treated and Untreated, fig.height=8, fig.width=16, message=TRUE, paged.print=TRUE, echo=FALSE}
 boxplot(LapUn$ESR1, LapTreat$ESR1, 
         LapUn$ERBB2, LapTreat$ERBB2,
         LapUn$ERBB3, LapTreat$ERBB3, 
         LapUn$ERBB4, LapTreat$ERBB4,
         LapUn$KRT75, LapTreat$KRT75, 
         LapUn$PGR, LapTreat$PGR,
-        col = viridis(12),
-        names = c("ESR1 before", "ESR1 after", "ERBB2 before", "ERBB2 after", "ERBB3 before", "ERBB3 after", "ERBB4 before","ERBB4 after", "KRT75 before", "KRT75 after", "PGR before",  "PGR after"),
-        main="Expression of Biomakers before and after treatment with Lapatinib", 
-        xlab="Biomarker",
-        ylab="expression")
+        col=c("deeppink4", "deeppink4", "burlywood1", "burlywood1", "darkcyan", "darkcyan", "pink", "pink", "darkolivegreen3", "darkolivegreen3", "lightblue", "lightblue"),
+        names = c("ESR1 before", "ESR1 after", "ERBB2 before", "ERBB2 after", "ERBB3 before", "ERBB3 after", "ERBB4 before","ERBB4 after", "KRT75 before", "KRT75 after", "PGR before",  "PGR   after"),
+        main="Expression of biomakers before and after treatment with Lapatinib", 
+        xlab="Biomarkers",
+        ylab="Expression")
 ```
+<div style="text-align: justify"> 
 
-###searching for our own biomarker
+### 3.1.2 Searching for our own biomarkers {#css_class3.1.2}
+
+The log2FoldChange was examined from the mean of all genes before and after treatment with lapatinib.</div>
+
 ```{r}
-
-#searching for our own biomarker
 Treat<-colMeans(LapTreat, na.rm = TRUE)
 Untreat<-colMeans(LapUn, na.rm = TRUE)
-dim(Treat)
 ut<-(Treat-Untreat)
 ut_sort<-sort(ut, decreasing = TRUE)
 head(ut_sort)
 ```
+<div style="text-align: justify"> 
+GDF3 Growth Differentiation Factor 3 belongs to the transforming growth factor beta (TGF-beta) superfamily and has some intrinsic activity.
 
+NUPR1 stands for nuclear protein, transcriptional regulator, 1. It regulates the transcription during stress signals by empowering cells with resistance to stress.
 
+DDIT3 encodes for the DNA damage-inducible transcript 3 protein, a member of the CCAAT/enhancer-binding protein which is a transcription factor. It is important for the response of cell stresses. The DNA damage-inducible transcript 3 protein induces cell cycle arrest and apoptosis in response to ER stress.
 
-Boxplot of our biomarker
-```{r, fig.height=8, fig.width=16, message=TRUE, paged.print=TRUE}
+TRIB3 stands for Tribbles Pseudokinase 3. The kinase is induced by the transcription factor NF-kappaB. It is essential for cell proliferation.
+
+ATF3 stands for activating transcription factor 3. It belongs to the mammalian activation transcription factor/cAMP responsive element-binding (CREB). ATF-3 is induced by physiological stress.
+
+ASNS stands for Asparagine Synthetase: The enzyme catalyzes the production of the amino acid L-asparagine. 
+</div>
+
+<div style="text-align: justify"> 
+### 3.1.3 Boxplot of our biomarkers {#css_class3.1.3}
+</div>
+```{r, fig.height=8, fig.width=18, message=TRUE, paged.print=TRUE}
 boxplot(LapTreat$GDF15,LapUn$GDF15,
         LapTreat$NUPR1, LapUn$NUPR1, 
         LapTreat$DDIT3, LapUn$DDIT3, 
         LapTreat$TRIB3, LapUn$TRIB3,
         LapTreat$ATF3,LapUn$ATF3, 
         LapTreat$ASNS, LapUn$ASNS, 
-        col = viridis(12),
+        col=c("deeppink4", "deeppink4", "burlywood1", "burlywood1", "darkcyan", "darkcyan", "pink", "pink", "darkolivegreen3", "darkolivegreen3", "lightblue", "lightblue"),
         names = c("GDF15 before", "GDF15 after", "NUPR1 before", "NUPR1 after ", "DDIT3 before", "DDIT3 after" ,"TRIB3 before","TRIB3 after", "ATF3 before", "ATF3 after", "ASNS before",  "ASNS after"),
         main="Expression of Biomakers before and after treatment with Lapatinib", 
-        xlab="Biomarker",
-        ylab="expression")
+        xlab="Biomarkers",
+        ylab="Expression")
 ```
 
-### creating some date
+
 ```{r}
 breastcells<-subset(Metadata, tissue == "Breast")
 breast<-subset(CCLE_basalexpression, breastcells$cell  %in%  colnames(CCLE_basalexpression))
 tbreastcells<-data.frame(t(breast))
 breast_marker <- c(tbreastcells$GDF15,tbreastcells$NUPR1, tbreastcells$DDIT3, tbreastcells$TRIB3, tbreastcells$ATF3, tbreastcells$ASNS)
 breast_marker_matrix <- data.frame(tbreastcells$GDF15,tbreastcells$NUPR1, tbreastcells$DDIT3, tbreastcells$TRIB3, tbreastcells$ATF3, tbreastcells$ASNS)
+names(breast_marker_matrix)[names(breast_marker_matrix) == "tbreastcells.GDF15"] <- "GDF15"
+names(breast_marker_matrix)[names(breast_marker_matrix) == "tbreastcells.NUPR1"] <- "NUPR1"
+names(breast_marker_matrix)[names(breast_marker_matrix) == "tbreastcells.DDIT3"] <- "DDIT3"
+names(breast_marker_matrix)[names(breast_marker_matrix) == "tbreastcells.TRIB3"] <- "TRIB3"
+names(breast_marker_matrix)[names(breast_marker_matrix) == "tbreastcells.ATF3"] <- "ATF3"
+names(breast_marker_matrix)[names(breast_marker_matrix) == "tbreastcells.ASNS"] <- "ASNS"
+Biomarkers<-c(rep('DF15',45),rep('NUPR1',45),rep('DDIT3',45),rep('TRIB3',45),rep('ATF3',45),rep('ASNS',45))
+Expression<-c(tbreastcells$GDF15,tbreastcells$NUPR1, tbreastcells$DDIT3, tbreastcells$TRIB3, tbreastcells$ATF3, tbreastcells$ASNS)
+df_breast<-data.frame(Expression, Biomarkers)
+
 ```
 
-###overview of the basalexpression of our biomarkers
-```{r}
+<div style="text-align: justify"> 
+### 3.1.4 ggBoxplot of our biomarkers' basalexpression in breast cells with Kruskal-Wallis test {#css_class3.1.4}
 
-cells<-c(rep('DF15',45),rep('NUPR1',45),rep('DDIT3',45),rep('TRIB3',45),rep('ATF3',45),rep('ASNS',45))
-expression<-c(tbreastcells$GDF15,tbreastcells$NUPR1, tbreastcells$DDIT3, tbreastcells$TRIB3, tbreastcells$ATF3, tbreastcells$ASNS)
- #names = c("GDF15", " ", "NUPR1", " ", "DDIT3", " " ,"TRIB3"," ", "ATF3", " ", "ASNS",  " "),
-df_breast<-data.frame(cells,expression)
-plot(expression ~ cells, data=df_breast)
-```
+The null hypothesis is: there is no difference between the groups.
+The Kruskal-Wallis test is for independent samples. It tests whether the central trends of several independent samples differ. </div>
 
+```{r, fig.height=5, fig.width=8, message=TRUE}
 
-
-###ggboxplot of basalexpression of biomarkers in breast cells
-Kruskal-Wallis test
-The null hypothesis is: there is no difference between the groups
-```{r}
-ggboxplot(df_breast, x="cells", y="expression", color = "cells",
+ggboxplot(df_breast, x="Biomarkers", y="Expression", color = "Biomarkers",
           add = "jitter", legend = "none")+
   rotate_x_text(angle = 45)+
-  stat_compare_means(method = "kruskal.test", label.y = 12)+        # Add global kruskal wallis test p-value
+  stat_compare_means(method = "kruskal.test", label.y = 15)+   # Add global kurskal wallis test p-value
   stat_compare_means(label = "p.signif", method = "t.test",
                      ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
 ```
 
-###pheatmap of the biomarker in breast cells
+### 3.1.5 Heatmap of biomarkers in breast cells {#css_class3.1.5}
 
-```{r}
+```{r, fig.height=5, fig.width=8, message=TRUE}
 pheat_breast<-pheatmap(breast_marker_matrix ,
                       show_rownames = FALSE, 
-                      show_colnames = TRUE, 
+                      show_colnames =TRUE,
                       cutree_cols = 4, 
                       cutree_rows = 3, 
                       color = viridis(4),
@@ -174,69 +211,71 @@ pheat_breast<-pheatmap(breast_marker_matrix ,
                       scale="row")
 pheat_breast
 ```
+<div style="text-align: justify"> 
 
-##paired t-test between the Lapatinib treated und untreated data
-###genome wide paired t-test
-```{r }
-#genome wide paired t-test
-LapatinibUntreated<-select(Untreated, contains("Lapa"))
-LapatinibTreated<-select(Treated, contains("Lapa"))
+## 3.2. Paired t-test between the Lapatinib treated und untreated data {#css_id3.2}
+
+### 3.2.1 Genome wide paired t-test {#css_class3.2.1}
+</div>
+```{r, echo=FALSE }
+LapatinibUntreated<-dplyr::select(Untreated, contains("Lapa"))
+LapatinibTreated<-dplyr::select(Treated, contains("Lapa"))
 before=as.matrix(LapatinibUntreated)
 after=as.matrix(LapatinibTreated)
+ba<-data.frame(before, after)
+```
+
+```{r}
 t.test(before, after, paired=TRUE)
+```
+<div style="text-align: justify"> 
+### 3.2.2 Paired t-test of our biomarker before and after treatment {#css_class3.2.2}
 
+The paired t-test shows a statistical significance of our biomarkers.</div>
+
+```{r, table1}
+before_biomarker<-LapUn %>% dplyr::select("GDF15", "NUPR1", "DDIT3", "TRIB3", "ATF3", "ASNS")
+after_biomarker<-LapTreat %>% dplyr::select("GDF15", "NUPR1", "DDIT3", "TRIB3", "ATF3", "ASNS")
+table<-data.table(col_t_paired(before_biomarker, after_biomarker, alternative = "two.sided", mu = 0,conf.level = 0.95))
+Marker=c("GDF15", "NUPR1", "DDIT3", "TRIB3", "ATF3", "ASNS")
+pvalue<-table$pvalue
+table[, .(Marker,pvalue)]
 ```
 
-###ggboxplot to compare the treated an untreated data
-```{r }
-#variance analysis before and after treatment
-my_data <- data.frame( 
-               group = rep(c("before", "after")),
-                expression = c(before,  after))
-               
-
-
-library(ggpubr)
-ggboxplot(my_data, x = "group", y = "expression", 
-                    color = "group", palette = c("#00AFBB", "#E7B800"),
-                    order = c("before", "after"),
-                    ylab = "expression", xlab = "group")
-
-```
-The ggboxplots "before" and "after" are very similar. This suggests that lapatinib only modifies the expression of fewer genes. The theory makes sense because in cancer cells only certain genes, such as proliferation genes, are altered.
-
-
-###t-test over each column 
-paired t-test over cell lines
-
+<div style="text-align: justify"> 
+### 3.2.3 Paired t-test over genes, increased confidence level (99 %) {#css_class3.2.3} 
+</div>
 ```{r}
-#t-test over each column -> cell lines
-library(matrixTests)
-#col_t_paired(before, after, alternative = "two.sided", mu = 0,conf.level = 0.95)
-
-```
-
-###Paired t-test of our biomarker before and after treatment
-Our biomarkers are significant.
-```{r}
-before_biomarker<-LapUn %>% select("GDF15", "NUPR1", "DDIT3", "TRIB3", "ATF3", "ASNS")
-after_biomarker<-LapTreat%>% select("GDF15", "NUPR1", "DDIT3", "TRIB3", "ATF3", "ASNS")
-col_t_paired(before_biomarker, after_biomarker, alternative = "two.sided", mu = 0,conf.level = 0.95)
-```
-
-
-### paired t-test over genes, increased confidence level (99%) 
-```{r}
-###t-test over each row
-
-
 row_t_test<-as.data.frame(row_t_paired(before, after, alternative = "two.sided", mu = 0,conf.level = 0.99))
 summary(row_t_test$pvalue)
 ```
 
+<div style="text-align: justify"> 
+### 3.2.4 Visualization of the genome-wide paired t-test in a vulcano plot {#css_class3.2.4}
+</div>
+```{r, fig.height=12, fig.width=12, message=TRUE, paged.print=TRUE}
+Lap_t_test<-data.table(col_t_paired(LapUn, LapTreat, alternative = "two.sided", mu = 0,conf.level = 0.95))
+padj<-p.adjust(Lap_t_test$pvalue, "BH")
+
+Lapatinib_fc<-as.data.frame.numeric(colMeans(LapUn-LapTreat))
+Lgenes<-(colnames(LapUn))
+
+vulcano<-data.frame(genes=Lgenes,Fold=Lapatinib_fc, pvalue=padj)
+names(vulcano)[names(vulcano) == "colMeans.LapUn...LapTreat."] <- "log2FoldChange"
+with(vulcano, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot", xlim=c(-2.5,2)))
+
+# Add colored points: red if padj<0.05, blue if log2FC>1, green if both)
+with(subset(vulcano, padj<.05 ), points(log2FoldChange, -log10(pvalue), pch=20, col="red"))
+with(subset(vulcano, abs(log2FoldChange)>1), points(log2FoldChange, -log10(pvalue), pch=20, col="blue"))
+with(subset(vulcano, padj<.05 & abs(log2FoldChange)>1), points(log2FoldChange, -log10(pvalue), pch=20, col="green"))
+
+# Label points with the textxy function from the calibrate plot
+with(subset(vulcano, padj<.05 & abs(log2FoldChange)>1), textxy(log2FoldChange, -log10(pvalue), labs = genes, cex=.8))
+```
 
 
-##k-means
+
+## 3.3 K-means {#css_id3.3}
 ```{r}
 LapatinibFold = select(Fold_Change, contains("Lapa"))
 
@@ -268,33 +307,32 @@ s = silhouette(km$cluster, D)
 plot(s)
 ```
 
-```{r}
-#plot kmeans
-clus <- kmeans(topVarFold75, centers=3)
-clusplot(topVarFold75, clus$cluster, color=TRUE, shade=TRUE, labels=1, lines=0, col.clus = c("purple", "pink", "lightseagreen"), main = "K-means Plot", col.p = c("purple", "pink", "lightseagreen"))
 
-```
+## 3.4 PCA {#css_id3.4}
 
+Since the clustering method by performing k means clustering again was not successful, we performed a principal component analysis over the selected lapatinib samples for identifying clusters or patterns while preserving as much information of the original data set as possible.
 
-## PCA
-```{r}
+```{r,}
 L_fc <- select(Fold_Change, contains("Lapa"))
 
 # PCA
 pca <- prcomp(t(L_fc), scale = TRUE)
 
 ```
+
+By plotting a scree plot of the variation percentage, we can display how much variation a principal component captures from the original data.
+
 ```{r}
 pca.var <- pca$sdev^2  # sdev calculates variation each PC accounts for
 pca.var.per <- round(pca.var/sum(pca.var)*100, 1) 
 # since percentages make more sense then normal variation values
 # calculate % or variation, which is much more interesing
 
-barplot(pca.var.per, main = "Scree plot", xlab = "Principal Components", ylab = "% variation")
-plot(pca.var.per[1:10], main = "Elbow plot", type = "l", xlab = "Principal Components", ylab = "% variation")
+
+plot(pca.var.per[1:10], main = "Scree plot", type = "l", xlab = "Principal Components", ylab = "% variation")
 plot(cumsum(pca.var.per[1:15]), main = "cumulative variation", type = "l", xlab = "Principal Components", ylab = "% variation") 
 ```
-```{r}
+```{r, echo=FALSE}
 pca.data <- data.frame(pca$x)
 rownames(pca.data) <- gsub(x = rownames(pca.data), pattern = "X786", replacement = "786")
 pca.data <- cbind(sample =rownames(pca.data), pca.data)
@@ -313,7 +351,7 @@ top_10_genes <- names(gene_score_ranked[1:10])
 top_10_genes # show names of top 10 genes
 
 ```
-```{r}
+```{r, echo=FALSE}
 ### Metadata matrix for coloring 
 Metadata$sample <- gsub(x = Metadata$sample, pattern = "-", replacement = ".")
 metad.cl <- subset(Metadata, sample %in% intersect(Metadata$sample, pca.data$sample))  
@@ -323,32 +361,38 @@ metad.cl$doubling_time <- Cellline_Annotation$Doubling_Time[match(metad.cl$cell,
 metad.cl$cancer_type <- Cellline_Annotation$Cancer_type[match(metad.cl$cell, Cellline_Annotation$Cell_Line_Name)]
 
 ```
-
-```{r}
+```{r, echo=FALSE}
 #color vectors for coloring by msi and tissue
 colormsi <- brewer.pal(3, "Set1")
 color_msi = colormsi[metad.cl$msi]
 msi <- levels(metad.cl$msi)
 
-magma <- magma(9)
+magma <- c("springgreen", "olivedrab4", "yellow2", "orange", "red2", "orchid1", "purple",  "turquoise2",   "navy")
 color_tissue = magma[metad.cl$tissue]
 tissue <- levels(metad.cl$tissue)
 
+```
 
+To determine clusters of samples based on their similarity, we plotted PC1 and PC2 aswell as a PC2 and PC3 while colouring by tissue type and drug respectively.
+
+```{r, fig.height = 4.5, fig.width = 7.2}
+par(mfrow=c(2,2), cex=0.7, oma=c(2,3,2,2))
+par(mar=c(4, 6, 3, 3))
 ## colored by msi
 #plot PC1 and PC2
-plot(pca$x[,1], 
-     pca$x[,2], 
-     col = color_msi,
-     pch = 19, 
-     xlab = paste("PC1 (",pca.var.per[1],"%)"), 
-     ylab = paste("PC2 (",pca.var.per[2],"%)"))
+msi12 <- plot(pca$x[,1], 
+          pca$x[,2], 
+          col = color_msi,
+          pch = 19, 
+          xlab = paste("PC1 (",pca.var.per[1],"%)"), 
+          ylab = paste("PC2 (",pca.var.per[2],"%)"))
+
 #create legend
-legend("bottomright", 
+legend(450, 0, 
        legend = msi, 
        col = colormsi, 
        pch = 19, 
-       xpd = "TRUE",
+       xpd = "FALSE",
        bty = "n",
        cex = 0.75
 )
@@ -357,45 +401,32 @@ mtext("PCA of Fold Change colored by MSI",
       side = 3, 
       line = -2,
       cex = 1.2,
-      font = 2, 
+      font = 2,
       outer = TRUE)
 
+
 #plot PC2 and PC3
-plot(pca$x[,2], 
-     pca$x[,3], 
-     col = color_msi,
-     pch = 19, 
-     xlab = paste("PC2 (",pca.var.per[2],"%)"), 
-     ylab = paste("PC3 (",pca.var.per[3],"%)"))
-#create legend
-legend("topleft", 
-       legend = msi, 
-       col = colormsi, 
-       pch = 19, 
-       xpd = "TRUE",
-       bty = "n",
-       cex = 0.75
-)
-#create title
-mtext("PCA of Fold Change colored by MSI", 
-      side = 3, 
-      line = -2,
-      cex = 1.2,
-      font = 2, 
-      outer = TRUE)
+msi23 <- plot(pca$x[,2], 
+          pca$x[,3], 
+          col = color_msi,
+          pch = 19, 
+          xlab = paste("PC2 (",pca.var.per[2],"%)"), 
+          ylab = paste("PC3 (",pca.var.per[3],"%)"))
+    
 
 
 
 ##colored by tissue
 #plot PC1 and PC2
-plot(pca$x[,1], 
-     pca$x[,2], 
-     col = color_tissue,
-     pch = 19, 
-     xlab = paste("PC1 (",pca.var.per[1],"%)"), 
-     ylab = paste("PC2 (",pca.var.per[2],"%)"))
+tissue12 <- plot(pca$x[,1], 
+              pca$x[,2], 
+              col = color_tissue,
+              pch = 19, 
+              xlab = paste("PC1 (",pca.var.per[1],"%)"), 
+              ylab = paste("PC2 (",pca.var.per[2],"%)"))
+             
 #create legend
-legend("bottomright", 
+legend(450, 0, 
        legend = tissue, 
        col = magma, 
        pch = 19, 
@@ -406,49 +437,35 @@ legend("bottomright",
 #create title
 mtext("PCA of Fold Change colored by tissue", 
       side = 3, 
-      line = -2,
+      line = -16,
       cex = 1.2,
-      font = 2, 
+      font = 2,
       outer = TRUE)
 
 #plot PC2 and PC3
-plot(pca$x[,2], 
-     pca$x[,3], 
-     col = color_tissue,
-     pch = 19, 
-     xlab = paste("PC2 (",pca.var.per[2],"%)"), 
-     ylab = paste("PC3 (",pca.var.per[3],"%)"))
-#create legend
-legend("bottomleft", 
-       legend = tissue, 
-       col = magma, 
-       pch = 19, 
-       xpd = "TRUE",
-       bty = "n",
-       cex = 0.75
-)
-#create title
-mtext("PCA of Fold Change colored by tissue", 
-      side = 3, 
-      line = -2,
-      cex = 1.2,
-      font = 2, 
-      outer = TRUE)
+tissue23 <- plot(pca$x[,2], 
+              pca$x[,3], 
+              col = color_tissue,
+              pch = 19, 
+              xlab = paste("PC2 (",pca.var.per[2],"%)"), 
+              ylab = paste("PC3 (",pca.var.per[3],"%)"))
 
 
 ```
 
-### pearson and spearman correlation
-```{r}
-# Pearson correlation
-cor(Cellline_Annotation$Doubling_Time, Cellline_Annotation$Inoculation_Density, method = "pearson")
-```
+As we can see, rarely any clusters can be determined. In Addition, the colour annotation does not reveal any pattern of clustering.
+
+
+## 3.5 Spearman correlation {#css_id3.5}
+
+Modelling of a linear relationship between cell doubling time and inoculation density.
+
 
 ```{r}
 # Spearman correlation
 cor(Cellline_Annotation$Doubling_Time, Cellline_Annotation$Inoculation_Density, method = "spearman")
 ```
-higher value with spearman method
+
 
 ```{r}
 plot(Cellline_Annotation$Doubling_Time, Cellline_Annotation$Inoculation_Density, pch= 16, col= "blue", main = "Spearman correlation between Doubling Time and Inoculation Density", xlab = "Doubling Time", ylab = "Inoculation Density")
@@ -456,3 +473,5 @@ lm(Cellline_Annotation$Inoculation_Density~ Cellline_Annotation$Doubling_Time)
 
 abline(lm(Cellline_Annotation$Inoculation_Density ~ Cellline_Annotation$Doubling_Time), col = "red", lwd = 2)
 ```
+
+As you can see from the plot, there is a positive correlation between inoculation density and doubling time. This means that the higher the inoculation density, the higher the doubling time, which suggests that the tumour grows slowly because the cells need more time to divide.
