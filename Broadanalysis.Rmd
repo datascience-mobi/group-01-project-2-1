@@ -40,10 +40,9 @@ library(matrixTests)
   [2.3 K-means clustering](#css_id2.3)  
   [2.4 PCA](#css_id2.4)  
 
-
+<div style = "text-align: justify">
 # 1. Introduction {#anchor1}
 
-<div style = "text-align: justify">
 
 Our project is about lapatinib and divided into three parts:
 Broad analysis, specific analysis and our three main questions.
@@ -74,7 +73,7 @@ Untreated = data.frame(NCI_TPW_gep_untreated)
 ## 1.2 Data scaling {#css_id1.1}
 
 After checking for normalization, we scaled our data in the first place to provide the scaled data for further analysis.
-</div>
+
 ```{r scaling}
 list = list(Treated,Untreated)
 nlist = lapply(list,scale)
@@ -102,9 +101,7 @@ rm(rmv.rows, n, NegLogGI50)
 
 ## 2.1 Boxplots {#css_id2.1}
 
-<div style = "text-align: justify">
-As a very first step of our data analysis, we checked the for normalzation.
-</div>
+As a very first step of our data analysis, we checked the for normalization.
 
 ```{r,echo=FALSE}
 TreatedNS = readRDS(paste0(wd, "/Data/NCI_TPW_gep_treated.rds"))
@@ -112,9 +109,7 @@ boxplot(TreatedNS,  ylab = "Gene expression profile", main = "Treated genexpress
 
 ```
 
-<div style = "text-align: justify">
 To check, if there is a connection between the different drugs, we coloured the plot concerning the drugs.
-</div>
 
 ```{r coloured boxplots UNSCALED, creating a susbet of Metadata based on the amount of tested genes in Treated,echo=FALSE, fig.height = 5, fig.width = 7}
 df = data.frame(t(TreatedNS))
@@ -136,9 +131,7 @@ legend("topright", inset = c(-0.35,0), legend= drugs, xpd = TRUE, pch=19,
 
 ```
 
-<div style = "text-align: justify">
 As shown, there is a connection between the different "boxes" and the different drugs. This could be the reason for different batches so we scale the data.
-</div>
 
 ```{r coloured boxplots SCALED, creating a susbet of Metadata based on the amount of tested genes in Treated,echo=FALSE, fig.height = 5, fig.width = 7}
 TreatedS = scale((Treated))
@@ -152,18 +145,14 @@ legend("topright", inset = c(-0.35,0), legend= drugs, xpd = TRUE, pch=19,
 
 ```
 
-<div style = "text-align: justify">
 As you can see the scaling is necessary to compensate the batch effect. Scaling is then applied on Untreated as well before further analysis.
-</div>
 
 
 
 ## 2.2 Densityplot {#css_id2.2}
 
-<div style = "text-align: justify">
 As a other method to get in touch with the data, we checked if there is a difference between the treated and untreated genexpression. 
-The abline shows the 3 quantiles (      25%       50%       75%    )
-</div>
+The abline shows the 3 quantiles (      25 %       50 %       75 %    )
 
 ```{r,echo=FALSE}
 NCI_TPW_gep_treated = readRDS(paste0(wd, "/Data/NCI_TPW_gep_treated.rds"))
@@ -174,17 +163,13 @@ legend("topright", legend = c("Treated", "Untreated"), col = c("black", "indianr
 abline(v = quantile(NCI_TPW_gep_treated)[2:4], col = c("lightblue", "blue",  "orange"), lty = 2)
 ```
 
-<div style = "text-align: justify">
 As assumed, the expression patterns don't differentiate much.
-</div>
 
 
 
 ## 2.3 K-means clustering {#css_id2.3}
 
-<div style = "text-align: justify">
 To look for clusters in the raw data we performed a k-menas clustering and searched for potentially clusters using the most variable (>75% Var), thus informative genes.
-</div>
 
 ```{r, echo=FALSE}
 topVarTreated = apply(Treated, 1, var)
@@ -196,9 +181,7 @@ topVarTreated75 = Treated[topVarTreated > quantile(topVarTreated, probs = 0.75),
 
 ```
 
-<div style = "text-align: justify">
 Running a loop for the best cluster-amount (searching for an "ellbow")
-</div>
 
 ```{r,echo=FALSE}
 wss = sapply(1:7, function(k) {
@@ -206,25 +189,19 @@ kmeans(x = t(topVarTreated75), centers = k)$tot.withinss})
 plot(1:7, wss, type = "b", pch = 19, xlab = "Number of clusters K", ylab = "Total within-clusters sum of squares", main = "Determining the amount of clusters from Treated")
 ```
 
-<div style = "text-align: justify">
 As we wanted an "ellbow", it is hard to determine the amount of clusters.
-</div>
 
 
 
 ## 2.4 PCA {#css_id2.4}
 
-<div style = "text-align: justify">
 Since the clustering method by performing k means clustering was not successful, we performed a principal component analysis for dimensionality reduction as another method for identifying clusters or patterns while preserving as much information of the original data set as possible.
-</div>
 
 ```{r}
 pca <- prcomp(t(Fold_Change), scale = TRUE)
 ```
 
-<div style = "text-align: justify">
 By plotting a scree plot of the variation percentage, we can display how much variation a principal component captures from the original data. 
-</div>
 
 ```{r}
 
@@ -237,9 +214,7 @@ plot(cumsum(pca.var.per[1:15]), main = "cumulative variation", type = "l", xlab 
 
 ```
 
-<div style = "text-align: justify">
 As seen in the scree plot, the first three or four PCs have capture most of the information since the curve bends at an "elbow" at PC4 - this is our cutting off point.
-</div>
 
 ```{r, echo=FALSE}
 # creating data frame with all PCs 
@@ -250,9 +225,7 @@ pca.data <- cbind(sample =rownames(pca.data), pca.data)
 
 ```
 
-<div style = "text-align: justify">
 PCs describe variation and account for the varied influences of the original characteristics. Such influences, or loadings, can be traced back from the PCA to find out which genes contribute most to the single PCS. 
-</div>
 
 ```{r}
 ## get names of top 10 genes that contribute most to pc1
@@ -292,9 +265,7 @@ color_tissue = viridis[metad.cl$tissue]
 tissue <- levels(metad.cl$tissue)
 ```
 
-<div style = "text-align: justify">
 To determine clusters of samples based on their similarity, we plotted PC1 and PC2 aswell as a PC2 and PC3 while colouring by tissue type and drug respectively.
-</div>
 
 ```{r, PCA drug+tissue, fig.height=6, fig.width=12}
 par(mfrow=c(1,2), cex=0.7)
@@ -408,7 +379,6 @@ mtext("PCA of Fold Change  colored by tissue",
 
 ```
 
-<div style = "text-align: justify">
 As we can see, in contrast to the k means method, clusters can be determined. Respecting the colour annotation, it is clear to say that the samples cluster according to drug treatment.   
 </div>
 
