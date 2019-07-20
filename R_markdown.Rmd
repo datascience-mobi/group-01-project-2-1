@@ -464,9 +464,9 @@ ut_sort<-sort(ut, decreasing = TRUE)
 head(ut_sort)
 ```
 <div style="text-align: justify"> 
-GDF3 Growth Differentiation Factor 3 belongs to the transforming growth factor beta (TGF-β) superfamily and has some intrinsic activity.
+GDF3 Growth Differentiation Factor 3 belongs to the transforming growth factor beta (TGF-beta) superfamily and has some intrinsic activity.
 
-NUPR1 stands for nuclear protein, transcriptional regulator, 1.It regulates the transcription during stress signals by empowering cells with resistance to stress.
+NUPR1 stands for nuclear protein, transcriptional regulator, 1. It regulates the transcription during stress signals by empowering cells with resistance to stress.
 
 DDIT3 encodes for the DNA damage-inducible transcript 3 protein, a member of the CCAAT/enhancer-binding protein which is a transcription factor. It is important for the response of cell stresses. The DNA damage-inducible transcript 3 protein induces cell cycle arrest and apoptosis in response to ER stress.
 
