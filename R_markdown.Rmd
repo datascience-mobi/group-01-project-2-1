@@ -1341,12 +1341,12 @@ ggboxplot (data = df_drug, x="drug", y="fc_drug", color = "drug",
 ```
 
 
-## 4.3 Question 3: Comparing lapatinib treated breast and cns celllines {#css_id4.3}
+## 4.3 Question 3: Does lapatinib have a similar effect on brain metastasis as it does on breast cancer? {#css_id4.3}
 
 As a proven fact, lapatinb crosses the brain-blood barrier. Since breast cancer tends to spread and form metastasis in brain cells and lapatinib is used in anti-breast cancer therapy, we wanted to analyse our data for similar effects after lapatinib treatment in breast and cns tissue cells. 
 
 At first, we selected lapatinib response genes by creating matrices with cns- and breast-cell line fold change values. 
-```{r, echo=FALSE}
+```{r}
 L_fc <- select(Fold_Change, contains("Lapa"))
 L_fc <- as.data.frame(t(L_fc))
 rownames(Metadata) <- Metadata$sample
@@ -1401,9 +1401,9 @@ genes <- colnames(breastFC)
 ```
 
 
-### 4.3.x Volcano plot {#css_class4.3.x}
+### 4.3.1 Volcano plot {#css_class4.3.1}
 
-For visualization of the biological significance (fold change values) and the statistical significance (adjusted p-values), we plotted our data in an interactive volcano plot. 
+For visualization of the biological significance (fold change values) and the statistical significance (adjusted p-values), we plotted our data in an interactive volcano plot.
 
 ```{r}
 ## breast volcano plot
@@ -1419,13 +1419,13 @@ diff_df_breast$group <- "NotSignificant"
 
 
 # change the grouping for the entries with significance but not a large enough Fold change
-diff_df_breast[which(diff_df_breast['FDR'] < 0.5 & (diff_df_breast['absFold']) < 0.2 ),"group"] <- "Significant"
+diff_df_breast[which(diff_df_breast['FDR'] < 0.5 & (diff_df_breast['absFold']) < 0.5 ),"group"] <- "Significant"
 
 # change the grouping for the entries a large enough Fold change but not a low enough p value
-diff_df_breast[which(diff_df_breast['FDR'] > 0.5 & (diff_df_breast['absFold']) > 0.2 ),"group"] <- "FoldChange"
+diff_df_breast[which(diff_df_breast['FDR'] > 0.5 & (diff_df_breast['absFold']) > 0.5 ),"group"] <- "FoldChange"
 
 # change the grouping for the entries with both significance and large enough fold change
-diff_df_breast[which(diff_df_breast['FDR'] < 0.5 & (diff_df_breast['absFold']) > 0.2 ),"group"] <- "Significant&FoldChange"
+diff_df_breast[which(diff_df_breast['FDR'] < 0.5 & (diff_df_breast['absFold']) > 0.5 ),"group"] <- "Significant&FoldChange"
 
 
 # Find and label the top peaks.
@@ -1475,13 +1475,13 @@ diff_df_cns$group <- "NotSignificant"
 
 
 # change the grouping for the entries with significance but not a large enough Fold change
-diff_df_cns[which(diff_df_cns['FDR'] < 0.5 & (diff_df_cns['absFold']) < 0.2 ),"group"] <- "Significant"
+diff_df_cns[which(diff_df_cns['FDR'] < 0.5 & (diff_df_cns['absFold']) < 0.5 ),"group"] <- "Significant"
 
 # change the grouping for the entries a large enough Fold change but not a low enough p value
-diff_df_cns[which(diff_df_cns['FDR'] > 0.5 & (diff_df_cns['absFold']) > 0.2 ),"group"] <- "FoldChange"
+diff_df_cns[which(diff_df_cns['FDR'] > 0.5 & (diff_df_cns['absFold']) > 0.5 ),"group"] <- "FoldChange"
 
 # change the grouping for the entries with both significance and large enough fold change
-diff_df_cns[which(diff_df_cns['FDR'] < 0.5 & (diff_df_cns['absFold']) > 0.2 ),"group"] <- "Significant&FoldChange"
+diff_df_cns[which(diff_df_cns['FDR'] < 0.5 & (diff_df_cns['absFold']) > 0.5 ),"group"] <- "Significant&FoldChange"
 
 
 # Find and label the top peaks..
@@ -1514,6 +1514,7 @@ plot_cns
 
 ```
 
+### 4.3.2 Heat map for visualization {#css_class4.3.2}
 To visualize the expression patterns of the top peak genes present in both tissue types we calculated a heat map, comparing the expression profiles of the two tissue types.
 
 ```{r}
@@ -1546,12 +1547,17 @@ pheatmap(
 )
 ```
 
-```{r, echo=FALSE}
+### 4.3.3 Investigation of correlation {#css_class4.3.3}
+For better visualization of the expression patterns of the top peak genes among breast and cns tissues we computed a heat map of the mean fold changes for direct comparison. 
+
+```{r}
 #correlation between top peak gene expression patterns in breast and cns tissues treated by lapatinib
 cor_mat <- as.data.frame(cor_mat)
 dif.FC.BC = data.frame(breast = cor_mat$breast -  mean(t(breastFC)), cns = cor_mat$cns -  mean(t(cnsFC))) #breast data - mean value, cns data - mean value
 dif.FC.BC$gene = rownames(cor_mat)
 ```
+
+To gather a more detailed conception of the gene expression regulation values (aka the fold change) we also computed a comparing bar plot showing the exact fold change values.
 
 ```{r, fig.height = 7, fig.width = 14}
 # PLot
@@ -1559,13 +1565,13 @@ dif.FC.BC$gene = rownames(cor_mat)
 b = ggplot(dif.FC.BC,aes(x = gene, y = breast)) +
   geom_bar(stat = "identity", fill = "skyblue") + 
   geom_text(aes(label = round(breast, 2)), vjust = -0.5, color = "black", size = 3) + 
-  coord_flip() + labs(title = "Mean graph plot of Fold Change for breast top peak genes")
+  coord_flip() + labs(title = "Mean of Fold Change for breast top peak genes")
 
 
 c = ggplot(dif.FC.BC,aes(x = gene, y = cns)) +
   geom_bar(stat = "identity", fill = "skyblue") + 
   geom_text(aes(label = round(cns, 2)), vjust = -0.5, color = "black", size = 3) + 
-  coord_flip() + labs(title = "Mean graph plot of Fold Change for CNS top peak genes")
+  coord_flip() + labs(title = "Mean of Fold Change for CNS top peak genes")
 
 ggarrange(b, c,
           labels = c("A", "B"),
@@ -1580,5 +1586,5 @@ At last, we investigated the expression regulation in both tissue types by calcu
 cor(cor_mat$breast, cor_mat$cns, method = "pearson")
 ```
 
-The obtained correlation value of 0.92 indicates that lapatinib treatment yields a similar effect on gene expression in breast and cns tissue cells and therefore might be possible to treat cancer in brain metastasis.  
+The obtained correlation value of ~ 0.92 indicates that lapatinib treatment yields a similar effect on gene expression in breast and cns tissue cells and therefore might be possible to treat cancer in brain metastasis.  
 </div>
