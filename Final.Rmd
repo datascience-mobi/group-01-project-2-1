@@ -90,6 +90,7 @@ HER2 is a receptor for the epidermal growth factor (EGF), which stimulates the c
 
 
 ## 1.1 Data loading {#css_id1}
+
 ```{r data_loading, echo=FALSE}
 
 
@@ -455,6 +456,7 @@ LapTreat<-data.frame(t(after))
 <div style="text-align: justify">  
 We found these genes as biomarkers in a paper and presented them in our first presentation. 
 (Source of the paper: Basal-Like Breast Cancer Defined by Five Biomarkers Has Superior Prognostic Value than Triple-Negative Phenotype, by Maggie C.U. Cheang, David Voduc, Chris Bajdik, et al. Clin Cancer Res 2008; 14:1368-1376)</div>
+
 ```{r Treated and Untreated, fig.height=8, fig.width=16, message=TRUE, paged.print=TRUE, echo=FALSE}
 boxplot(LapUn$ESR1, LapTreat$ESR1, 
         LapUn$ERBB2, LapTreat$ERBB2,
@@ -836,10 +838,10 @@ cor(Cellline_Annotation$Doubling_Time, Cellline_Annotation$Inoculation_Density, 
 
 
 ```{r}
-plot(Cellline_Annotation$Doubling_Time, Cellline_Annotation$Inoculation_Density, pch= 16, col= "blue", main = "Spearman correlation between Doubling Time and Inoculation Density", xlab = "Doubling Time", ylab = "Inoculation Density")
+plot(Cellline_Annotation$Doubling_Time, Cellline_Annotation$Inoculation_Density, pch= 16, col= "royalblue3", main = "Spearman correlation between Doubling Time and Inoculation Density", xlab = "Doubling Time", ylab = "Inoculation Density")
 lm(Cellline_Annotation$Inoculation_Density~ Cellline_Annotation$Doubling_Time)
 
-abline(lm(Cellline_Annotation$Inoculation_Density ~ Cellline_Annotation$Doubling_Time), col = "red", lwd = 2)
+abline(lm(Cellline_Annotation$Inoculation_Density ~ Cellline_Annotation$Doubling_Time), col = "violetred3", lwd = 2)
 ```
 
 As you can see from the plot, there is a positive correlation between inoculation density and doubling time. This means that the higher the inoculation density, the higher the doubling time, which suggests that the tumour grows slowly because the cells need more time to divide.
@@ -917,7 +919,8 @@ rmse22.test = sqrt(1/n * sum(residuals^2))
 
 ### 4.1.2 Linear regression ~ Doubling-time {#css_class4.1.2}
 
-The second linear model tries to predict the G-50 value among the data of the Doubling-time.
+The second linear model tries to predict the GI-50 value among the data of the Doubling-time.
+
 ```{r,echo = FALSE}
 NegLogGI50Lap = NegLogGI50[9,]
 
@@ -978,6 +981,7 @@ rmse2.test = sqrt(1/n * sum(residuals^2))
 ### 4.1.3 Multiple regression {#css_class4.1.3}
 
 Finally, we did a multiple regression with both datasets to predict GI50-values.
+
 ```{r,echo = FALSE}
 
 NegLogGI50Lap_t = t(NegLogGI50Lap)
@@ -1055,7 +1059,7 @@ As we read in the paper "Antitumor and antiangiogenic effect of the dual EGFR an
 ### 4.2.1 Heatmap {#css_class4.2.1}
 ```{r correlation heatmap}
 cor = cor(NLGI50.all)
-pheatmap(cor, col = cm.colors(256), border_color = NA, main = "Correlation NLGI50")
+pheatmap(cor, col = cm.colors(256), border_color = NA, main = "Correlation GI50")
 
 ```
 
@@ -1083,14 +1087,14 @@ diff$celllines = factor(diff$celllines, levels = diff$celllines[order(diff$tissu
 e =  ggplot(diff, aes(x = celllines, y = erlotinib, fill = tissue))+ 
   geom_bar(stat = "identity") + 
   coord_flip() + 
-  labs(title = "Mean graph plot of NLGI50 values for Erlotinib")+
+  labs(title = "Mean graph plot of GI50 values for Erlotinib")+
   theme(plot.title = element_text(hjust = 0.5, size = 19),
         axis.title = element_text(size=17))
 
 l = ggplot(diff, aes(x = celllines, y = lapatinib, fill = tissue)) + 
   geom_bar(stat="identity") + 
   coord_flip() + 
-  labs(title="Mean graph plot of NLGI50 values for Lapatinib")+
+  labs(title="Mean graph plot of GI50 values for Lapatinib")+
   theme(plot.title = element_text(hjust = 0.5, size = 19),
         axis.title = element_text(size=17)) #change size and center title
 
@@ -1129,11 +1133,11 @@ dif.NegLogGI50.lung$celllines = rownames(NegLogGI50.lung)
 
 # PLot Erlotinib and Lapatinib
 
-e = ggplot(dif.NegLogGI50.lung,aes(x = celllines, y = erlotinib)) + geom_bar(stat = "identity", fill = "skyblue") + geom_text(aes(label=round(erlotinib, 2)), vjust = -0.5, color = "black", size = 3) + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Erlotinib, only lung genes")+
+e = ggplot(dif.NegLogGI50.lung,aes(x = celllines, y = erlotinib)) + geom_bar(stat = "identity", fill = "skyblue") + geom_text(aes(label=round(erlotinib, 2)), vjust = -0.5, color = "black", size = 3) + coord_flip() + labs(title = "Mean graph plot of GI50 values for Erlotinib, only lung genes")+
   theme(plot.title = element_text(size = 15),
         axis.title = element_text(size=15))
 
-l = ggplot(dif.NegLogGI50.lung,aes(x = celllines, y = lapatinib)) + geom_bar(stat = "identity", fill = "skyblue") + geom_text(aes(label=round(lapatinib, 2)), vjust = -0.5, color = "black", size = 3) + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Lapatinib, only lung genes")+
+l = ggplot(dif.NegLogGI50.lung,aes(x = celllines, y = lapatinib)) + geom_bar(stat = "identity", fill = "skyblue") + geom_text(aes(label=round(lapatinib, 2)), vjust = -0.5, color = "black", size = 3) + coord_flip() + labs(title = "Mean graph plot of GI50 values for Lapatinib, only lung genes")+
   theme(plot.title = element_text(size = 15),
         axis.title = element_text(size=15))
 
