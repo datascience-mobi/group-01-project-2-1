@@ -471,7 +471,7 @@ boxplot(LapUn$ESR1, LapTreat$ESR1,
         ylab="Expression")
 ```
 
-Unfortunately, we can not use them as biomarkers so we search for our own biomarkers.
+Unfortunately, we can not use them as biomarkers because expression either decreases only slightly or even increases. So we searched for our own biomarkers.
 
 <div style="text-align: justify"> 
 
