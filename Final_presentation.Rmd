@@ -235,7 +235,7 @@ As we wanted an "elbow", it is hard to determine the amount of clusters.
 
 Since the clustering method by performing k-means clustering was not successful, we performed a principal component analysis for dimensionality reduction as another method for identifying clusters or patterns while preserving as much information of the original data set as possible.
 
-```{r}
+```{r, echo=TRUE}
 pca <- prcomp(t(Fold_Change), scale = TRUE)
 ```
 
@@ -559,7 +559,8 @@ pheat_breast<-pheatmap(breast_marker_matrix ,
                       cutree_cols = 4, 
                       cutree_rows = 3, 
                       color = viridis(4),
-                      drop_levels = TRUE, 
+                      drop_levels = TRUE,
+                      border_color = NA,
                       clustering_method = "ward.D2", 
                       scale="row")
 pheat_breast
@@ -1049,7 +1050,7 @@ As we read in the paper "Antitumor and antiangiogenic effect of the dual EGFR an
 ### 4.2.1 Heatmap {#css_class4.2.1}
 ```{r correlation heatmap}
 cor = cor(NLGI50.all)
-pheatmap(cor, col = cm.colors(256), main = "Correlation NLGI50")
+pheatmap(cor, col = cm.colors(256), border_color = NA, main = "Correlation NLGI50")
 
 ```
 
@@ -1225,7 +1226,7 @@ ggboxplot (data = df_drug, x="Drug", y="log2FoldChange", color = "Drug",
 
 ## 4.3 Question 3: Does Lapatinib have a similar effect on brain metastasis as it does on breast cancer? {#css_id4.3}
 
-As a proven fact, Lapatinb crosses the brain-blood barrier. Since breast cancer tends to spread and form metastasis in brain cells and Lapatinib is used in anti-breast cancer therapy, we wanted to analyse our data for similar effects after Lapatinib treatment in breast and cns tissue cells. 
+As the paper "Lapatinib Distribution in HER2 Overexpressing Experimental Brain Metastases of Breast Cancer" (Taskar et.al., 2012) suggests, Lapatinb crosses the brain-blood barrier. Since breast cancer tends to spread and form metastasis in brain cells and Lapatinib is used in anti-breast cancer therapy, we wanted to analyse our data for similar effects after Lapatinib treatment in breast and cns tissue cells. 
 
 At first, we selected Lapatinib response genes by creating matrices with cns- and breast-cell line fold change values. 
 ```{r}
@@ -1443,9 +1444,7 @@ dif.FC.BC$gene = rownames(cor_mat)
 
 The heatmap shows, that the top expression genes are regulated similarly in breast and in cns cells after treatment with Lapatinib. 
 
-To gather a more detailed conception of the gene expression regulation values (aka the fold change) we also computed a comparing bar plot showing the exact fold change values.
-
-```{r, fig.height = 7, fig.width = 14}
+```{r, fig.height = 7, fig.width = 14, eval=FALSE}
 # PLot
 
 b = ggplot(dif.FC.BC,aes(x = gene, y = breast)) +
