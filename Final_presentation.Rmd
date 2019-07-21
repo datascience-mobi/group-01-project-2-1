@@ -831,10 +831,10 @@ cor(Cellline_Annotation$Doubling_Time, Cellline_Annotation$Inoculation_Density, 
 
 
 ```{r}
-plot(Cellline_Annotation$Doubling_Time, Cellline_Annotation$Inoculation_Density, pch= 16, col= "blue", main = "Spearman correlation between Doubling Time and Inoculation Density", xlab = "Doubling Time", ylab = "Inoculation Density")
+plot(Cellline_Annotation$Doubling_Time, Cellline_Annotation$Inoculation_Density, pch= 16, col= "royalblue3", main = "Spearman correlation between Doubling Time and Inoculation Density", xlab = "Doubling Time", ylab = "Inoculation Density")
 lm(Cellline_Annotation$Inoculation_Density~ Cellline_Annotation$Doubling_Time)
 
-abline(lm(Cellline_Annotation$Inoculation_Density ~ Cellline_Annotation$Doubling_Time), col = "red", lwd = 2)
+abline(lm(Cellline_Annotation$Inoculation_Density ~ Cellline_Annotation$Doubling_Time), col = "violetred3", lwd = 2)
 ```
 
 As you can see from the plot, there is a positive correlation between inoculation density and doubling time. This means that the higher the inoculation density, the higher the doubling time, which suggests that the tumour grows slowly because the cells need more time to divide.
@@ -1048,9 +1048,10 @@ As we read in the paper "Antitumor and antiangiogenic effect of the dual EGFR an
 
 
 ### 4.2.1 Heatmap {#css_class4.2.1}
+
 ```{r correlation heatmap}
 cor = cor(NLGI50.all)
-pheatmap(cor, col = cm.colors(256), border_color = NA, main = "Correlation NLGI50")
+pheatmap(cor, col = cm.colors(256), border_color = NA, main = "Correlation GI50")
 
 ```
 
@@ -1058,6 +1059,7 @@ Erlotinib and Lapatinib have a strong correlation.
 
 
 ### 4.2.2 Plot Erlotinib and Lapatinib, colored by tissue {#css_class4.2.2}
+
 ```{r plot erlotinib, fig.height=12, fig.width=16}
 
 #differece
@@ -1078,14 +1080,14 @@ diff$celllines = factor(diff$celllines, levels = diff$celllines[order(diff$tissu
 e =  ggplot(diff, aes(x = celllines, y = erlotinib, fill = tissue))+ 
   geom_bar(stat = "identity") + 
   coord_flip() + 
-  labs(title = "Mean graph plot of NLGI50 values for Erlotinib")+
+  labs(title = "Mean graph plot of GI50 values for Erlotinib")+
   theme(plot.title = element_text(hjust = 0.5, size = 19),
         axis.title = element_text(size=17))
 
 l = ggplot(diff, aes(x = celllines, y = lapatinib, fill = tissue)) + 
   geom_bar(stat="identity") + 
   coord_flip() + 
-  labs(title="Mean graph plot of NLGI50 values for Lapatinib")+
+  labs(title="Mean graph plot of GI50 values for Lapatinib")+
   theme(plot.title = element_text(hjust = 0.5, size = 19),
         axis.title = element_text(size=17)) #change size and center title
 
@@ -1099,6 +1101,7 @@ rm(e,l)
 The difference from the GI50 for a particular cell line and the mean GI50 is plotted here for Erlotinib and Lapatinib.
 
 ### 4.2.3 Pearson correlation {#css_class4.2.3}
+
 ```{r correlation erlotinib, lapatinib}
 cor(NLGI50.all$erlotinib, NLGI50.all$lapatinib, method = "pearson")
 ```
@@ -1106,6 +1109,7 @@ cor(NLGI50.all$erlotinib, NLGI50.all$lapatinib, method = "pearson")
 A Pearson correlation coefficient of ~ 0.65 confirms that these patterns are similar. One reason for this is that both Erlotinib and Lapatinib are EGFR inhibitors. Cell lines that were more sensitive are displayed as bars that project to the right of the mean. Cell lines that were less sensitive are displayed with bars projected to the left.
 
 ### 4.2.4 Lung cellines {#css_class4.2.4}
+
 To answer our more specific question, whether Lapatinib also has an effect on lung cancer, we will only look at the cell lines in lung cancer.
 
 ```{r lung genes, fig.height = 7, fig.width = 14}
@@ -1124,11 +1128,11 @@ dif.NegLogGI50.lung$celllines = rownames(NegLogGI50.lung)
 
 # PLot Erlotinib and Lapatinib
 
-e = ggplot(dif.NegLogGI50.lung,aes(x = celllines, y = erlotinib)) + geom_bar(stat = "identity", fill = "skyblue") + geom_text(aes(label=round(erlotinib, 2)), vjust = -0.5, color = "black", size = 3) + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Erlotinib, only lung genes")+
+e = ggplot(dif.NegLogGI50.lung,aes(x = celllines, y = erlotinib)) + geom_bar(stat = "identity", fill = "skyblue") + geom_text(aes(label=round(erlotinib, 2)), vjust = -0.5, color = "black", size = 3) + coord_flip() + labs(title = "Mean graph plot of GI50 values for Erlotinib, only lung genes")+
   theme(plot.title = element_text(size = 15),
         axis.title = element_text(size=15))
 
-l = ggplot(dif.NegLogGI50.lung,aes(x = celllines, y = lapatinib)) + geom_bar(stat = "identity", fill = "skyblue") + geom_text(aes(label=round(lapatinib, 2)), vjust = -0.5, color = "black", size = 3) + coord_flip() + labs(title = "Mean graph plot of NLGI50 values for Lapatinib, only lung genes")+
+l = ggplot(dif.NegLogGI50.lung,aes(x = celllines, y = lapatinib)) + geom_bar(stat = "identity", fill = "skyblue") + geom_text(aes(label=round(lapatinib, 2)), vjust = -0.5, color = "black", size = 3) + coord_flip() + labs(title = "Mean graph plot of GI50 values for Lapatinib, only lung genes")+
   theme(plot.title = element_text(size = 15),
         axis.title = element_text(size=15))
 
