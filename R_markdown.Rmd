@@ -81,7 +81,7 @@ library(viridis)
 # 1. Introduction {#anchor1}
 
 
-Our project is about lapatinib and divided into three parts:
+Our project is about Lapatinib and divided into three parts:
 Broad analysis, specific analysis and our three main questions.
 The main questions are the most important part of our project. They address whether cell doubling time correlates with reduced drug sensitivity and the effect of lapatinib on lung cancer and brain metastasis.
 Twenty-five per cent of breast cancers overexpress ErbB2 / HER which leads to a more aggressive phenotype. Lapatinib blocks tyrosine kinases that belong to the HER2 receptor, which is increasingly found on the cell surface of cancer cells.
