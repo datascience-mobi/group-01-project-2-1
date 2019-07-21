@@ -13,3 +13,6 @@ erlotinib.treated = Treated[, erl.treated]
 
 erl = data.frame(position = 1:819, celllines = colnames(Treated))[249:307,]
 lap = data.frame(position = 1:819, celllines = colnames(Treated))[421:474,]
+
+Metadata_Lapatinib_treated = Metadata[which(Metadata$drug == "lapatinib" & Metadata$dose != "0nM"),]
+Metadata_Erlotinib_treated = Metadata[which(Metadata$drug == "erlotinib" & Metadata$dose != "0nM"),]
