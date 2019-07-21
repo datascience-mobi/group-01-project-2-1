@@ -823,7 +823,7 @@ As we can see, rarely any clusters can be determined. In Addition, the color ann
 Modeling of a linear relationship between cell doubling time and inoculation density.
 
 
-```{r}
+```{r, echo = TRUE}
 # Spearman correlation
 cor(Cellline_Annotation$Doubling_Time, Cellline_Annotation$Inoculation_Density, method = "spearman")
 ```
