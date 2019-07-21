@@ -1215,7 +1215,7 @@ fligner.test(log2FoldChange ~ Drug, data=df_drug )
 
 <div style="text-align: justify"> 
 Anova tests whether the means of several independent groups differ.
-A p-value of 0.53 means that the result is not significant. Therefore, there is no significant difference between Erlotinib and Lapatinib.</div>
+A p-value > 0.05 means that the result is not significant. Therefore, there is no significant difference between Erlotinib and Lapatinib.</div>
 
 ```{r}
 ggboxplot (data = df_drug, x="Drug", y="log2FoldChange", color = "Drug",    
