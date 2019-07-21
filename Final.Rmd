@@ -637,6 +637,8 @@ with(subset(vulcano, padj<.05 & abs(log2FoldChange)>1), textxy(log2FoldChange, -
 
 
 ## 3.3 K-means {#css_id3.3}
+
+The silhouette-plot can be used to determin the amount of clusters. The main value, the average silhouette width is an indicator of the chosen amount of clusters (Higher values indicate better clusters).
 ```{r}
 LapatinibFold = select(Fold_Change, contains("Lapa"))
 
@@ -654,10 +656,14 @@ km$tot.withinss
 km = kmeans(x = t(topVarFold75), centers = 3, nstart = 10)
 km$tot.withinss
 
-#running a loop for the best n (searching for "elbow")
-wss = (sapply(2:7, function(k) {
-  kmeans(x =t(topVarFold75), centers = k)$tot.withinss})  )            
-plot(2:7, wss, type = "b", pch = 19, xlab = "Number of clusters K", ylab = "Total within-clusters sum of squares", main = "Determining the amount of clusters from Foldchange")
+```
+
+```{r}
+# Using the silhouett method
+D = dist(t(topVarFold75))
+km = kmeans(x = t(topVarFold75), centers = 2, nstart = 10)
+s = silhouette(km$cluster, D)
+plot(s,  main = "Silhouette value for each cell-line",col= c("darkblue", "firebrick"), border=c("black"))
 ```
 
 ```{r}
@@ -665,9 +671,10 @@ plot(2:7, wss, type = "b", pch = 19, xlab = "Number of clusters K", ylab = "Tota
 D = dist(t(topVarFold75))
 km = kmeans(x = t(topVarFold75), centers = 3, nstart = 10)
 s = silhouette(km$cluster, D)
-plot(s)
+plot(s , main = "Silhouette value for each cell-line ",col= c("darkblue", "firebrick","forestgreen"), border=c("black"))
 ```
 
+The negative bars indicate an incorrectly assigned datapoint. Overall, the fewer clusters you have, the better your silhouette width values are. This is due to the datapoints being very proximate to one another and not being able to define specific or different clusters.
 
 ## 3.4 PCA {#css_id3.4}
 
