@@ -539,7 +539,7 @@ df_breast<-data.frame(Expression, Biomarkers)
 ### 3.1.4 ggBoxplot of our biomarkers' basalexpression in breast cells with Kruskal-Wallis test {#css_class3.1.4}
 
 The null hypothesis is: there is no difference between the groups.
-The Kruskal-Wallis test is for independent samples. It tests whether the central trends of several independent samples differ. </div>
+The Kruskal-Wallis test is for independent samples. It tests whether the central trends of several independent samples differ. Since the p-value of the Kruskal-Wallis test is significant, our biomarkers do not show the same central tendencies. It can be conclude that the genes are not closely related.</div>
 
 ```{r, fig.height=5, fig.width=8, message=TRUE}
 
