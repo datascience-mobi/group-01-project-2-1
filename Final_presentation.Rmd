@@ -7,9 +7,10 @@ output: html_document
 
 
 
-```{r setup, include = FALSE, warning = FALSE, error = FALSE, echo = FALSE}
-knitr::opts_chunk$set(echo = TRUE,
-                      chache = TRUE)
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      chache = TRUE,
+                      warning = FALSE)
 #library packages
 library(calibrate)
 library(cluster) 
