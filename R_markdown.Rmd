@@ -81,7 +81,7 @@ library(viridis)
 # 1. Introduction {#anchor1}
 
 
-Our project is about lapatinib and divided into three parts:
+Our project is about Lapatinib and divided into three parts:
 Broad analysis, specific analysis and our three main questions.
 The main questions are the most important part of our project. They address whether cell doubling time correlates with reduced drug sensitivity and the effect of lapatinib on lung cancer and brain metastasis.
 Twenty-five per cent of breast cancers overexpress ErbB2 / HER which leads to a more aggressive phenotype. Lapatinib blocks tyrosine kinases that belong to the HER2 receptor, which is increasingly found on the cell surface of cancer cells.
@@ -1101,7 +1101,7 @@ The difference from the GI50 for a particular cell line and the mean GI50 is plo
 cor(NLGI50.all$erlotinib, NLGI50.all$lapatinib, method = "pearson")
 ```
 
-A Pearson correlation coefficient of ~ 0.65 confirms that these patterns are similar. One reason for this is that both erlotinib and lapatinib are EGFR inhibitors. Cell lines that were more sensitive are displayed as bars that project to the right of the mean. Cell lines that were less sensitive are displayed with bars projected to the left.
+A Pearson correlation coefficient of ~ 0.65 confirms that these patterns are similar. One reason for this is that both Erlotinib and Lapatinib are EGFR inhibitors. Cell lines that were more sensitive are displayed as bars that project to the right of the mean. Cell lines that were less sensitive are displayed with bars projected to the left.
 
 ### 4.2.4 Lung cellines {#css_class4.2.4}
 To answer our more specific question, whether Lapatinib also has an effect on lung cancer, we will only look at the cell lines in lung cancer.
@@ -1440,8 +1440,7 @@ dif.FC.BC = data.frame(breast = cor_mat$breast -  mean(t(breastFC)), cns = cor_m
 dif.FC.BC$gene = rownames(cor_mat)
 ```
 
-The heatmap shows, that the top expression genes are regulated similarly in breast and in cns cells after treatment with lapatinib. 
-
+The heatmap shows, that the top expression genes are regulated similarly in breast and in cns cells after treatment with Lapatinib. 
 
 To gather a more detailed conception of the gene expression regulation values (aka the fold change) we also computed a comparing bar plot showing the exact fold change values.
 
