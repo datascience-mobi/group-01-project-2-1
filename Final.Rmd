@@ -147,7 +147,7 @@ boxplot(TreatedNS,  ylab = "Gene expression profile", main = "Treated genexpress
 
 ```
 
-In order to check whether there is a connection between the various drugs, we have colored the plot by drug.
+In order to check whether there is a connection between the various drugs, we colored the plot by drug.
 
 ```{r colored boxplots UNSCALED, creating a susbet of Metadata based on the amount of tested genes in Treated,echo=FALSE, fig.height = 5, fig.width = 7}
 df = data.frame(t(TreatedNS))
@@ -559,7 +559,8 @@ pheat_breast<-pheatmap(breast_marker_matrix ,
                       cutree_cols = 4, 
                       cutree_rows = 3, 
                       color = viridis(4),
-                      drop_levels = TRUE, 
+                      drop_levels = TRUE,
+                      border_color = NA,
                       clustering_method = "ward.D2", 
                       scale="row")
 pheat_breast
@@ -694,7 +695,7 @@ pca.data <- cbind(sample =rownames(pca.data), pca.data)
 
 ```
 
-As seen in the scree plot, the first four PCs have capture most of the information since the curve bends at an "elbow" at PC4 - this is our cutting off point.
+As seen in the scree plot, again the first three or four PCs have capture most of the information since the curve bends at an "elbow" at PC4 - this is our cutting off point.
 
 ```{r, echo=FALSE, eval=FALSE}
 ## get names of top 10 genes that contribute most to pc1
@@ -1049,7 +1050,7 @@ As we read in the paper "Antitumor and antiangiogenic effect of the dual EGFR an
 ### 4.2.1 Heatmap {#css_class4.2.1}
 ```{r correlation heatmap}
 cor = cor(NLGI50.all)
-pheatmap(cor, col = cm.colors(256), main = "Correlation NLGI50")
+pheatmap(cor, col = cm.colors(256), border_color = NA, main = "Correlation NLGI50")
 
 ```
 
@@ -1225,7 +1226,7 @@ ggboxplot (data = df_drug, x="Drug", y="log2FoldChange", color = "Drug",
 
 ## 4.3 Question 3: Does Lapatinib have a similar effect on brain metastasis as it does on breast cancer? {#css_id4.3}
 
-As a proven fact, Lapatinb crosses the brain-blood barrier. Since breast cancer tends to spread and form metastasis in brain cells and Lapatinib is used in anti-breast cancer therapy, we wanted to analyse our data for similar effects after Lapatinib treatment in breast and cns tissue cells. 
+As the paper "Lapatinib Distribution in HER2 Overexpressing Experimental Brain Metastases of Breast Cancer" (Taskar et.al., 2012) suggests, Lapatinb crosses the brain-blood barrier. Since breast cancer tends to spread and form metastasis in brain cells and Lapatinib is used in anti-breast cancer therapy, we wanted to analyse our data for similar effects after Lapatinib treatment in breast and cns tissue cells. 
 
 At first, we selected Lapatinib response genes by creating matrices with cns- and breast-cell line fold change values. 
 ```{r}
