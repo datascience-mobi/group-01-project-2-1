@@ -31,7 +31,7 @@ library(viridis)
 ```
 <div style = "text-align: justify">
 
-# Table of content
+# Table of contents
 
 [1. Introduction](#anchor1)  
   [1.1 Data loading](#css_id1)  
@@ -43,7 +43,7 @@ library(viridis)
   [2.3 K-means clustering](#css_id2.3)  
   [2.4 PCA](#css_id2.4)  
 
-[3. Specific analysis: lapatinib](#anchor3)  
+[3. Specific analysis: Lapatinib](#anchor3)  
   [3.1 Analysis of biomarker and t-test between treated and untreated cells](#css_id3.1)    
     [3.1.1 Expression of biomakers before and after the treatment of Lapatinib](#css_class3.1.1)  
     [3.1.2 Searching for our own biomarkers](#css_class3.1.2)  
@@ -1286,7 +1286,7 @@ genes <- colnames(breastFC)
 
 For visualization of the biological significance (fold change values) and the statistical significance (adjusted p-values), we plotted our data in an interactive volcano plot.
 
-```{r}
+```{r, warning = FALSE}
 ## breast volcano plot
 #creating a matrix containg all needed values for plotting
 diff_df_breast <- data.frame(gene = genes, Fold = breastFCm, FDR = fdr_breast)
@@ -1342,7 +1342,7 @@ plot_breast
 ```
 
 
-```{r}
+```{r, warning = FALSE}
 
 ## CNS volcano plot
 
