@@ -1,8 +1,10 @@
 ---
 title: "Project02 - Group01"
-author: "Eva, Tobi, Kathi, Laura"
+author: "Eva, Tobias, Katharina, Laura"
 date: "24. July 2019"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 
@@ -652,11 +654,6 @@ summary(topVarFold)
 topVarFold75 = LapatinibFold[topVarFold > quantile(topVarFold, probs = 0.75), ]
 dim(topVarFold75)
 
-km = kmeans(x = t(topVarFold75), centers = 2, nstart = 10)
-km$tot.withinss
-
-km = kmeans(x = t(topVarFold75), centers = 3, nstart = 10)
-km$tot.withinss
 
 ```
 
@@ -1060,7 +1057,9 @@ knitr::kable(table, format = "markdown")
 ```
 
 
+
 The data is hard to discuss, because we used random values for our test and training dataset. Hence, different values on every run are obtained. We could use "selected values" (First 20) but this would be kind of cheating.
+But overall, the models do not seem to be appropriate for good linear regression.
 
 ## 4.2 Question 2: Does Lapatinib have a similar effect on lung cancer as Erlotinib? {#css_id4.2}
 
