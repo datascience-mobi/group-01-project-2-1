@@ -91,7 +91,7 @@ HER2 is a receptor for the epidermal growth factor (EGF), which stimulates the c
 
 ## 1.1 Data loading {#css_id1}
 
-```{r data_loading, echo=FALSE}
+```{r data_loading}
 
 
 wd = getwd()
@@ -142,7 +142,7 @@ rm(rmv.rows, n)
 
 As the very first step in our data analysis, we checked the normalization of the data.
 
-```{r,echo=FALSE}
+```{r}
 TreatedNS = readRDS(paste0(wd, "/Data/NCI_TPW_gep_treated.rds"))
 boxplot(TreatedNS,  ylab = "Gene expression profile", main = "Treated genexpressionprofiles",xaxt = "n")
 
@@ -150,7 +150,7 @@ boxplot(TreatedNS,  ylab = "Gene expression profile", main = "Treated genexpress
 
 In order to check whether there is a connection between the various drugs, we colored the plot by drug.
 
-```{r colored boxplots UNSCALED, creating a susbet of Metadata based on the amount of tested genes in Treated,echo=FALSE, fig.height = 5, fig.width = 7}
+```{r colored boxplots UNSCALED, creating a susbet of Metadata based on the amount of tested genes in Treated, fig.height = 5, fig.width = 7}
 df = data.frame(t(TreatedNS))
 df.data <- data.frame(sample = rownames(df))
 adjustedMeda = subset(Metadata, sample %in% intersect(Metadata$sample, df.data$sample))
@@ -172,7 +172,7 @@ legend("topright", inset = c(-0.35,0), legend= drugs, xpd = TRUE, pch=19,
 
 As shown, there is a connection between the different "boxes" and the different drugs. This could be the reason for different batches so we scale the data.
 
-```{r colored boxplots SCALED, creating a susbet of Metadata based on the amount of tested genes in Treated,echo=FALSE, fig.height = 5, fig.width = 7}
+```{r colored boxplots SCALED, creating a susbet of Metadata based on the amount of tested genes in Treated, fig.height = 5, fig.width = 7}
 TreatedS = scale((Treated))
 par(mar=c(5, 4, 5, 9))
 boxplot(TreatedS, border=adjustedMeda$drug,xlab= "Samples" ,ylab = "Gene expression profile",
@@ -193,7 +193,7 @@ As you can see the scaling is necessary to compensate the batch effect. Scaling 
 As an other method to get in touch with the data, we checked if there is a difference between the treated and untreated genexpression. 
 The abline shows the 3 quantiles (      25 %       50 %       75 %    )
 
-```{r,echo=FALSE}
+```{r}
 NCI_TPW_gep_treated = readRDS(paste0(wd, "/Data/NCI_TPW_gep_treated.rds"))
 NCI_TPW_gep_untreated = readRDS(paste0(wd, "/Data/NCI_TPW_gep_untreated.rds"))
 plot(density(NCI_TPW_gep_treated), "Densityplot Treated vs Untreated",xlab= "Expressionvalue")
@@ -210,7 +210,7 @@ As assumed, the expression patterns don't differentiate much.
 
 To look for clusters in the raw data we performed a k-means clustering and searched for potentially clusters using the most variable (>75 % Var), and thus the most informative genes.
 
-```{r, echo=FALSE}
+```{r}
 topVarTreated = apply(Treated, 1, var)
 
 
@@ -222,7 +222,7 @@ topVarTreated75 = Treated[topVarTreated > quantile(topVarTreated, probs = 0.75),
 
 Running a loop for the best cluster-amount (searching for an "elbow")
 
-```{r,echo=FALSE}
+```{r}
 wss = sapply(1:7, function(k) {
 kmeans(x = t(topVarTreated75), centers = k)$tot.withinss})            
 plot(1:7, wss, type = "b", pch = 19, xlab = "Number of clusters K", ylab = "Total within-clusters sum of squares", main = "Determining the amount of clusters from Treated")
@@ -868,7 +868,7 @@ As mentioned in our presentation, we want to create a model to predict GI50-valu
 
 The first linear model tries to predict the GI-50 value among the data of the Inoculation density.
 
-```{r,echo = FALSE}
+```{r}
 NegLogGI50Lap = NegLogGI50[9,]
 
 #Sort by Cellline-Name
@@ -928,7 +928,7 @@ rmse22.test = sqrt(1/n * sum(residuals^2))
 
 The second linear model tries to predict the GI-50 value among the data of the Doubling-time.
 
-```{r,echo = FALSE}
+```{r}
 NegLogGI50Lap = NegLogGI50[9,]
 
 #Sort by Cellline-Name
@@ -989,7 +989,7 @@ rmse2.test = sqrt(1/n * sum(residuals^2))
 
 Finally, we did a multiple regression with both datasets to predict GI50-values.
 
-```{r,echo = FALSE}
+```{r}
 
 NegLogGI50Lap_t = t(NegLogGI50Lap)
 combined3 = cbind(NegLogGI50Lap_t, Inoculation_Density$`df2$Inoculation_Density`, Doublingtime$`df$Doubling_Time`)
@@ -1043,7 +1043,7 @@ rmse3.test = sqrt(1/n * sum(residuals^2))
 
 The following table shows important values. 
 
-```{r, results='asis',echo = FALSE}
+```{r, results='asis'}
 Rsrd =  c(summary(l22.train)$r.squared, summary(l2.train)$r.squared, summary(l3.train)$r.squared)
 F_Stat = c(summary(l22.train)$fstatistic[1],summary(l2.train)$fstatistic[1],summary(l3.train)$fstatistic[1])
 Sum_RMSE = c(rmse22.test,rmse2.test,rmse3.test)
