@@ -471,7 +471,7 @@ boxplot(LapUn$ESR1, LapTreat$ESR1,
 
 ### 3.1.2 Searching for our own biomarkers {#css_class3.1.2}
 
-The log2FoldChange was examined from the mean of all genes before and after treatment with lapatinib.</div>
+The log2FoldChange was examined from the mean of all genes before and after treatment with Lapatinib.</div>
 
 ```{r}
 Treat<-colMeans(LapTreat, na.rm = TRUE)
@@ -659,7 +659,7 @@ plot(s)
 
 ## 3.4 PCA {#css_id3.4}
 
-Since the clustering method by performing k means clustering again was not successful, we performed a principal component analysis over the selected lapatinib samples for identifying clusters or patterns while preserving as much information of the original data set as possible.
+Since the clustering method by performing k means clustering again was not successful, we performed a principal component analysis over the selected Lapatinib samples for identifying clusters or patterns while preserving as much information of the original data set as possible.
 
 ```{r}
 L_fc <- select(Fold_Change, contains("Lapa"))
@@ -1098,10 +1098,10 @@ The difference from the NegLogGI50 for a particular cell line and the mean NegLo
 cor(NLGI50.all$erlotinib, NLGI50.all$lapatinib, method = "pearson")
 ```
 
-A Pearson correlation coefficient of ~ 0.65 confirms that these patterns are similar. One reason for this is that both erlotinib and lapatinib are EGFR inhibitors. Cell lines that were more sensitive are displayed as bars that project to the right of the mean. Cell lines that were less sensitive are displayed with bars projected to the left.
+A Pearson correlation coefficient of ~ 0.65 confirms that these patterns are similar. One reason for this is that both Erlotinib and Lapatinib are EGFR inhibitors. Cell lines that were more sensitive are displayed as bars that project to the right of the mean. Cell lines that were less sensitive are displayed with bars projected to the left.
 
 ### 4.2.4 Lung cellines {#css_class4.2.4}
-To answer our more specific question, whether lapatinib also has an effect on lung cancer, we will only look at the cell lines in lung cancer.
+To answer our more specific question, whether Lapatinib also has an effect on lung cancer, we will only look at the cell lines in lung cancer.
 
 ```{r lung genes, fig.height = 7, fig.width = 14}
 #only lung with mean all
@@ -1189,7 +1189,7 @@ df_drug<-data.frame(log2FoldChange, Drug)
 <div style="text-align: justify"> 
 ### 4.2.5 Anova {#css_class4.2.5}
 ### Checking requirements for ANOVA
-First, the fold change data of lapatinib and erlotinib must be checked for normality. Anova can be used if the data is distributed normally.</div>
+First, the fold change data of Lapatinib and Erlotinib must be checked for normality. Anova can be used if the data is distributed normally.</div>
 ```{r}
 qqnorm(log2FoldChange, pch = 1, frame = FALSE)
 qqline(log2FoldChange, col = "steelblue", lwd = 2)
@@ -1218,7 +1218,7 @@ ggboxplot (data = df_drug, x="Drug", y="log2FoldChange", color = "Drug",
 
 As a proven fact, lapatinb crosses the brain-blood barrier. Since breast cancer tends to spread and form metastasis in brain cells and lapatinib is used in anti-breast cancer therapy, we wanted to analyse our data for similar effects after lapatinib treatment in breast and cns tissue cells. 
 
-At first, we selected lapatinib response genes by creating matrices with cns- and breast-cell line fold change values. 
+At first, we selected Lapatinib response genes by creating matrices with cns- and breast-cell line fold change values. 
 ```{r}
 L_fc <- select(Fold_Change, contains("Lapa"))
 L_fc <- as.data.frame(t(L_fc))
@@ -1432,7 +1432,7 @@ dif.FC.BC = data.frame(breast = cor_mat$breast -  mean(t(breastFC)), cns = cor_m
 dif.FC.BC$gene = rownames(cor_mat)
 ```
 
-The heat map shows, that the top expression genes are regulated similarly in breast and in cns cells after treatment with lapatinib. 
+The heat map shows, that the top expression genes are regulated similarly in breast and in cns cells after treatment with Lapatinib. 
 
 
 To gather a more detailed conception of the gene expression regulation values (aka the fold change) we also computed a comparing bar plot showing the exact fold change values.
@@ -1468,5 +1468,5 @@ At last, we investigated the expression regulation in both tissue types by calcu
 cor(cor_mat$breast, cor_mat$cns, method = "pearson")
 ```
 
-The obtained correlation value of ~ 0.92 indicates that lapatinib treatment yields a similar effect on gene expression in breast and cns tissue cells and therefore might be possible to treat cancer in brain metastasis.  
+The obtained correlation value of ~ 0.92 indicates that Lapatinib treatment yields a similar effect on gene expression in breast and cns tissue cells and therefore might be possible to treat cancer in brain metastasis.  
 </div>
