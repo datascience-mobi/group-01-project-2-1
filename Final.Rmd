@@ -72,7 +72,7 @@ library(viridis)
     [4.2.3 Pearson correlation](#css_class4.2.3)  
     [4.2.4 Lung cellines](#css_class4.2.4)  
     [4.2.5 Anova](#css_class4.2.5)  
-  [4.3 Question 3: Does Lapatinib have a similar effect on brain metastasis as it does on breast cancer?](#css_id4.3)  
+  [4.3 Question 3: Does Lapatinib have a similar effect on brain metastases as it does on breast cancer?](#css_id4.3)  
     [4.3.1 Volcano plot](#css_class4.3.1)  
     [4.3.2 Heatmap for visualization](#css_class4.3.2)  
     [4.3.3 Investigation of correlation](#css_class4.3.3)  
@@ -84,7 +84,7 @@ library(viridis)
 
 Our project is about Lapatinib and divided into three parts:
 Broad analysis, specific analysis and our three main questions.
-The main questions are the most important part of our project. They address whether cell doubling time correlates with reduced drug sensitivity and the effect of lapatinib on lung cancer and brain metastasis.
+The main questions are the most important part of our project. They address whether cell doubling time correlates with reduced drug sensitivity and the effect of lapatinib on lung cancer and brain metastases.
 Twenty-five per cent of breast cancers overexpress ErbB2 / HER which leads to a more aggressive phenotype. Lapatinib blocks tyrosine kinases that belong to the HER2 receptor, which is increasingly found on the cell surface of cancer cells.
 HER2 is a receptor for the epidermal growth factor (EGF), which stimulates the cell division of cancer cells. By blocking these HER2 receptors, the unregulated growth of cancer cells can be controlled again. Lapatinib binds the ATP-binding site of the receptor's intracellular domain and inhibits the survival and proliferation pathways of the tumor cell.
 
@@ -1229,9 +1229,9 @@ ggboxplot (data = df_drug, x="Drug", y="log2FoldChange", color = "Drug",
 
 
 
-## 4.3 Question 3: Does Lapatinib have a similar effect on brain metastasis as it does on breast cancer? {#css_id4.3}
+## 4.3 Question 3: Does Lapatinib have a similar effect on brain metastases as it does on breast cancer? {#css_id4.3}
 
-As the paper "Lapatinib Distribution in HER2 Overexpressing Experimental Brain Metastases of Breast Cancer" (Taskar et.al., 2012) suggests, Lapatinb crosses the brain-blood barrier. Since breast cancer tends to spread and form metastasis in brain cells and Lapatinib is used in anti-breast cancer therapy, we wanted to analyse our data for similar effects after Lapatinib treatment in breast and cns tissue cells. 
+As the paper "Lapatinib Distribution in HER2 Overexpressing Experimental Brain Metastases of Breast Cancer" (Taskar et.al., 2012) suggests, Lapatinb crosses the brain-blood barrier. Since breast cancer tends to spread and form metastases in brain cells and Lapatinib is used in anti-breast cancer therapy, we wanted to analyse our data for similar effects after Lapatinib treatment in breast and cns tissue cells. 
 
 At first, we selected Lapatinib response genes by creating matrices with cns- and breast-cell line fold change values. 
 ```{r}
@@ -1482,5 +1482,5 @@ At last, we investigated the expression regulation in both tissue types by calcu
 cor(cor_mat$breast, cor_mat$cns, method = "pearson")
 ```
 
-The obtained correlation value of ~ 0.92 indicates that Lapatinib treatment yields a similar effect on gene expression in breast and cns tissue cells and therefore might be possible to treat cancer in brain metastasis.  
+The obtained correlation value of ~ 0.92 indicates that Lapatinib treatment yields a similar effect on gene expression in breast and cns tissue cells and therefore might be possible to treat cancer in brain metastases.  
 </div>
