@@ -91,7 +91,7 @@ HER2 is a receptor for the epidermal growth factor (EGF), which stimulates the c
 
 ## 1.1 Data loading {#css_id1}
 
-```{r data_loading}
+```{r data_loading, echo = FALSE}
 
 
 wd = getwd()
@@ -639,7 +639,7 @@ with(subset(vulcano, padj<.05 & abs(log2FoldChange)>1), textxy(log2FoldChange, -
 
 ## 3.3 K-means {#css_id3.3}
 
-The silhouette-plot can be used to determin the amount of clusters. The main value, the average silhouette width is an indicator of the chosen amount of clusters (Higher values indicate better clusters).
+The silhouette-plot can be used to determin the amount of clusters. The main value, the average silhouette width is an indicator of the chosen amount of clusters (higher values indicate better clusters).
 
 ```{r}
 LapatinibFold = select(Fold_Change, contains("Lapa"))
@@ -660,20 +660,22 @@ km$tot.withinss
 
 ```
 
-```{r}
+```{r, fig.height = 6, fig.width = 8}
 # Using the silhouett method
 D = dist(t(topVarFold75))
 km = kmeans(x = t(topVarFold75), centers = 2, nstart = 10)
 s = silhouette(km$cluster, D)
-plot(s,  main = "Silhouette value for each cell-line",col= c("darkblue", "firebrick"), border=c("black"))
+plot(s,  main = "Silhouette value for each cell-line", col= c("darkblue", "firebrick"), border=c("black"))
 ```
 
-```{r}
+```{r, fig.height = 5, fig.width = 8}
 # Using the silhouett method
 D = dist(t(topVarFold75))
 km = kmeans(x = t(topVarFold75), centers = 3, nstart = 10)
 s = silhouette(km$cluster, D)
-plot(s , main = "Silhouette value for each cell-line ",col= c("darkblue", "firebrick","forestgreen"), border=c("black"))
+par(adj = 0.5)
+plot(s, main = "Silhouette value for each cell-line ", adj = 0.5, col= c("darkblue", "firebrick","forestgreen"), 
+     border=c("black"))
 ```
 
 The negative bars indicate an incorrectly assigned datapoint. Overall, the fewer clusters you have, the better your silhouette width values are. This is due to the datapoints being very proximate to one another and not being able to define specific or different clusters.
