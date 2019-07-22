@@ -531,7 +531,7 @@ names(breast_marker_matrix)[names(breast_marker_matrix) == "tbreastcells.DDIT3"]
 names(breast_marker_matrix)[names(breast_marker_matrix) == "tbreastcells.TRIB3"] <- "TRIB3"
 names(breast_marker_matrix)[names(breast_marker_matrix) == "tbreastcells.ATF3"] <- "ATF3"
 names(breast_marker_matrix)[names(breast_marker_matrix) == "tbreastcells.ASNS"] <- "ASNS"
-Biomarkers<-c(rep('DF15',45),rep('NUPR1',45),rep('DDIT3',45),rep('TRIB3',45),rep('ATF3',45),rep('ASNS',45))
+Biomarkers<-c(rep('GDF15',45),rep('NUPR1',45),rep('DDIT3',45),rep('TRIB3',45),rep('ATF3',45),rep('ASNS',45))
 Expression<-c(tbreastcells$GDF15,tbreastcells$NUPR1, tbreastcells$DDIT3, tbreastcells$TRIB3, tbreastcells$ATF3, tbreastcells$ASNS)
 df_breast<-data.frame(Expression, Biomarkers)
 
