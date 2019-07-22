@@ -1,13 +1,15 @@
 ---
 title: "Project02 - Group01"
-author: "Eva, Tobi, Kathi, Laura"
+author: "Eva, Tobias, Katharina, Laura"
 date: "24. July 2019"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 
 
-```{r setup, include = FALSE}
+```{r setup, include=FALSE }
 knitr::opts_chunk$set(echo = FALSE,
                       chache = TRUE,
                       warning = FALSE)
@@ -72,7 +74,7 @@ library(viridis)
     [4.2.3 Pearson correlation](#css_class4.2.3)  
     [4.2.4 Lung cellines](#css_class4.2.4)  
     [4.2.5 Anova](#css_class4.2.5)  
-  [4.3 Question 3: Does Lapatinib have a similar effect on brain metastasis as it does on breast cancer?](#css_id4.3)  
+  [4.3 Question 3: Does Lapatinib have a similar effect on brain metastases as it does on breast cancer?](#css_id4.3)  
     [4.3.1 Volcano plot](#css_class4.3.1)  
     [4.3.2 Heatmap for visualization](#css_class4.3.2)  
     [4.3.3 Investigation of correlation](#css_class4.3.3)  
@@ -84,13 +86,14 @@ library(viridis)
 
 Our project is about Lapatinib and divided into three parts:
 Broad analysis, specific analysis and our three main questions.
-The main questions are the most important part of our project. They address whether cell doubling time correlates with reduced drug sensitivity and the effect of lapatinib on lung cancer and brain metastasis.
+The main questions are the most important part of our project. They address whether cell doubling time correlates with reduced drug sensitivity and the effect of lapatinib on lung cancer and brain metastases.
 Twenty-five per cent of breast cancers overexpress ErbB2 / HER which leads to a more aggressive phenotype. Lapatinib blocks tyrosine kinases that belong to the HER2 receptor, which is increasingly found on the cell surface of cancer cells.
 HER2 is a receptor for the epidermal growth factor (EGF), which stimulates the cell division of cancer cells. By blocking these HER2 receptors, the unregulated growth of cancer cells can be controlled again. Lapatinib binds the ATP-binding site of the receptor's intracellular domain and inhibits the survival and proliferation pathways of the tumor cell.
 
 
 ## 1.1 Data loading {#css_id1}
-```{r data_loading, echo=FALSE}
+
+```{r data_loading, echo = FALSE}
 
 
 wd = getwd()
@@ -141,15 +144,15 @@ rm(rmv.rows, n)
 
 As the very first step in our data analysis, we checked the normalization of the data.
 
-```{r,echo=FALSE}
+```{r}
 TreatedNS = readRDS(paste0(wd, "/Data/NCI_TPW_gep_treated.rds"))
 boxplot(TreatedNS,  ylab = "Gene expression profile", main = "Treated genexpressionprofiles",xaxt = "n")
 
 ```
 
-In order to check whether there is a connection between the various drugs, we have colored the plot by drug.
+In order to check whether there is a connection between the various drugs, we colored the plot by drug.
 
-```{r colored boxplots UNSCALED, creating a susbet of Metadata based on the amount of tested genes in Treated,echo=FALSE, fig.height = 5, fig.width = 7}
+```{r colored boxplots UNSCALED, creating a susbet of Metadata based on the amount of tested genes in Treated, fig.height = 5, fig.width = 7}
 df = data.frame(t(TreatedNS))
 df.data <- data.frame(sample = rownames(df))
 adjustedMeda = subset(Metadata, sample %in% intersect(Metadata$sample, df.data$sample))
@@ -171,7 +174,7 @@ legend("topright", inset = c(-0.35,0), legend= drugs, xpd = TRUE, pch=19,
 
 As shown, there is a connection between the different "boxes" and the different drugs. This could be the reason for different batches so we scale the data.
 
-```{r colored boxplots SCALED, creating a susbet of Metadata based on the amount of tested genes in Treated,echo=FALSE, fig.height = 5, fig.width = 7}
+```{r colored boxplots SCALED, creating a susbet of Metadata based on the amount of tested genes in Treated, fig.height = 5, fig.width = 7}
 TreatedS = scale((Treated))
 par(mar=c(5, 4, 5, 9))
 boxplot(TreatedS, border=adjustedMeda$drug,xlab= "Samples" ,ylab = "Gene expression profile",
@@ -192,7 +195,7 @@ As you can see the scaling is necessary to compensate the batch effect. Scaling 
 As an other method to get in touch with the data, we checked if there is a difference between the treated and untreated genexpression. 
 The abline shows the 3 quantiles (      25 %       50 %       75 %    )
 
-```{r,echo=FALSE}
+```{r}
 NCI_TPW_gep_treated = readRDS(paste0(wd, "/Data/NCI_TPW_gep_treated.rds"))
 NCI_TPW_gep_untreated = readRDS(paste0(wd, "/Data/NCI_TPW_gep_untreated.rds"))
 plot(density(NCI_TPW_gep_treated), "Densityplot Treated vs Untreated",xlab= "Expressionvalue")
@@ -209,7 +212,7 @@ As assumed, the expression patterns don't differentiate much.
 
 To look for clusters in the raw data we performed a k-means clustering and searched for potentially clusters using the most variable (>75 % Var), and thus the most informative genes.
 
-```{r, echo=FALSE}
+```{r}
 topVarTreated = apply(Treated, 1, var)
 
 
@@ -221,7 +224,7 @@ topVarTreated75 = Treated[topVarTreated > quantile(topVarTreated, probs = 0.75),
 
 Running a loop for the best cluster-amount (searching for an "elbow")
 
-```{r,echo=FALSE}
+```{r}
 wss = sapply(1:7, function(k) {
 kmeans(x = t(topVarTreated75), centers = k)$tot.withinss})            
 plot(1:7, wss, type = "b", pch = 19, xlab = "Number of clusters K", ylab = "Total within-clusters sum of squares", main = "Determining the amount of clusters from Treated")
@@ -235,7 +238,7 @@ As we wanted an "elbow", it is hard to determine the amount of clusters.
 
 Since the clustering method by performing k-means clustering was not successful, we performed a principal component analysis for dimensionality reduction as another method for identifying clusters or patterns while preserving as much information of the original data set as possible.
 
-```{r, echo=TRUE}
+```{r}
 pca <- prcomp(t(Fold_Change), scale = TRUE)
 ```
 
@@ -455,6 +458,7 @@ LapTreat<-data.frame(t(after))
 <div style="text-align: justify">  
 We found these genes as biomarkers in a paper and presented them in our first presentation. 
 (Source of the paper: Basal-Like Breast Cancer Defined by Five Biomarkers Has Superior Prognostic Value than Triple-Negative Phenotype, by Maggie C.U. Cheang, David Voduc, Chris Bajdik, et al. Clin Cancer Res 2008; 14:1368-1376)</div>
+
 ```{r Treated and Untreated, fig.height=8, fig.width=16, message=TRUE, paged.print=TRUE, echo=FALSE}
 boxplot(LapUn$ESR1, LapTreat$ESR1, 
         LapUn$ERBB2, LapTreat$ERBB2,
@@ -469,7 +473,7 @@ boxplot(LapUn$ESR1, LapTreat$ESR1,
         ylab="Expression")
 ```
 
-Unfortunately, we can not use them as biomarkers so we search for our own biomarkers.
+Unfortunately, we can not use them as biomarkers because expression either decreases only slightly or even increases. So we searched for our own biomarkers.
 
 <div style="text-align: justify"> 
 
@@ -514,7 +518,8 @@ boxplot(LapTreat$GDF15,LapUn$GDF15,
         xlab="Biomarkers",
         ylab="Expression")
 ```
-
+<div style="text-align: justify"> 
+After the treatment with Lapatinib, the expression of the biomarkers has dropped. </div>
 
 ```{r}
 breastcells<-subset(Metadata, tissue == "Breast")
@@ -538,7 +543,7 @@ df_breast<-data.frame(Expression, Biomarkers)
 ### 3.1.4 ggBoxplot of our biomarkers' basalexpression in breast cells with Kruskal-Wallis test {#css_class3.1.4}
 
 The null hypothesis is: there is no difference between the groups.
-The Kruskal-Wallis test is for independent samples. It tests whether the central trends of several independent samples differ. </div>
+The Kruskal-Wallis test is for independent samples. It tests whether the central trends of several independent samples differ. Since the p-value of the Kruskal-Wallis test is significant, our biomarkers do not show the same central tendencies. It can be conclude that the genes are not closely related.</div>
 
 ```{r, fig.height=5, fig.width=8, message=TRUE}
 
@@ -551,6 +556,8 @@ ggboxplot(df_breast, x="Biomarkers", y="Expression", color = "Biomarkers",
 ```
 
 ### 3.1.5 Heatmap of biomarkers in breast cells {#css_class3.1.5}
+<div style="text-align: justify"> 
+Because lapatinib is a breast cancer drug, we are more closely studying the expression of biomarkers in breast tissue. It can be seen that ASNS and GDF15 are very strongly expressed in breast cancer cells.</div>
 
 ```{r, fig.height=5, fig.width=8, message=TRUE}
 pheat_breast<-pheatmap(breast_marker_matrix ,
@@ -606,7 +613,10 @@ summary(row_t_test$pvalue)
 
 <div style="text-align: justify"> 
 ### 3.2.4 Visualization of the genome-wide paired t-test in a vulcano plot {#css_class3.2.4}
-</div>
+
+If the p-value of a gene is less than 0.05, it turns red. If the Log2FoldChange is greater than one, the gene is displayed in blue. If both conditions are met, the gene is displayed in green.
+Thus, all significant genes are stained red or green.</div>
+
 ```{r, fig.height=12, fig.width=12, message=TRUE, paged.print=TRUE}
 Lap_t_test<-data.table(col_t_paired(LapUn, LapTreat, alternative = "two.sided", mu = 0,conf.level = 0.95))
 padj<-p.adjust(Lap_t_test$pvalue, "BH")
@@ -630,6 +640,9 @@ with(subset(vulcano, padj<.05 & abs(log2FoldChange)>1), textxy(log2FoldChange, -
 
 
 ## 3.3 K-means {#css_id3.3}
+
+The silhouette-plot can be used to determin the amount of clusters. The main value, the average silhouette width is an indicator of the chosen amount of clusters (higher values indicate better clusters).
+
 ```{r}
 LapatinibFold = select(Fold_Change, contains("Lapa"))
 
@@ -641,26 +654,28 @@ summary(topVarFold)
 topVarFold75 = LapatinibFold[topVarFold > quantile(topVarFold, probs = 0.75), ]
 dim(topVarFold75)
 
-km = kmeans(x = t(topVarFold75), centers = 2, nstart = 10)
-km$tot.withinss
 
-km = kmeans(x = t(topVarFold75), centers = 3, nstart = 10)
-km$tot.withinss
-
-#running a loop for the best n (searching for "elbow")
-wss = (sapply(2:7, function(k) {
-  kmeans(x =t(topVarFold75), centers = k)$tot.withinss})  )            
-plot(2:7, wss, type = "b", pch = 19, xlab = "Number of clusters K", ylab = "Total within-clusters sum of squares", main = "Determining the amount of clusters from Foldchange")
 ```
 
-```{r}
+```{r, fig.height = 6, fig.width = 8}
+# Using the silhouett method
+D = dist(t(topVarFold75))
+km = kmeans(x = t(topVarFold75), centers = 2, nstart = 10)
+s = silhouette(km$cluster, D)
+plot(s,  main = "Silhouette value for each cell-line", col= c("darkblue", "firebrick"), border=c("black"))
+```
+
+```{r, fig.height = 5, fig.width = 8}
 # Using the silhouett method
 D = dist(t(topVarFold75))
 km = kmeans(x = t(topVarFold75), centers = 3, nstart = 10)
 s = silhouette(km$cluster, D)
-plot(s)
+par(adj = 0.5)
+plot(s, main = "Silhouette value for each cell-line ", adj = 0.5, col= c("darkblue", "firebrick","forestgreen"), 
+     border=c("black"))
 ```
 
+The negative bars indicate an incorrectly assigned datapoint. Overall, the fewer clusters you have, the better your silhouette width values are. This is due to the datapoints being very proximate to one another and not being able to define specific or different clusters.
 
 ## 3.4 PCA {#css_id3.4}
 
@@ -695,7 +710,7 @@ pca.data <- cbind(sample =rownames(pca.data), pca.data)
 
 ```
 
-As seen in the scree plot, the first four PCs have capture most of the information since the curve bends at an "elbow" at PC4 - this is our cutting off point.
+As seen in the scree plot, again the first three or four PCs have capture most of the information since the curve bends at an "elbow" at PC4 - this is our cutting off point.
 
 ```{r, echo=FALSE, eval=FALSE}
 ## get names of top 10 genes that contribute most to pc1
@@ -854,7 +869,7 @@ As mentioned in our presentation, we want to create a model to predict GI50-valu
 
 The first linear model tries to predict the GI-50 value among the data of the Inoculation density.
 
-```{r,echo = FALSE}
+```{r}
 NegLogGI50Lap = NegLogGI50[9,]
 
 #Sort by Cellline-Name
@@ -912,8 +927,9 @@ rmse22.test = sqrt(1/n * sum(residuals^2))
 
 ### 4.1.2 Linear regression ~ Doubling-time {#css_class4.1.2}
 
-The second linear model tries to predict the G-50 value among the data of the Doubling-time.
-```{r,echo = FALSE}
+The second linear model tries to predict the GI-50 value among the data of the Doubling-time.
+
+```{r}
 NegLogGI50Lap = NegLogGI50[9,]
 
 #Sort by Cellline-Name
@@ -973,7 +989,8 @@ rmse2.test = sqrt(1/n * sum(residuals^2))
 ### 4.1.3 Multiple regression {#css_class4.1.3}
 
 Finally, we did a multiple regression with both datasets to predict GI50-values.
-```{r,echo = FALSE}
+
+```{r}
 
 NegLogGI50Lap_t = t(NegLogGI50Lap)
 combined3 = cbind(NegLogGI50Lap_t, Inoculation_Density$`df2$Inoculation_Density`, Doublingtime$`df$Doubling_Time`)
@@ -1027,7 +1044,7 @@ rmse3.test = sqrt(1/n * sum(residuals^2))
 
 The following table shows important values. 
 
-```{r, results='asis',echo = FALSE}
+```{r, results='asis'}
 Rsrd =  c(summary(l22.train)$r.squared, summary(l2.train)$r.squared, summary(l3.train)$r.squared)
 F_Stat = c(summary(l22.train)$fstatistic[1],summary(l2.train)$fstatistic[1],summary(l3.train)$fstatistic[1])
 Sum_RMSE = c(rmse22.test,rmse2.test,rmse3.test)
@@ -1040,7 +1057,9 @@ knitr::kable(table, format = "markdown")
 ```
 
 
+
 The data is hard to discuss, because we used random values for our test and training dataset. Hence, different values on every run are obtained. We could use "selected values" (First 20) but this would be kind of cheating.
+But overall, the models do not seem to be appropriate for good linear regression.
 
 ## 4.2 Question 2: Does Lapatinib have a similar effect on lung cancer as Erlotinib? {#css_id4.2}
 
@@ -1215,7 +1234,7 @@ fligner.test(log2FoldChange ~ Drug, data=df_drug )
 
 <div style="text-align: justify"> 
 Anova tests whether the means of several independent groups differ.
-A p-value > 0.05 means that the result is not significant. Therefore, there is no significant difference between Erlotinib and Lapatinib.</div>
+A p-value of 0.53 means that the result is not significant. Therefore, there is no significant difference between Erlotinib and Lapatinib.</div>
 
 ```{r}
 ggboxplot (data = df_drug, x="Drug", y="log2FoldChange", color = "Drug",    
@@ -1228,9 +1247,9 @@ ggboxplot (data = df_drug, x="Drug", y="log2FoldChange", color = "Drug",
 
 
 
-## 4.3 Question 3: Does Lapatinib have a similar effect on brain metastasis as it does on breast cancer? {#css_id4.3}
+## 4.3 Question 3: Does Lapatinib have a similar effect on brain metastases as it does on breast cancer? {#css_id4.3}
 
-As the paper "Lapatinib Distribution in HER2 Overexpressing Experimental Brain Metastases of Breast Cancer" (Taskar et.al., 2012) suggests, Lapatinb crosses the brain-blood barrier. Since breast cancer tends to spread and form metastasis in brain cells and Lapatinib is used in anti-breast cancer therapy, we wanted to analyse our data for similar effects after Lapatinib treatment in breast and cns tissue cells. 
+As the paper "Lapatinib Distribution in HER2 Overexpressing Experimental Brain Metastases of Breast Cancer" (Taskar et.al., 2012) suggests, Lapatinb crosses the brain-blood barrier. Since breast cancer tends to spread and form metastases in brain cells and Lapatinib is used in anti-breast cancer therapy, we wanted to analyse our data for similar effects after Lapatinib treatment in breast and cns tissue cells. 
 
 At first, we selected Lapatinib response genes by creating matrices with cns- and breast-cell line fold change values. 
 ```{r}
@@ -1448,7 +1467,9 @@ dif.FC.BC$gene = rownames(cor_mat)
 
 The heatmap shows, that the top expression genes are regulated similarly in breast and in cns cells after treatment with Lapatinib. 
 
-```{r, fig.height = 7, fig.width = 14, eval=FALSE}
+To gather a more detailed conception of the gene expression regulation values (aka the fold change) we also computed a comparing bar plot showing the exact fold change values.
+
+```{r, fig.height = 7, fig.width = 14}
 # PLot
 
 b = ggplot(dif.FC.BC,aes(x = gene, y = breast)) +
@@ -1479,5 +1500,5 @@ At last, we investigated the expression regulation in both tissue types by calcu
 cor(cor_mat$breast, cor_mat$cns, method = "pearson")
 ```
 
-The obtained correlation value of ~ 0.92 indicates that Lapatinib treatment yields a similar effect on gene expression in breast and cns tissue cells and therefore might be possible to treat cancer in brain metastasis.  
+The obtained correlation value of ~ 0.92 indicates that Lapatinib treatment yields a similar effect on gene expression in breast and cns tissue cells and therefore might be possible to treat cancer in brain metastases.  
 </div>
