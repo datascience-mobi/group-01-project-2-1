@@ -37,14 +37,11 @@ library(viridis)
 # Table of contents
 
 [1. Introduction](#anchor1)  
-  [1.1 Data loading](#css_id1)  
-  [1.2 Data scaling](#css_id1.1)  
 
 [2. Broad analysis](#anchor2)  
   [2.1 Boxplots](#css_id2.1)  
   [2.2 Densityplot](#css_id2.2)  
-  [2.3 K-means clustering](#css_id2.3)  
-  [2.4 PCA](#css_id2.4)  
+  [2.3 PCA](#css_id2.3)  
 
 [3. Specific analysis: Lapatinib](#anchor3)  
   [3.1 Analysis of biomarker and t-test between treated and untreated cells](#css_id3.1)    
@@ -61,10 +58,8 @@ library(viridis)
 
 [4. Main questions](#anchor4)  
   [4.1 Question 1: Does the cell doubling time correlate with reduced drug sensitivity?](#css_id4.1)  
-    [4.1.1 Linear regression ~ Inoculation_Density](#css_class4.1.1)    
-    [4.1.2 Linear regression ~ Doubling-time](#css_class4.1.2)  
-    [4.1.3 Multiple regression](#css_class4.1.3)  
-    [4.1.4 Table of conclusion](#css_class4.1.4)    
+    [4.1.1 Linear regression ~ Doubling-time](#css_class4.1.1)  
+    [4.1.2 Table of conclusion](#css_class4.1.2)    
   [4.2 Question 2: Does Lapatinib have a similar effect on lung cancer as Erlotinib?](#css_id4.2)  
     [4.2.1 Heatmap](#css_class4.2.1)  
     [4.2.2 Plot Erlotinib and Lapatinib, colored by tissue](#css_class4.2.2)  
@@ -88,7 +83,7 @@ Twenty-five per cent of breast cancers overexpress ErbB2 / HER which leads to a 
 HER2 is a receptor for the epidermal growth factor (EGF), which stimulates the cell division of cancer cells. By blocking these HER2 receptors, the unregulated growth of cancer cells can be controlled again. Lapatinib binds the ATP-binding site of the receptor's intracellular domain and inhibits the survival and proliferation pathways of the tumor cell.
 
 
-## 1.1 Data loading {#css_id1}
+
 
 ```{r data_loading, echo = FALSE}
 
@@ -108,9 +103,7 @@ Treated = data.frame(NCI_TPW_gep_treated)
 Untreated = data.frame(NCI_TPW_gep_untreated)
 ```
 
-## 1.2 Data scaling {#css_id1.1}
 
-After checking for normalization, we scaled our data in the first place to provide the scaled data for further analysis.
 
 ```{r scaling}
 list = list(Treated,Untreated)
@@ -123,7 +116,7 @@ rm(NCI_TPW_gep_treated,NCI_TPW_gep_untreated,list,nlist)
 
 ```
 
-### Remove missing values {#css_id1.2}
+
 ```{r remove_NAs}
 n= as.data.frame(t(NegLogGI50))
 rmv.rows = apply(n, 1, function(x) {
@@ -204,34 +197,7 @@ abline(v = quantile(NCI_TPW_gep_treated)[2:4], col = c("lightblue", "blue",  "or
 As assumed, the expression patterns don't differentiate much.
 
 
-
-## 2.3 K-means clustering {#css_id2.3}
-
-To look for clusters in the raw data we performed a k-means clustering and searched for potentially clusters using the most variable (>75 % Var), and thus the most informative genes.
-
-```{r}
-topVarTreated = apply(Treated, 1, var)
-
-
-
-topVarTreated75 = Treated[topVarTreated > quantile(topVarTreated, probs = 0.75), ]
-
-
-```
-
-Running a loop for the best cluster-amount (searching for an "elbow")
-
-```{r}
-wss = sapply(1:7, function(k) {
-kmeans(x = t(topVarTreated75), centers = k)$tot.withinss})            
-plot(1:7, wss, type = "b", pch = 19, xlab = "Number of clusters K", ylab = "Total within-clusters sum of squares", main = "Determining the amount of clusters from Treated")
-```
-
-As we wanted an "elbow", it is hard to determine the amount of clusters.
-
-
-
-## 2.4 PCA {#css_id2.4}
+## 2.3 PCA {#css_id2.3}
 
 Since the clustering method by performing k-means clustering was not successful, we performed a principal component analysis for dimensionality reduction as another method for identifying clusters or patterns while preserving as much information of the original data set as possible.
 
@@ -644,11 +610,11 @@ LapatinibFold = select(Fold_Change, contains("Lapa"))
 
 #Determining the number of clusters
 topVarFold = apply(LapatinibFold, 1, var)
-summary(topVarFold)
+#summary(topVarFold)
 
 # Using the most variable, thus informative genes
 topVarFold75 = LapatinibFold[topVarFold > quantile(topVarFold, probs = 0.75), ]
-dim(topVarFold75)
+#dim(topVarFold75)
 
 
 ```
@@ -738,7 +704,7 @@ tissue <- levels(metad.cl$tissue)
 
 ```
 
-To determine clusters of samples based on their similarity, we plotted PC1 and PC2 as well as a PC2 and PC3 while coloring by microsatellite instability status and drug respectively.
+
 
 ```{r, fig.height = 4.5, fig.width = 7.2, warning = FALSE, eval=FALSE}
 par(mfrow=c(2,2), cex=0.7, oma=c(2,3,2,2))
@@ -851,9 +817,6 @@ As you can see from the plot, there is a positive correlation between inoculatio
 As mentioned in our presentation, we want to create a model to predict GI50-values and thus to predict, if Lapatinib is a good choice. Therefore, we took several datasets and performed three regression analyses.
 
 
-### 4.1.1 Linear regression ~ Inoculation_Density {#css_class4.1.1}
-
-The first linear model tries to predict the GI-50 value among the data of the Inoculation density.
 
 ```{r}
 NegLogGI50Lap = NegLogGI50[9,]
@@ -892,12 +855,12 @@ dat22.test = combined22[-i22.train, ]
 l22.train = lm(NegLogGI50Lap ~ Inoculation_Density, data = dat22.train)
 #summary(l22.train)
 
-qqnorm(l22.train$residuals, main = "Test for normaldistribution of residuals")
-qqline(l22.train$residuals)
+#qqnorm(l22.train$residuals, main = "Test for normaldistribution of residuals")
+#qqline(l22.train$residuals)
 
-plot(dat22.train$NegLogGI50Lap, l22.train$fitted.values, pch = 20, col = "blue", xlab = "Real values", 
-     ylab = "Predicted values", main = "Linear regression ~ Inoculation_Density ~ Training")
-abline(0, 1, col = "red")
+#plot(dat22.train$NegLogGI50Lap, l22.train$fitted.values, pch = 20, col = "blue", xlab = "Real values", 
+    # ylab = "Predicted values", main = "Linear regression ~ Inoculation_Density ~ Training")
+#abline(0, 1, col = "red")
 
 n = nrow(dat22.train)
 rmse22.train = sqrt(1/n * sum(l22.train$residuals^2))
@@ -911,9 +874,19 @@ rmse22.test = sqrt(1/n * sum(residuals^2))
 #rmse22.test
 ```
 
-### 4.1.2 Linear regression ~ Doubling-time {#css_class4.1.2}
+### 4.1.1 Linear regression ~ Doubling-time {#css_class4.1.1}
 
 The second linear model tries to predict the GI-50 value among the data of the Doubling-time.
+
+
+```{r, echo=TRUE, eval= FALSE}
+i2.train = sample(1:nrow(combined2), 48)
+
+dat2.train = combined2[i2.train, ]
+dat2.test = combined2[-i2.train, ]
+
+l2.train = lm(NegLogGI50Lap ~ Doubling_Time, data = dat2.train)
+```
 
 ```{r}
 NegLogGI50Lap = NegLogGI50[9,]
@@ -972,9 +945,7 @@ rmse2.test = sqrt(1/n * sum(residuals^2))
 ```
 
 
-### 4.1.3 Multiple regression {#css_class4.1.3}
 
-Finally, we did a multiple regression with both datasets to predict GI50-values.
 
 ```{r}
 
@@ -1006,12 +977,12 @@ dat3.test = combined3[-i3.train, ]
 l3.train = lm(NegLogGI50Lap ~ Inoculation_Density + Doubling_Time , data = dat3.train)
 #summary(l3.train)
 
-qqnorm(l3.train$residuals, main = "Test for normaldistribution of residuals")
-qqline(l3.train$residuals)
+#qqnorm(l3.train$residuals, main = "Test for normaldistribution of residuals")
+#qqline(l3.train$residuals)
 
-plot(dat3.train$NegLogGI50Lap, l3.train$fitted.values, pch = 20, col = "blue", xlab = "Real values", 
-     ylab = "Predicted values", main = "Multiple regression ~ Training")
-abline(0, 1, col = "red")
+#plot(dat3.train$NegLogGI50Lap, l3.train$fitted.values, pch = 20, col = "blue", xlab = "Real values", 
+    # ylab = "Predicted values", main = "Multiple regression ~ Training")
+#abline(0, 1, col = "red")
 
 n = nrow(dat3.train)
 rmse3.train = sqrt(1/n * sum(l3.train$residuals^2))
@@ -1026,18 +997,28 @@ rmse3.test = sqrt(1/n * sum(residuals^2))
 ```
 
 
-### 4.1.4 Table of conclusion {#css_class4.1.4}
+### 4.1.2 Table of conclusion {#css_class4.1.2}
 
 The following table shows important values. 
 
 ```{r, results='asis'}
+f1 = summary(l22.train)$fstatistic
+p1 = pf(f1[1], f1[2], f1[3], lower.tail = FALSE)
+
+f2 = summary(l2.train)$fstatistic
+p2 = pf(f2[1], f2[2], f2[3], lower.tail = FALSE)
+
+f3 = summary(l3.train)$fstatistic
+p3 = pf(f3[1], f3[2], f3[3], lower.tail = FALSE)
+
+
 Rsrd =  c(summary(l22.train)$r.squared, summary(l2.train)$r.squared, summary(l3.train)$r.squared)
-F_Stat = c(summary(l22.train)$fstatistic[1],summary(l2.train)$fstatistic[1],summary(l3.train)$fstatistic[1])
+F_Stat = c(p1,p2,p3)
 Sum_RMSE = c(rmse22.test,rmse2.test,rmse3.test)
 Rsrd1 = as.data.frame(t(Rsrd))
 table = rbind(Rsrd1,F_Stat,Sum_RMSE)
 colnames(table) = c("Inoculation_Density","Doublingtime","Multiple regression")
-rownames(table) = c("R-squared-value","F-statistic","RMSE of test-dataset")
+rownames(table) = c("R-squared-value","F-statistic (p-value)","RMSE of test-dataset")
 knitr::kable(table, format = "markdown")
 
 ```
