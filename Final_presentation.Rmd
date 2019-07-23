@@ -57,8 +57,7 @@ library(viridis)
     [3.2.1 Paired t-test of our biomarker before and after treatment](#css_class3.2.1)  
     [3.2.2 Visualization of the genome-wide paired t-test in a vulcano plot](#css_class3.2.2)  
   [3.3 K-means](#css_id3.3)  
-  [3.4 PCA](#css_id3.4)  
-  [3.5 Spearman correlation](#css_id3.5)  
+  [3.4 Spearman correlation](#css_id3.5)  
 
 [4. Main questions](#anchor4)  
   [4.1 Question 1: Does the cell doubling time correlate with reduced drug sensitivity?](#css_id4.1)  
@@ -236,7 +235,7 @@ As we wanted an "elbow", it is hard to determine the amount of clusters.
 
 Since the clustering method by performing k-means clustering was not successful, we performed a principal component analysis for dimensionality reduction as another method for identifying clusters or patterns while preserving as much information of the original data set as possible.
 
-```{r}
+```{r, echo=TRUE}
 pca <- prcomp(t(Fold_Change), scale = TRUE)
 ```
 
@@ -250,7 +249,7 @@ pca.var.per <- round(pca.var/sum(pca.var)*100, 1)
 # since percentages make more sense than normal variation values calculate % of variation
 
 plot(pca.var.per[1:10], main = "Scree plot", type = "b", xlab = "Principal Components", ylab = "% variation")
-plot(cumsum(pca.var.per[1:15]), main = "cumulative variation", type = "l", xlab = "Principal Components", ylab = "% variation") 
+ 
 
 ```
 
@@ -265,7 +264,7 @@ pca.data <- cbind(sample =rownames(pca.data), pca.data)
 
 ```
 
-```{r, echo=FALSE, eval=FALSE}
+```{r, eval=FALSE}
 # PCs describe variation and account for the varied influences of the original characteristics. 
 # Such influences, or loadings, can be traced back from the PCA to find out which genes contribute most to the single PCS.
 ## get names of top 10 genes that contribute most to pc1
@@ -277,8 +276,6 @@ gene_score_ranked <- sort(gene_score, decreasing = TRUE)
 top_10_genes <- names(gene_score_ranked[1:10])
 top_10_genes # show names of top 10 genes
 ```
-
-In order to color our clusters according to sample annotations, we created a color vector by dissecting the metadata matrix by our PCA data samples. Additionally we were fixing some labeling problems. 
 
 ```{r}
 ### Metadata color matrix for coloring 
@@ -292,8 +289,6 @@ metad.cl$mechanism <- Drug_Annotation$Mechanism[match(metad.cl$drug, Drug_Annota
 metad.cl$msi <- Cellline_Annotation$Microsatellite_instability_status[match(metad.cl$cell, Cellline_Annotation$Cell_Line_Name)]
 
 ```
-
-Subsequently we created the color vectors for coloring according to drug and tissue type. 
 
 ```{r}
 # plotting all informative PCs
@@ -311,6 +306,17 @@ tissue <- levels(metad.cl$tissue)
 ```
 
 To determine clusters of samples based on their similarity, we plotted PC1 and PC2 as well as a PC2 and PC3 while coloring by tissue type and drug respectively.
+
+```{r, echo=TRUE, eval=FALSE}
+#plot PC1 and PC2 colored by tissue
+
+plot(pca$x[,1], 
+     pca$x[,2], 
+     col = color_tissue,
+     pch = 19, 
+     xlab = paste("PC1 (",pca.var.per[1],"%)"), 
+     ylab = paste("PC2 (",pca.var.per[2],"%)"))
+```
 
 ```{r, PCA tissue, fig.height=6, fig.width=12, warning = FALSE}
 par(mfrow=c(1,2), cex=0.7)
@@ -341,6 +347,7 @@ mtext("PCA of Fold Change  colored by tissue",
       cex = 1.2,
       font = 2, 
       outer = TRUE)
+
 
 #plot PC2 and PC3
 plot(pca$x[,2], 
@@ -666,9 +673,6 @@ plot(s, main = "Silhouette value for each cell-line ", adj = 0.5, col= c("darkbl
 
 The negative bars indicate an incorrectly assigned datapoint. Overall, the fewer clusters you have, the better your silhouette width values are. This is due to the datapoints being very proximate to one another and not being able to define specific or different clusters.
 
-## 3.4 PCA {#css_id3.4}
-
-Since the clustering method by performing k-means clustering again was not successful, we performed a principal component analysis over the selected Lapatinib samples for identifying clusters or patterns while preserving as much information of the original data set as possible.
 
 ```{r}
 L_fc <- select(Fold_Change, contains("Lapa"))
@@ -678,9 +682,8 @@ pca <- prcomp(t(L_fc), scale = TRUE)
 
 ```
 
-By plotting a scree plot of the variation percentage, we can display how much variation a principal component captures from the original data.
 
-```{r}
+```{r, eval=FALSE}
 pca.var <- pca$sdev^2  # sdev calculates variation each PC accounts for
 pca.var.per <- round(pca.var/sum(pca.var)*100, 1) 
 # since percentages make more sense then normal variation values
@@ -688,7 +691,6 @@ pca.var.per <- round(pca.var/sum(pca.var)*100, 1)
 
 
 plot(pca.var.per[1:10], main = "Scree plot", type = "b", xlab = "Principal Components", ylab = "% variation")
-plot(cumsum(pca.var.per[1:15]), main = "cumulative variation", type = "l", xlab = "Principal Components", ylab = "% variation") 
 ```
 
 
@@ -698,8 +700,6 @@ rownames(pca.data) <- gsub(x = rownames(pca.data), pattern = "X786", replacement
 pca.data <- cbind(sample =rownames(pca.data), pca.data)
 
 ```
-
-As seen in the scree plot, again the first three or four PCs have capture most of the information since the curve bends at an "elbow" at PC4 - this is our cutting off point.
 
 ```{r, echo=FALSE, eval=FALSE}
 ## get names of top 10 genes that contribute most to pc1
@@ -713,7 +713,7 @@ top_10_genes # show names of top 10 genes
 
 ```
 
-In order to color our clusters according to sample annotations, we created a color vector by dissecting the metadata matrix as well as the cell-line-annotation matrix  by our PCA data samples. 
+
 
 ```{r}
 ### Metadata matrix for coloring 
@@ -725,8 +725,6 @@ metad.cl$doubling_time <- Cellline_Annotation$Doubling_Time[match(metad.cl$cell,
 metad.cl$cancer_type <- Cellline_Annotation$Cancer_type[match(metad.cl$cell, Cellline_Annotation$Cell_Line_Name)]
 
 ```
-
-Subsequently we created the color vectors for coloring according to drug and microsatellite instability status.
 
 ```{r}
 #color vectors for coloring by msi and tissue
@@ -742,7 +740,7 @@ tissue <- levels(metad.cl$tissue)
 
 To determine clusters of samples based on their similarity, we plotted PC1 and PC2 as well as a PC2 and PC3 while coloring by microsatellite instability status and drug respectively.
 
-```{r, fig.height = 4.5, fig.width = 7.2, warning = FALSE}
+```{r, fig.height = 4.5, fig.width = 7.2, warning = FALSE, eval=FALSE}
 par(mfrow=c(2,2), cex=0.7, oma=c(2,3,2,2))
 par(mar=c(4, 6, 3, 3))
 ## colored by msi
@@ -820,10 +818,9 @@ tissue23 <- plot(pca$x[,2],
 
 ```
 
-As we can see, rarely any clusters can be determined. In Addition, the color annotation does not reveal any pattern of clustering.
 
 
-## 3.5 Spearman correlation {#css_id3.5}
+## 3.4 Spearman correlation {#css_id3.5}
 
 Modeling of a linear relationship between cell doubling time and inoculation density.
 
@@ -1362,13 +1359,13 @@ diff_df_cns$group <- "NotSignificant"
 
 
 # change the grouping for the entries with significance but not a large enough Fold change
-diff_df_cns[which(diff_df_cns['FDR'] < 0.5 & (diff_df_cns['absFold']) < 0.5 ),"group"] <- "Significant"
+diff_df_cns[which(diff_df_cns['FDR'] < 0.5 & (diff_df_cns['absFold']) < 1 ),"group"] <- "Significant"
 
 # change the grouping for the entries a large enough Fold change but not a low enough p value
-diff_df_cns[which(diff_df_cns['FDR'] > 0.5 & (diff_df_cns['absFold']) > 0.5 ),"group"] <- "FoldChange"
+diff_df_cns[which(diff_df_cns['FDR'] > 0.5 & (diff_df_cns['absFold']) > 1 ),"group"] <- "FoldChange"
 
 # change the grouping for the entries with both significance and large enough fold change
-diff_df_cns[which(diff_df_cns['FDR'] < 0.5 & (diff_df_cns['absFold']) > 0.5 ),"group"] <- "Significant&FoldChange"
+diff_df_cns[which(diff_df_cns['FDR'] < 0.5 & (diff_df_cns['absFold']) > 1 ),"group"] <- "Significant&FoldChange"
 
 
 # Find and label the top peaks
@@ -1435,10 +1432,9 @@ pheatmap(
 )
 ```
 
+The heatmap shows, that the top expression genes are regulated similarly in breast and in cns cells after treatment with Lapatinib.
 
 ### 4.3.3 Investigation of correlation {#css_class4.3.3}
-
-For better visualization of the expression patterns of the top peak genes among breast and cns tissues we computed a heatmap of the mean fold changes for direct comparison. 
 
 ```{r}
 #correlation between top peak gene expression patterns in breast and cns tissues treated by lapatinib
@@ -1447,11 +1443,8 @@ dif.FC.BC = data.frame(breast = cor_mat$breast -  mean(t(breastFC)), cns = cor_m
 dif.FC.BC$gene = rownames(cor_mat)
 ```
 
-The heatmap shows, that the top expression genes are regulated similarly in breast and in cns cells after treatment with Lapatinib. 
 
-To gather a more detailed conception of the gene expression regulation values (aka the fold change) we also computed a comparing bar plot showing the exact fold change values.
-
-```{r, fig.height = 7, fig.width = 14}
+```{r, fig.height = 7, fig.width = 14, eval=FALSE}
 # PLot
 
 b = ggplot(dif.FC.BC,aes(x = gene, y = breast)) +
