@@ -833,7 +833,6 @@ cor(Cellline_Annotation$Doubling_Time, Cellline_Annotation$Inoculation_Density, 
 
 ```{r}
 plot(Cellline_Annotation$Doubling_Time, Cellline_Annotation$Inoculation_Density, pch= 16, col= "royalblue3", main = "Spearman correlation between Doubling Time and Inoculation Density", xlab = "Doubling Time", ylab = "Inoculation Density")
-lm(Cellline_Annotation$Inoculation_Density~ Cellline_Annotation$Doubling_Time)
 
 abline(lm(Cellline_Annotation$Inoculation_Density ~ Cellline_Annotation$Doubling_Time), col = "violetred3", lwd = 2)
 ```
