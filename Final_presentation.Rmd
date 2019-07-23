@@ -572,6 +572,8 @@ abslog2FoldChange<-abs(vulcano$log2FoldChange)
 with(vulcano, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot", xlim=c(-2.5,2)))
 ```
 ```{r, fig.height=12, fig.width=12, message=TRUE, paged.print=TRUE}
+with(vulcano, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot", xlim=c(-2.5,2)))
+
 # Add colored points: red if padj<0.05, blue if log2FC>1, green if both)
 with(subset(vulcano, padj<.05 ), points(log2FoldChange, -log10(pvalue), pch=20, col="red"))
 with(subset(vulcano, (abslog2FoldChange)>1), points(log2FoldChange, -log10(pvalue), pch=20, col="blue"))
