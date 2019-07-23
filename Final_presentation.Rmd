@@ -64,7 +64,6 @@ library(viridis)
     [4.2.2 Plot Erlotinib and Lapatinib, colored by tissue](#css_class4.2.2)  
     [4.2.3 Pearson correlation](#css_class4.2.3)  
     [4.2.4 Lung cellines](#css_class4.2.4)  
-    [4.2.5 Anova](#css_class4.2.5)  
   [4.3 Question 3: Does Lapatinib have a similar effect on brain metastases as it does on breast cancer?](#css_id4.3)  
     [4.3.1 Volcano plot](#css_class4.3.1)  
     [4.3.2 Heatmap for visualization](#css_class4.3.2)  
@@ -1123,54 +1122,6 @@ cor(NegLogGI50.lung$erlotinib, NegLogGI50.lung$lapatinib, method = "pearson")
 ```
 
 A pearson correlation coefficent of ~ 0.96 suggests that Lapatinib has a similar effect on lung cancer as Erlotinib.
-
-
-```{r}
-lapa<-data.frame(Metadata[which(Metadata[,'drug'] == "lapatinib"), ])
-erlo<-data.frame(Metadata[which(Metadata[,'drug'] == "erlotinib"), ])
-el<-right_join(lapa,erlo, by="cell")
-rmv.rows = apply(el, 1, function(x) {
-  sum(is.na(x))
-})  # Go through each row and sum up all missing values
-row.names(rmv.rows)
-
-fc<-data.frame(Treated-Untreated)
-all<-data.frame(fc[grep("lapatinib|erlotinib", colnames(fc))])
-
-
-all.rmv<-data.frame(all %>% dplyr::select(
-                    -"CCRF.CEM_erlotinib_10000nM_24h", 
-                    -"HL.60_erlotinib_10000nM_24h", 
-                    -"HT29_erlotinib_10000nM_24h", 
-                    -"K.562_erlotinib_10000nM_24h", 
-                    -"LOX_erlotinib_10000nM_24h",
-                    -"SR_erlotinib_10000nM_24h",
-                    -"COLO.205_lapatinib_10000nM_24h"))
-                  
-la<-data.frame(all.rmv[grep("lapatinib", colnames(all.rmv))])
-
-er<-data.frame(all.rmv[grep("erlotinib", colnames(all.rmv))])
-erla<-data.frame(er,la)
-Drug<-c(rep('Erlotinib',53), rep('Lapatinib',53))
-log2FoldChange<-apply(erla, MARGIN = 2, FUN = mean)
-df_drug<-data.frame(log2FoldChange, Drug)
-
-```
-
-<div style="text-align: justify"> 
-### 4.2.5 Anova {#css_class4.2.5}
-Anova tests whether the means of several independent groups differ.
-A p-value > 0.05 means that the result is not significant. Therefore, there is no significant difference between Erlotinib and Lapatinib.</div>
-
-```{r}
-ggboxplot (data = df_drug, x="Drug", y="log2FoldChange", color = "Drug",    
-          add = "jitter", legend = "none")+
-          rotate_x_text(angle = 45)+
-          stat_compare_means(method = "anova",  label.x = 2)+ # Add global anova p-value
-          stat_compare_means(label = "p.signif", method = "t.test",
-          ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
-```
-
 
 
 ## 4.3 Question 3: Does Lapatinib have a similar effect on brain metastases as it does on breast cancer? {#css_id4.3}
