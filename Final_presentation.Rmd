@@ -1,5 +1,6 @@
 ---
-title: "Project02 - Group01"
+title: "Final Presentation, Lapatinib"
+Subtitle: "Project02 - Group01"
 author: "Eva, Tobias, Katharina, Laura"
 date: "24. July 2019"
 output:
@@ -577,7 +578,6 @@ with(subset(volcano, (abslog2FoldChange)>1), points(log2FoldChange, -log10(pvalu
 with(subset(volcano, padj<.05 & (abslog2FoldChange)>1), points(log2FoldChange, -log10(pvalue), pch=20, col="green"))
 # Label points with the textxy function from the calibrate plot
 with(subset(volcano, padj<.05 & (abslog2FoldChange)>1), textxy(log2FoldChange, -log10(pvalue), labs = genes, cex=.8))
-```volcano, padj<.05 ), points(log2FoldChange, -log10(pvalue), pch=20, col="red"))
 ```
 
 
