@@ -548,7 +548,8 @@ df_breast<-data.frame(Expression, Biomarkers)
 ### 3.1.4 ggBoxplot of our biomarkers' basalexpression in breast cells with Kruskal-Wallis test {#css_class3.1.4}
 
 The null hypothesis is: there is no difference between the groups.
-The Kruskal-Wallis test is for independent samples. It tests whether the central trends of several independent samples differ. Since the p-value of the Kruskal-Wallis test is significant, our biomarkers do not show the same central tendencies. It can be conclude that the genes are not closely related.</div>
+The Kruskal-Wallis test is for independent samples. It tests whether the central trends of several independent samples differ. Since the p-value of the Kruskal-Wallis test is significant, our biomarkers do not show the same central tendencies. It can be conclude that the genes are not closely related.
+Because Lapatinib is a breast cancer drug, we are more closely studying the expression of biomarkers in breast tissue. It can be seen that ASNS and GDF15 are very strongly expressed in breast cancer cells.</div>
 
 ```{r, fig.height=5, fig.width=8, message=TRUE, echo=TRUE}
 
@@ -560,23 +561,6 @@ ggboxplot(df_breast, x="Biomarkers", y="Expression", color = "Biomarkers",
                      ref.group = ".all.", hide.ns = TRUE)      # Pairwise comparison against all
 ```
 
-### 3.1.5 Heatmap of biomarkers in breast cells {#css_class3.1.5}
-<div style="text-align: justify"> 
-Because lapatinib is a breast cancer drug, we are more closely studying the expression of biomarkers in breast tissue. It can be seen that ASNS and GDF15 are very strongly expressed in breast cancer cells.</div>
-
-```{r, fig.height=5, fig.width=8, message=TRUE}
-pheat_breast<-pheatmap(breast_marker_matrix ,
-                      show_rownames = FALSE, 
-                      show_colnames =TRUE,
-                      cutree_cols = 4, 
-                      cutree_rows = 3, 
-                      color = viridis(4),
-                      drop_levels = TRUE,
-                      border_color = NA,
-                      clustering_method = "ward.D2", 
-                      scale="row")
-pheat_breast
-```
 <div style="text-align: justify"> 
 
 ## 3.2. Paired t-test between the Lapatinib treated and untreated data {#css_id3.2}
@@ -590,9 +574,6 @@ after=as.matrix(LapatinibTreated)
 ba<-data.frame(before, after)
 ```
 
-```{r}
-t.test(before, after, paired=TRUE)
-```
 <div style="text-align: justify"> 
 ### 3.2.1 Paired t-test of our biomarker before and after treatment {#css_class3.2.1}
 
@@ -626,11 +607,11 @@ with(vulcano, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot", 
 
 # Add colored points: red if padj<0.05, blue if log2FC>1, green if both)
 with(subset(vulcano, padj<.05 ), points(log2FoldChange, -log10(pvalue), pch=20, col="red"))
-with(subset(vulcano, abs(log2FoldChange)>1), points(log2FoldChange, -log10(pvalue), pch=20, col="blue"))
-with(subset(vulcano, padj<.05 & abs(log2FoldChange)>1), points(log2FoldChange, -log10(pvalue), pch=20, col="green"))
+with(subset(vulcano, (log2FoldChange)>1), points(log2FoldChange, -log10(pvalue), pch=20, col="blue"))
+with(subset(vulcano, padj<.05 & (log2FoldChange)>1), points(log2FoldChange, -log10(pvalue), pch=20, col="green"))
 
 # Label points with the textxy function from the calibrate plot
-with(subset(vulcano, padj<.05 & abs(log2FoldChange)>1), textxy(log2FoldChange, -log10(pvalue), labs = genes, cex=.8))
+with(subset(vulcano, padj<.05 & (log2FoldChange)>1), textxy(log2FoldChange, -log10(pvalue), labs = genes, cex=.8))
 ```
 
 
@@ -1195,23 +1176,6 @@ df_drug<-data.frame(log2FoldChange, Drug)
 
 <div style="text-align: justify"> 
 ### 4.2.5 Anova {#css_class4.2.5}
-### Checking requirements for ANOVA
-
-First, the fold change data of Lapatinib and Erlotinib must be checked for normality. Anova can be used if the data is distributed normally.</div>
-
-```{r}
-qqnorm(log2FoldChange, pch = 1, frame = FALSE)
-qqline(log2FoldChange, col = "steelblue", lwd = 2)
-```
-
-<div style="text-align: justify"> 
-Anova anticipates homogeneity of variances. If the p-value of the Fligner-Killeen test is greater than 0.05, the homogeneity of variance is not rejected and this condition is met. The p-value of 0,08067 let us know that variances are homogeneous.</div>
-
-```{r}
-fligner.test(log2FoldChange ~ Drug, data=df_drug )
-```
-
-<div style="text-align: justify"> 
 Anova tests whether the means of several independent groups differ.
 A p-value > 0.05 means that the result is not significant. Therefore, there is no significant difference between Erlotinib and Lapatinib.</div>
 
