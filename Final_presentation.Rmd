@@ -573,13 +573,8 @@ with(volcano, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot", 
 ```{r, fig.height=12, fig.width=12, message=TRUE, paged.print=TRUE}
 with(volcano, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot", xlim=c(-2.5,2)))
 
-# Add colored points: red if padj<0.05, blue if log2FC>1, green if both)
+# Add colored points: red if padj<0.05)
 with(subset(volcano, padj<.05 ), points(log2FoldChange, -log10(pvalue), pch=20, col="red"))
-with(subset(volcano, (abslog2FoldChange)>1), points(log2FoldChange, -log10(pvalue), pch=20, col="blue"))
-with(subset(volcano, padj<.05 & (abslog2FoldChange)>1), points(log2FoldChange, -log10(pvalue), pch=20, col="green"))
-
-# Label points with the textxy function from the calibrate plot
-with(subset(volcano, padj<.05 & (abslog2FoldChange)>1), textxy(log2FoldChange, -log10(pvalue), labs = genes, cex=.8))
 ```
 
 
