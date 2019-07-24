@@ -1235,7 +1235,7 @@ for (i in seq_len(nrow(top_peaks_breast))) {
 plot_breast <- plot_ly(data = diff_df_breast, x = diff_df_breast$Fold, y = -log10(diff_df_breast$FDR), type = "scatter", text = diff_df_breast$gene, mode = "markers", color = diff_df_breast$group) %>% 
   layout(title ="Volcano Plot of Lapatinib breast cancer samples", 
          xaxis = list(title="log2 Fold Change"),
-         yaxis = list(title="FDR")) %>%
+         yaxis = list(title="neglog FDR")) %>%
   layout(annotations = a)
 plot_breast
 
@@ -1288,7 +1288,7 @@ for (i in seq_len(nrow(top_peaks_cns))) {
 plot_cns <- plot_ly(data = diff_df_cns, x = diff_df_cns$Fold, y = -log10(diff_df_cns$FDR),type = "scatter", text = diff_df_cns$gene, mode = "markers", color = diff_df_cns$group) %>% 
   layout(title ="Volcano Plot of Lapatinib CNS cancer samples",
          xaxis = list(title="log2 Fold Change"),
-         yaxis = list(title="FDR"))%>%
+         yaxis = list(title="neglog FDR"))%>%
   layout(annotations = a)
 plot_cns
 
